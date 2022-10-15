@@ -1,5 +1,6 @@
 package com.laul.trackaid
 
+import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
 
@@ -13,7 +14,11 @@ object DataProvider {
             mIcon = R.drawable.icn_bg,
             mColor_Primary = R.color.red_primary,
             mColor_Secondary = R.color.red_secondary,
-            gFitDataType = HealthDataTypes.TYPE_BLOOD_GLUCOSE
+            gFitDataType = HealthDataTypes.TYPE_BLOOD_GLUCOSE,
+            gFitOptions = FitnessOptions.builder()
+                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
+                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
+                .build()
         ),
         ModuleData(
             mId = 1,
@@ -22,7 +27,11 @@ object DataProvider {
             mIcon = R.drawable.icn_steps,
             mColor_Primary = R.color.orange_primary,
             mColor_Secondary = R.color.orange_secondary,
-            gFitDataType = DataType.TYPE_STEP_COUNT_DELTA
+            gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
+            gFitOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build()
         ),
         ModuleData(
             mId = 1,
@@ -31,7 +40,11 @@ object DataProvider {
             mIcon = R.drawable.icn_hr,
             mColor_Primary = R.color.blue_primary,
             mColor_Secondary = R.color.blue_secondary,
-            gFitDataType = DataType.TYPE_HEART_RATE_BPM
+            gFitDataType = DataType.TYPE_HEART_RATE_BPM,
+            gFitOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
+                .build()
         ),
         ModuleData(
             mId = 1,
@@ -40,7 +53,10 @@ object DataProvider {
             mIcon = R.drawable.icn_bp,
             mColor_Primary = R.color.pink_primary,
             mColor_Secondary = R.color.pink_secondary,
-            gFitDataType = DataType.TYPE_STEP_COUNT_DELTA
+            gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
+            gFitOptions = FitnessOptions.builder()
+                .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
+                .build()
         )
     )
 }

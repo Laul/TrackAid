@@ -1,6 +1,7 @@
 package com.laul.trackaid
 
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,42 +10,42 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.laul.trackaid.ui.theme.TrackAidTheme
 import androidx.compose.material.Icon
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+
 import com.laul.trackaid.ui.theme.backgroundColor
 
 
 @Composable
-fun MainModule(name: String) {
-    var moduleTitles = arrayListOf<String>("Blood Glucose", "Steps", "Heart Rate", "Blood Pressure")
+fun MainModule(gFitConnectManager: GFitConnectManager) {
+
+
     Scaffold(
         backgroundColor = backgroundColor,
         content = {
-            Modules()
+            Modules(gFitConnectManager)
         }
     )
 }
 
-@Preview(showBackground = true)
 @Composable
-fun Main_ModulePreview() {
+fun TextDebug(result: Float) {
 
-    TrackAidTheme {
-        MainModule("Android")
-    }
+    Text(
+        text = result.toString(),
+        style = MaterialTheme.typography.h1.copy()
+    )
 }
 
-
 @Composable
-private fun Modules() {
-    val modules = remember { DataProvider.moduleList }
+private fun Modules(gFitConnectManager: GFitConnectManager) {
+    val modules = remember { mutableStateOf( DataProvider.moduleList)}
 
     LazyColumn(
         modifier = Modifier.padding(
@@ -53,35 +54,31 @@ private fun Modules() {
         )
     ) {
         items(
-            items = modules,
+            items = DataProvider.moduleList,
 
             itemContent = {
-               Module(module = it)
+                Module(module = it, gFitConnectManager)
             })
     }
 }
 
 
 @Composable
-private fun Module(module: ModuleData) {
-//
-//    Surface(
-//        modifier = Modifier
-//            .padding(
-//                vertical = dimensionResource(R.dimen.padding_mid),
-//                horizontal = dimensionResource(R.dimen.padding_mid)
-//            )
-//            .border(
-//                BorderStroke(
-//                    1.dp,
-//                    colorResource(id = module.mColor_Primary)
-//                ),
-//
-//                ),
-//        color = colorResource(id = module.mColor_Secondary),
-//        contentColor = colorResource(module.mColor_Primary)
-//
-//    ){
+private fun Module(module: ModuleData, gFitConnectManager: GFitConnectManager) {
+    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(5)
+    val lastCall = remember { mutableStateOf(0f.toLong() )    }
+    Log.i("lastCall", lastCall.toString())
+
+
+    if (module.dPoints.size == 0) {
+        module.getGFitData(
+            gFitConnectManager.permission,
+            LocalContext.current,
+            lastCall,
+            Time_Start,
+            Time_End
+        )
+    }
 
 
     OutlinedButton(
@@ -102,7 +99,7 @@ private fun Module(module: ModuleData) {
     ) {
         Row(
             modifier = Modifier.padding(
-                vertical =dimensionResource(id = R.dimen.padding_mid),
+                vertical = dimensionResource(id = R.dimen.padding_mid),
                 horizontal = dimensionResource(id = R.dimen.padding_small)
             )
         ) {
@@ -131,7 +128,7 @@ private fun Module(module: ModuleData) {
                 }
 
                 // Latest value + unit + associated date
-                LatestValue(module)
+                LatestValue(module, lastCall)
 
                 // Label for warning / normal info based on last value
                 Label(module)
@@ -144,12 +141,14 @@ private fun Module(module: ModuleData) {
 
 
 @Composable
-private fun LatestValue(module: ModuleData) {
-    Row(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))) {
-        Text(
-            text = "Value",
-            style = MaterialTheme.typography.h2.copy()
-        )
+        fun LatestValue(module: ModuleData, lastCall: MutableState<Long>) {
+            Row(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))) {
+        if (lastCall.value !=0L){
+            Text(
+                text = module.dPoints[0].value.toString(), //module.dPoint[0].value[0].toString(),
+                style = MaterialTheme.typography.h2.copy()
+            )
+        }
         Text(
             modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_mid)),
             text = module.mUnit,
@@ -157,7 +156,7 @@ private fun LatestValue(module: ModuleData) {
         )
     }
     Text(
-        text = "Date",
+        text = module.mName,
         style = MaterialTheme.typography.h3.copy()
     )
 }

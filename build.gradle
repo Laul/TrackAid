@@ -1,7 +1,9 @@
 buildscript {
     ext {
-        health_connect_version = '1.0.0-alpha04'
+        health_connect_version = "1.0.0-alpha06"
         compose_version = '1.1.0-beta01'
+        lifecycle_version = '2.5.1'
+
     }
 }// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
