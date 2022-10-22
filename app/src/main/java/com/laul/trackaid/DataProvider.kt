@@ -1,5 +1,6 @@
 package com.laul.trackaid
 
+import co.csadev.kellocharts.model.Line
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
@@ -19,9 +20,9 @@ object DataProvider {
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
                 .build()
-        ),
+    ),
         ModuleData(
-            mId = 1,
+            mId = 2,
             mName = "Steps",
             mUnit = "steps",
             mIcon = R.drawable.icn_steps,
@@ -33,8 +34,9 @@ object DataProvider {
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .build()
         ),
+
         ModuleData(
-            mId = 1,
+            mId = 3,
             mName = "Heart Rate",
             mUnit = "bpm",
             mIcon = R.drawable.icn_hr,
@@ -47,7 +49,7 @@ object DataProvider {
                 .build()
         ),
         ModuleData(
-            mId = 1,
+            mId = 4,
             mName = "Blood Pressure",
             mUnit = "mmHg",
             mIcon = R.drawable.icn_bp,

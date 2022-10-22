@@ -1,7 +1,7 @@
 package com.laul.trackaid
 
 
-import android.util.Log
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,35 +18,29 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.viewinterop.AndroidView
+import co.csadev.kellocharts.model.Axis
+import co.csadev.kellocharts.model.Line
+import co.csadev.kellocharts.model.LineChartData
+import co.csadev.kellocharts.model.PointValue
+import co.csadev.kellocharts.view.LineChartView
+import com.laul.trackaid.DataGeneral.Companion.getDate
 
 import com.laul.trackaid.ui.theme.backgroundColor
 
 
 @Composable
-fun MainModule(gFitConnectManager: GFitConnectManager) {
-
-
+fun compMainModule(gFitConnectManager: GFitConnectManager) {
     Scaffold(
         backgroundColor = backgroundColor,
         content = {
-            Modules(gFitConnectManager)
+            compModules(gFitConnectManager)
         }
     )
 }
 
 @Composable
-fun TextDebug(result: Float) {
-
-    Text(
-        text = result.toString(),
-        style = MaterialTheme.typography.h1.copy()
-    )
-}
-
-@Composable
-private fun Modules(gFitConnectManager: GFitConnectManager) {
-    val modules = remember { mutableStateOf( DataProvider.moduleList)}
-
+private fun compModules(gFitConnectManager: GFitConnectManager) {
     LazyColumn(
         modifier = Modifier.padding(
             vertical = 10.dp,
@@ -57,32 +51,32 @@ private fun Modules(gFitConnectManager: GFitConnectManager) {
             items = DataProvider.moduleList,
 
             itemContent = {
-                Module(module = it, gFitConnectManager)
+                compModule(module = it, gFitConnectManager)
             })
     }
 }
 
-
 @Composable
-private fun Module(module: ModuleData, gFitConnectManager: GFitConnectManager) {
-    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(5)
-    val lastCall = remember { mutableStateOf(0f.toLong() )    }
-    Log.i("lastCall", lastCall.toString())
+private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager) {
 
+    // Variables to be used to get data from GFit
+    var context = LocalContext.current
+    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(6)
+
+    // Observer to trigger recomposition
+    val lastCall = remember { mutableStateOf(0f.toLong() )    }
 
     if (module.dPoints.size == 0) {
-        module.getGFitData(
-            gFitConnectManager.permission,
-            LocalContext.current,
-            lastCall,
-            Time_Start,
-            Time_End
-        )
+        module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
+        module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
     }
 
-
+    // Card as button so that we can click on it to launch it as dedicated module
     OutlinedButton(
-        onClick = { /* TODO to handle */ },
+        onClick = {
+            module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
+            module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
+        },
         colors = ButtonDefaults.buttonColors(
             backgroundColor = colorResource(module.mColor_Secondary).copy(
                 alpha = 0.1f
@@ -97,6 +91,7 @@ private fun Module(module: ModuleData, gFitConnectManager: GFitConnectManager) {
         // elevation = elevation(defaultElevation = 1.dp, pressedElevation = 0.dp)
 
     ) {
+        // Structure for module box
         Row(
             modifier = Modifier.padding(
                 vertical = dimensionResource(id = R.dimen.padding_mid),
@@ -104,6 +99,7 @@ private fun Module(module: ModuleData, gFitConnectManager: GFitConnectManager) {
             )
         ) {
 
+            // Left side - Contains title, latest value(s) and label
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -123,46 +119,101 @@ private fun Module(module: ModuleData, gFitConnectManager: GFitConnectManager) {
                         style = MaterialTheme.typography.h1.copy(),
                         modifier = Modifier
                             .padding(start = dimensionResource(R.dimen.padding_mid))
-                            .align(Alignment.Bottom)
+                            .align(Alignment.Bottom),
+                        color = colorResource(id = module.mColor_Primary)
+
                     )
                 }
 
                 // Latest value + unit + associated date
-                LatestValue(module, lastCall)
+                compLastData(module, lastCall)
 
                 // Label for warning / normal info based on last value
-                Label(module)
+                compLabel(module)
             }
 
+            // Right side - Contains chart
+            // module.formatAsColumn()
 
+            Column(){
+                //compChart(context, module)
+                var ctx = LocalContext.current
+
+                Text(text = lastCall.value.toString())
+                AndroidView(
+
+                    modifier = Modifier.size(200.dp),
+                    factory = { ctx: Context ->
+
+
+                        //  Initialize a View or View hierarchy here
+                        LineChartView(ctx).apply {
+                            lineChartData = module.kChart_Data
+                        }
+
+                    },
+                    update = {
+                        it.lineChartData = module.kChart_Data
+//                        module.kYAxis = Axis(hasLines = true, maxLabels = 4)
+//                        module.kYAxis.name = lastCall.value.toString()
+                    }
+
+                )
+
+
+
+
+
+            }
         }
     }
 }
 
 
 @Composable
-        fun LatestValue(module: ModuleData, lastCall: MutableState<Long>) {
-            Row(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))) {
-        if (lastCall.value !=0L){
-            Text(
-                text = module.dPoints[0].value.toString(), //module.dPoint[0].value[0].toString(),
-                style = MaterialTheme.typography.h2.copy()
-            )
+fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
+
+    var lastDPoint = module.getLastData()
+
+
+    Row(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))) {
+        if (lastCall.value != 0L) {
+            // Display last value(s)
+            if (module.mName == "Blood Pressure"){
+                Text(
+                    text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
+                    style = MaterialTheme.typography.h1.copy(),
+                    color = colorResource(id = module.mColor_Primary)
+
+                )
+            }
+            else{
+                Text(
+                    text = "%.2f".format(lastDPoint.value[0]),
+                    style = MaterialTheme.typography.h1.copy(),
+                    color = colorResource(id = module.mColor_Primary)
+
+                )
+            }
         }
         Text(
             modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_mid)),
             text = module.mUnit,
-            style = MaterialTheme.typography.h2.copy()
+            style = MaterialTheme.typography.h2.copy(),
+            color = colorResource(id = module.mColor_Primary)
+
         )
     }
+    // Display Date of last value(s)
     Text(
-        text = module.mName,
-        style = MaterialTheme.typography.h3.copy()
+        text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d - h:mm a "),
+        style = MaterialTheme.typography.h3.copy(),
+        color = colorResource(id = module.mColor_Primary)
     )
 }
 
 @Composable
-fun Label(module: ModuleData) {
+fun compLabel(module: ModuleData) {
     Card(
         border = BorderStroke(
             1.dp,

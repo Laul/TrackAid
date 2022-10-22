@@ -23,22 +23,22 @@ val Typography = Typography(
     h1 = TextStyle(
         fontFamily = fontCustom,
         fontWeight = FontWeight.W800,
-        fontSize = 16.sp
+        fontSize = 24.sp
     ),
     h2 = TextStyle(
         fontFamily = fontCustom,
         fontWeight = FontWeight.W400,
-        fontSize = 14.sp
+        fontSize = 20.sp
     ),
     h3 = TextStyle(
         fontFamily = fontCustom,
         fontWeight = FontWeight.W200,
-        fontSize = 12.sp
+        fontSize = 16.sp
     ),
     body1 = TextStyle(
         fontFamily = fontCustom,
         fontWeight = FontWeight.W200,
-        fontSize = 12.sp
+        fontSize = 14.sp
     )
 
 

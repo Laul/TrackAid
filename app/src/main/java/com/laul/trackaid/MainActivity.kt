@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import com.laul.trackaid.ui.theme.TrackAidTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -15,7 +16,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TrackAidTheme{
-                    MainModule(gFitConnectManager = healthConnectManager)
+                compMainModule(gFitConnectManager = healthConnectManager)
             }
         }
     }
