@@ -1,4 +1,4 @@
-package com.laul.trackaid
+package com.laul.trackaid.data
 
 import java.text.SimpleDateFormat
 import java.util.*

@@ -4,6 +4,7 @@ package com.laul.trackaid
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.laul.trackaid.connection.BaseApplication
 import com.laul.trackaid.ui.theme.TrackAidTheme
 
 class MainActivity : ComponentActivity() {

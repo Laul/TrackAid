@@ -1,4 +1,4 @@
-package com.laul.trackaid
+package com.laul.trackaid.data
 
 import android.content.Context
 import android.util.Log
@@ -13,7 +13,8 @@ import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.android.gms.fitness.data.HealthFields
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
-import com.laul.trackaid.DataGeneral.Companion.getDate
+import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList

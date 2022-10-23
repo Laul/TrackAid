@@ -19,23 +19,25 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
-import co.csadev.kellocharts.model.Axis
-import co.csadev.kellocharts.model.Line
-import co.csadev.kellocharts.model.LineChartData
-import co.csadev.kellocharts.model.PointValue
 import co.csadev.kellocharts.view.LineChartView
-import com.laul.trackaid.DataGeneral.Companion.getDate
+import com.laul.trackaid.connection.GFitConnectManager
+import com.laul.trackaid.data.DataGeneral
+import com.laul.trackaid.data.DataGeneral.Companion.getDate
+import com.laul.trackaid.data.DataProvider
+import com.laul.trackaid.data.ModuleData
 
 import com.laul.trackaid.ui.theme.backgroundColor
+import com.laul.trackaid.views.BottomNavigationBar
+import com.laul.trackaid.views.FaB
 
 
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager) {
     Scaffold(
         backgroundColor = backgroundColor,
-        content = {
-            compModules(gFitConnectManager)
-        }
+        content = { compModules(gFitConnectManager)   },
+        bottomBar = { BottomNavigationBar() },
+        floatingActionButton = { FaB() }
     )
 }
 

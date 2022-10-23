@@ -2,17 +2,12 @@ package com.laul.trackaid
 
 import android.content.Context
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import co.csadev.kellocharts.model.Axis
-import co.csadev.kellocharts.model.Line
-import co.csadev.kellocharts.model.LineChartData
-import co.csadev.kellocharts.model.PointValue
 import co.csadev.kellocharts.view.LineChartView
-
+import com.laul.trackaid.data.ModuleData
 
 
 @Composable
