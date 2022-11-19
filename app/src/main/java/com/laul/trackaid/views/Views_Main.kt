@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.ButtonDefaults.elevation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -34,7 +35,6 @@ import com.laul.trackaid.views.FaB
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager) {
     Scaffold(
-        backgroundColor = backgroundColor,
         content = { compModules(gFitConnectManager)   },
         bottomBar = { BottomNavigationBar() },
         floatingActionButton = { FaB() }
@@ -74,23 +74,14 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
     }
 
     // Card as button so that we can click on it to launch it as dedicated module
-    OutlinedButton(
+    Button(
         onClick = {
             module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
             module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
         },
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = colorResource(module.mColor_Secondary).copy(
-                alpha = 0.1f
-            )
-        ),
-        shape = RoundedCornerShape(2.dp),
+        shape = RoundedCornerShape(5.dp),
         modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_mid)),
-        border = BorderStroke(
-            1.dp,
-            colorResource(id = module.mColor_Primary)
-        ),
-        // elevation = elevation(defaultElevation = 1.dp, pressedElevation = 0.dp)
+        elevation = elevation(defaultElevation = 0.dp, pressedElevation = -2.dp)
 
     ) {
         // Structure for module box
@@ -114,7 +105,6 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                         painterResource(id = module.mIcon),
                         contentDescription = "Favorite",
                         modifier = Modifier.size(dimensionResource(R.dimen.icon_size)),
-                        tint = colorResource(module.mColor_Primary)
                     )
                     Text(
                         text = module.mName,
@@ -122,7 +112,6 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                         modifier = Modifier
                             .padding(start = dimensionResource(R.dimen.padding_mid))
                             .align(Alignment.Bottom),
-                        color = colorResource(id = module.mColor_Primary)
 
                     )
                 }
@@ -185,7 +174,6 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
                 Text(
                     text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
                     style = MaterialTheme.typography.h1.copy(),
-                    color = colorResource(id = module.mColor_Primary)
 
                 )
             }
@@ -193,7 +181,6 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
                 Text(
                     text = "%.2f".format(lastDPoint.value[0]),
                     style = MaterialTheme.typography.h1.copy(),
-                    color = colorResource(id = module.mColor_Primary)
 
                 )
             }
@@ -202,7 +189,6 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
             modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_mid)),
             text = module.mUnit,
             style = MaterialTheme.typography.h2.copy(),
-            color = colorResource(id = module.mColor_Primary)
 
         )
     }
@@ -210,23 +196,16 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
     Text(
         text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d - h:mm a "),
         style = MaterialTheme.typography.h3.copy(),
-        color = colorResource(id = module.mColor_Primary)
     )
 }
 
 @Composable
 fun compLabel(module: ModuleData) {
     Card(
-        border = BorderStroke(
-            1.dp,
-            colorResource(id = module.mColor_Primary)
-        ),
-        backgroundColor = (colorResource(id = R.color.state_normal)),
         elevation = 0.dp,
         modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))
     ) {
         Text(
-            color = colorResource(id = R.color.grey_secondary),
             modifier = Modifier.padding(
                 vertical = 2.dp,
                 horizontal = dimensionResource(R.dimen.padding_mid)

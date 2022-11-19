@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -18,6 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.R
 import com.laul.trackaid.ui.theme.backgroundColor
+import com.laul.trackaid.ui.theme.grey_primary
+import com.laul.trackaid.ui.theme.grey_secondary
 
 
 @Preview(showBackground = true)
@@ -26,10 +29,10 @@ fun BottomNarPreview() {
     BottomNavigationBar()
 }
 
-@Composable
+@Composable @Preview
 fun FaB() {
     FloatingActionButton(
-        onClick = { }
+        onClick = { },
     ) {
         Icon(
             painterResource(R.drawable.ic_sync),
@@ -45,7 +48,6 @@ fun BottomNavigationBar() {
     val selectedIndex = remember { mutableStateOf(0) }
     BottomNavigation(
         elevation = 15.dp,
-        backgroundColor = colorResource(id = R.color.grey_secondary).copy(alpha = 0.8f)
         ) {
 
         BottomNavigationItem(icon = {

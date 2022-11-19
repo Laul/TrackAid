@@ -15,6 +15,7 @@
  */
 package com.laul.trackaid.connection
 
+import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.util.Log
@@ -28,6 +29,7 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import kotlinx.coroutines.channels.ActorScope
 import java.util.concurrent.TimeUnit
 
 
@@ -53,10 +55,19 @@ class GFitConnectManager(private val context: Context) {
         private set
 
     init {
-        getPermission()
+        getPermission(context)
     }
 
-    fun getPermission() {
+    fun getPermission(context : Context) {
+        // If no permission -> request permission to the user
+        if (!GoogleSignIn.hasPermissions(getGoogleAccount(context ), gFitOptions)) {
+            GoogleSignIn.requestPermissions(
+                context as Activity , // your activity
+                1, // e.g. 1
+                getGoogleAccount(context),
+                gFitOptions
+            )
+        }
         permission = GoogleSignIn.hasPermissions(
             GoogleSignIn.getAccountForExtension(
                 context,
@@ -66,4 +77,9 @@ class GFitConnectManager(private val context: Context) {
     }
 
 
+    /** GFit connection request based on fitness option list
+     * @param context: App Context (typically main activity)
+     */
+    private fun getGoogleAccount(context: Context) =
+        GoogleSignIn.getAccountForExtension(context, gFitOptions)
 }

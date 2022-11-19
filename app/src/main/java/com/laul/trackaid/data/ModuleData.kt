@@ -76,6 +76,7 @@ data class ModuleData(
         }
     }
 
+
     fun formatDatapoint(response: DataReadResponse, lastCall: MutableState<Long>) {
         var result = 0f
         for (bucket in response.buckets) {
