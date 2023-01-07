@@ -1,4 +1,4 @@
-package com.laul.trackaid.ui.theme
+package com.laul.trackaid.theme
 
 //import androidx.compose.ui.graphics.Color
 //

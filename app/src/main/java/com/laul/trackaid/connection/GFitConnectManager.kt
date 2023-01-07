@@ -68,6 +68,7 @@ class GFitConnectManager(private val context: Context) {
                 gFitOptions
             )
         }
+
         permission = GoogleSignIn.hasPermissions(
             GoogleSignIn.getAccountForExtension(
                 context,

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TrackAid</string>
+    <string name="title_activity_detailed1">DetailedActivity1</string>
+    <string name="title_activity_detailed">DetailedActivity</string>
 </resources>

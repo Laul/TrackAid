@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+//import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Favorite
@@ -27,6 +27,11 @@ import androidx.compose.ui.semantics.SemanticsProperties.Text
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import co.csadev.kellocharts.view.LineChartView
 import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
@@ -36,45 +41,61 @@ import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.views.BottomNavigationBar
 
 //import com.laul.trackaid.views.BottomNavigationBar
-import com.laul.trackaid.views.FaB
+import com.laul.trackaid.views.NavRoutes
+
+
+@Composable
+fun compCommon(gFitConnectManager: GFitConnectManager) {
+
+    val navController = rememberNavController()
+
+
+
+    NavHost(
+        navController = navController,
+        startDestination = NavRoutes.Home.route,
+    ) {
+        composable(NavRoutes.Home.route) {
+            compMainModule(gFitConnectManager, navController = navController)
+        }
+
+        composable(NavRoutes.Detailed.route) {
+            compDetailedModule(navController = navController)
+        }
+
+    }
+}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compMainModule(gFitConnectManager: GFitConnectManager,navController: NavHostController) {
-
+fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavHostController) {
 
     Scaffold(
-        content = { innerPadding -> compModules(gFitConnectManager, innerPadding)   },
-        bottomBar = {
-            BottomNavigationBar()
+        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
+        bottomBar = {BottomNavigationBar(navController)}
 
-        },
-//        floatingActionButton = { FaB() }
     )
 }
 
 @Composable
-private fun compModules(gFitConnectManager: GFitConnectManager, innerPadding: PaddingValues) {
+private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavHostController, innerPadding: PaddingValues) {
+
     LazyColumn(
         contentPadding = innerPadding
-//
-//                modifier = Modifier.padding(
-//            vertical = 10.dp,
-//            horizontal = 5.dp
-//        )
+
     ) {
         items(
             items = DataProvider.moduleList,
 
             itemContent = {
-                compModule(module = it, gFitConnectManager)
+                compModule(module = it, gFitConnectManager, navController )
             })
     }
 }
 
 @Composable
-private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager) {
+private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavHostController) {
 
     // Variables to be used to get data from GFit
     var context = LocalContext.current
@@ -89,8 +110,10 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
     }
 
     // Card as button so that we can click on it to launch it as dedicated module
-    Button(
+    OutlinedButton(
         onClick = {
+            navController.navigate(NavRoutes.Detailed.route)
+
             module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
             module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
         },

@@ -6,7 +6,7 @@ class Navigation {
 
 // Screen routes ____________________________
 
-sealed class Screens(val route: String) {
-    object Home : Screens("Home")
-    object Module : Screens("Detailed")
+sealed class NavRoutes(val route: String) {
+    object Home : NavRoutes("Home")
+    object Detailed : NavRoutes("Detailed")
 }
