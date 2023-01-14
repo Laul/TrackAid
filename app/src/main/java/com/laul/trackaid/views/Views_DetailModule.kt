@@ -18,25 +18,25 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import co.csadev.kellocharts.view.LineChartView
+import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.views.BottomNavigationBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compDetailedModule(navController: NavHostController){
-
+fun compDetailedModule(navController: NavHostController, moduleID : String?){
 
     Scaffold(
-        content = {innerPadding -> compDetailed(navController, innerPadding) },
+        content = {innerPadding -> compDetailed(navController, innerPadding, moduleID) },
         bottomBar = {BottomNavigationBar(navController)}
     )
 }
 
 @Composable
-fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues){
+fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
     Card() {
         Text(
-            text ="Plop",
+            text ="Plop" + moduleID.toString(),
             modifier = Modifier
                 .padding(start = dimensionResource(R.dimen.padding_mid))
 

@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.SemanticsProperties.Text
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -49,8 +50,6 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 
     val navController = rememberNavController()
 
-
-
     NavHost(
         navController = navController,
         startDestination = NavRoutes.Home.route,
@@ -59,8 +58,12 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
             compMainModule(gFitConnectManager, navController = navController)
         }
 
-        composable(NavRoutes.Detailed.route) {
-            compDetailedModule(navController = navController)
+        composable(NavRoutes.Detailed.route +  "/{moduleID}") {backStackEntry ->
+            val moduleID = backStackEntry.arguments?.getString("moduleID")
+            compDetailedModule(
+                navController = navController ,
+                moduleID = moduleID
+            )
         }
 
     }
@@ -69,7 +72,7 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavHostController) {
+fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavController) {
 
     Scaffold(
         content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
@@ -79,7 +82,7 @@ fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavHo
 }
 
 @Composable
-private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavHostController, innerPadding: PaddingValues) {
+private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavController, innerPadding: PaddingValues) {
 
     LazyColumn(
         contentPadding = innerPadding
@@ -95,7 +98,7 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
 }
 
 @Composable
-private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavHostController) {
+private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController) {
 
     // Variables to be used to get data from GFit
     var context = LocalContext.current
@@ -103,19 +106,16 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
 
     // Observer to trigger recomposition
     val lastCall = remember { mutableStateOf(0f.toLong() )    }
-
     if (module.dPoints.size == 0) {
         module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
         module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
     }
+    var moduleID by remember { mutableStateOf(module.mId.toString()) }
 
     // Card as button so that we can click on it to launch it as dedicated module
     OutlinedButton(
         onClick = {
-            navController.navigate(NavRoutes.Detailed.route)
-
-            module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
-            module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
+            navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
         },
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_mid)),
