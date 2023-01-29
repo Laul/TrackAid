@@ -107,10 +107,10 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
 
     // Observer to trigger recomposition
     val lastCall = remember { mutableStateOf(0f.toLong() )    }
-    if (module.dPoints.size == 0) {
+//    if (module.dPoints.size == 0) {
         module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
         module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
-    }
+//    }
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
 
     // Card as button so that we can click on it to launch it as dedicated module
@@ -170,25 +170,27 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                 var ctx = LocalContext.current
 
                 Text(text = lastCall.value.toString())
-                AndroidView(
 
-                    modifier = Modifier.size(200.dp),
-                    factory = { ctx: Context ->
-
-
-                        //  Initialize a View or View hierarchy here
-                        LineChartView(ctx).apply {
-                            lineChartData = module.kChart_Data
-                        }
-
-                    },
-                    update = {
-                        it.lineChartData = module.kChart_Data
-//                        module.kYAxis = Axis(hasLines = true, maxLabels = 4)
-//                        module.kYAxis.name = lastCall.value.toString()
-                    }
-
-                )
+                compChart(context = ctx, module = module )
+//                AndroidView(
+//
+//                    modifier = Modifier.size(200.dp),
+//                    factory = { ctx: Context ->
+//
+//
+//                        //  Initialize a View or View hierarchy here
+//                        LineChartView(ctx).apply {
+//                            lineChartData = module.kChart_Data
+//                        }
+//
+//                    },
+//                    update = {
+//                        it.lineChartData = module.kChart_Data
+////                        module.kYAxis = Axis(hasLines = true, maxLabels = 4)
+////                        module.kYAxis.name = lastCall.value.toString()
+//                    }
+//
+//                )
 
 
 

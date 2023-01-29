@@ -35,17 +35,6 @@ import com.laul.trackaid.theme.md_theme_light_secondaryContainer
 @Composable
 fun BottomNavigationBar(navController: NavController) {
 
-    val selectedIndex = remember { mutableStateOf(0) }
-//
-//    val items = listOf(
-//        NavRoutes.Home.route,
-//        NavRoutes.Detailed.route + "/1",
-//        NavRoutes.Detailed.route + "/2",
-//        NavRoutes.Detailed.route + "/3",
-//        NavRoutes.Detailed.route + "/4"
-//    )
-
-
     NavigationBar(
         ) {
 
@@ -69,7 +58,7 @@ fun BottomNavigationBar(navController: NavController) {
             BottomNavigationItem(
                 label = {
                     Text(text = item.value.mName,
-                    fontSize = 9.sp)
+                    fontSize = 10.sp)
                 },
                 icon = {
                     Icon(

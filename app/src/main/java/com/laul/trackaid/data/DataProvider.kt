@@ -23,7 +23,7 @@ object DataProvider {
 
         NavRoutes.Detailed.route + "/1" to ModuleData(
             mId = 1,
-            mName = "Blood Glucose",
+            mName = "Glucose",
             mUnit = "mmol/L",
             mIcon = R.drawable.ic_bg,
             mColor_Primary = R.color.red_primary,
@@ -71,7 +71,7 @@ object DataProvider {
 
         NavRoutes.Detailed.route + "/4" to ModuleData(
             mId = 4,
-            mName = "Blood Pressure",
+            mName = "Pressure",
             mUnit = "mmHg",
             mIcon = R.drawable.ic_bp,
             mColor_Primary = R.color.pink_primary,

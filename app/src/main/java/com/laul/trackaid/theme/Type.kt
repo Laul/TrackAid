@@ -59,14 +59,14 @@ val AppTypography = Typography(
         fontFamily = Roboto,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.10000000149011612.sp,
-        lineHeight = 16.sp,
-        fontSize = 12.sp
+        lineHeight = 8.sp,
+        fontSize = 40.sp
     ),
     labelSmall = TextStyle(
         fontFamily = Roboto,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.10000000149011612.sp,
-        lineHeight = 16.sp,
+        lineHeight = 9.sp,
         fontSize = 11.sp
     ),
     bodyLarge = TextStyle(
