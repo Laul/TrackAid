@@ -84,12 +84,13 @@ fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavCo
 @Composable
 private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavController, innerPadding: PaddingValues) {
 
+    val moduleList = DataProvider.moduleList.values.toList().drop(1)
     LazyColumn(
         contentPadding = innerPadding
 
     ) {
         items(
-            items = DataProvider.moduleList,
+            items = moduleList,
 
             itemContent = {
                 compModule(module = it, gFitConnectManager, navController )
@@ -225,7 +226,7 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
         }
         Text(
             modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_mid)),
-            text = module.mUnit,
+            text = module.mUnit!!,
             style = MaterialTheme.typography.titleMedium.copy(),
 
         )

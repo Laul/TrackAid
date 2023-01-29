@@ -4,11 +4,24 @@ import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
 import com.laul.trackaid.R
+import com.laul.trackaid.views.NavRoutes
+
 
 object DataProvider {
 
-    val moduleList = listOf(
-        ModuleData(
+    val moduleList = mapOf(
+        NavRoutes.Home.route to ModuleData(
+            mId = 0,
+            mName = "Home",
+            mUnit =null,
+            mIcon = R.drawable.ic_home,
+            mColor_Primary = null,
+            mColor_Secondary = null,
+            gFitDataType = null,
+            gFitOptions = null
+        ),
+
+        NavRoutes.Detailed.route + "/1" to ModuleData(
             mId = 1,
             mName = "Blood Glucose",
             mUnit = "mmol/L",
@@ -20,8 +33,9 @@ object DataProvider {
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
                 .build()
-    ),
-        ModuleData(
+        ),
+
+        NavRoutes.Detailed.route + "/2" to ModuleData(
             mId = 2,
             mName = "Steps",
             mUnit = "steps",
@@ -41,7 +55,7 @@ object DataProvider {
                 .build()
         ),
 
-        ModuleData(
+        NavRoutes.Detailed.route + "/3"  to ModuleData(
             mId = 3,
             mName = "Heart Rate",
             mUnit = "bpm",
@@ -54,7 +68,8 @@ object DataProvider {
                 .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
                 .build()
         ),
-        ModuleData(
+
+        NavRoutes.Detailed.route + "/4" to ModuleData(
             mId = 4,
             mName = "Blood Pressure",
             mUnit = "mmHg",

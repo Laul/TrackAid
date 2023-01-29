@@ -26,23 +26,25 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.laul.trackaid.R
+import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.md_theme_light_onSurfaceVariant
 import com.laul.trackaid.theme.md_theme_light_secondaryContainer
 
 
 @Composable
-fun BottomNavigationBar(navController: NavController ) {
+fun BottomNavigationBar(navController: NavController) {
 
     val selectedIndex = remember { mutableStateOf(0) }
+//
+//    val items = listOf(
+//        NavRoutes.Home.route,
+//        NavRoutes.Detailed.route + "/1",
+//        NavRoutes.Detailed.route + "/2",
+//        NavRoutes.Detailed.route + "/3",
+//        NavRoutes.Detailed.route + "/4"
+//    )
 
-    val items = listOf(
-        NavRoutes.Home.route,
-        NavRoutes.Detailed.route + "/1",
-        NavRoutes.Detailed.route + "/2",
-        NavRoutes.Detailed.route + "/3",
-        NavRoutes.Detailed.route + "/4"
-    )
 
     NavigationBar(
         ) {
@@ -51,28 +53,28 @@ fun BottomNavigationBar(navController: NavController ) {
         val currentRoute = navBackStackEntry?.destination?.route
         val detailedID = navBackStackEntry?.arguments?.getString("moduleID")
 
-        items.forEach { item ->
+        DataProvider.moduleList.forEach { item ->
             var selected = false
             if (currentRoute != null) {
-                if (currentRoute.startsWith("Detailed") && item.startsWith("Detailed")){
+                if (currentRoute.startsWith("Detailed") && item.key.startsWith("Detailed")){
                     if (detailedID != null) {
-                        selected = item.endsWith(detailedID)
+                        selected = item.key.endsWith(detailedID)
                     }
                 }
                 else {
-                    selected = currentRoute == item // if current route equal to screen route it return true
+                    selected = currentRoute == item.key // if current route equal to screen route it return true
                 }
             }
 
             BottomNavigationItem(
                 label = {
-                    Text(text = "plpo",
+                    Text(text = item.value.mName,
                     fontSize = 9.sp)
                 },
                 icon = {
                     Icon(
                         ImageVector.vectorResource(
-                            id = R.drawable.ic_home
+                            id = item.value.mIcon
                         ),
                         tint = if (selected) Color.White else Color.Black,
 
@@ -84,7 +86,7 @@ fun BottomNavigationBar(navController: NavController ) {
                 selectedContentColor =Color(R.color.red_primary) ,
                 unselectedContentColor = md_theme_light_onSurfaceVariant,
                 onClick = {
-                    navController.navigate(item) {
+                    navController.navigate(item.key) {
 
                         navController.graph.startDestinationRoute?.let { screen_route ->
                             popUpTo(screen_route) {

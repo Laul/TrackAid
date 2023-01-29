@@ -22,12 +22,12 @@ import kotlin.collections.ArrayList
 data class ModuleData(
     val mId: Int,
     val mName: String,
-    val mUnit: String,
+    val mUnit: String?,
     val mIcon: Int,
-    val mColor_Primary: Int,
-    val mColor_Secondary: Int,
-    val gFitDataType: DataType,
-    val gFitOptions: FitnessOptions
+    val mColor_Primary: Int?,
+    val mColor_Secondary: Int?,
+    val gFitDataType: DataType?,
+    val gFitOptions: FitnessOptions?
 ) {
     // Chart variables
     var kChart_Data = LineChartData(arrayListOf<Line>())
@@ -50,8 +50,9 @@ data class ModuleData(
 
 
         // Default request using ".read" - For steps, we need to use ".aggregate"
+
         var gFitReq = DataReadRequest.Builder()
-            .read(gFitDataType)
+            .read(gFitDataType!!)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
             .build()
@@ -68,7 +69,7 @@ data class ModuleData(
         if (permission) {
             Fitness.getHistoryClient(
                 context,
-                GoogleSignIn.getAccountForExtension(context, gFitOptions)
+                GoogleSignIn.getAccountForExtension(context, gFitOptions!!)
             )
                 .readData(gFitReq)
                 .addOnSuccessListener { response -> formatDatapoint(response, lastCall) }
