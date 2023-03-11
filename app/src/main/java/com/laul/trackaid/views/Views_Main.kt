@@ -10,13 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-//import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Call
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Menu
+
 import androidx.compose.material3.*
-import androidx.compose.material3.FloatingActionButtonDefaults.elevation
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -24,30 +19,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Image
-import androidx.compose.ui.semantics.SemanticsProperties.Text
+
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import co.csadev.kellocharts.view.LineChartView
 import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
 
 //import com.laul.trackaid.views.BottomNavigationBar
@@ -207,6 +196,7 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController) {
 
@@ -224,94 +214,108 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
 
     // Card as button so that we can click on it to launch it as dedicated module
     Card(
+        border =BorderStroke(1.dp,md_theme_light_outlineVariant ),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = md_theme_light_surfaceVariant ,
 
+        ),
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier
-            .padding(dimensionResource(id = R.dimen.padding_mid)),
+
+            .padding(
+                horizontal = dimensionResource(id = R.dimen.padding_large),
+                vertical = dimensionResource(id = R.dimen.padding_mid)
+            )
+            .height(height = 120.dp)
+
+//            .padding(top = 23.dp,
+//                bottom = 28.dp)
 
     ) {
         // Structure for module box
         Row(
+            verticalAlignment = Alignment.CenterVertically,
+//            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
+                .padding(
+                    vertical = dimensionResource(id = R.dimen.padding_mid),
+                    horizontal = 20.dp
+                )
+//                    horizontal = dimensionResource(id = R.dimen.padding_large))
+
+                .height(height = 110.dp)
+
                 .clickable(
                     onClick = {
                         navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
                     },
                 )
-                .background(Color(0xFFF3F3F3))
-                .padding(
-                    vertical = dimensionResource(id = R.dimen.padding_large),
-                    horizontal = dimensionResource(id = R.dimen.padding_large)
-                )
         ) {
+            // Icon
+            Badge(
+                modifier = Modifier
+
+                    .align(Alignment.CenterVertically)
+                    .size(size = 50.dp)
+                    .clip(shape = RoundedCornerShape(percent = 50))
+                    .background(color = Color.Green),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
+                Icon(
+                    painterResource(id = module.mIcon),
+                    contentDescription = "Favorite",
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.icon_size))
+                        .padding(dimensionResource(id = R.dimen.padding_small))
+                )
+
+            }
+
+
 
             // Left side - Contains title, latest value(s) and label
             Column(
                 modifier = Modifier
-
-                    .weight(1f)
-                    .padding(bottom = 5.dp)
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_mid))
+                    .weight(.7f)
             ) {
-                // Title and icon with primary color/tint
-                Row(
-                    modifier = Modifier.background(Color(0xFFF3F3F3))
-                ) {
-                    Icon(
-                        painterResource(id = module.mIcon),
-                        contentDescription = "Favorite",
-                        modifier = Modifier.size(dimensionResource(R.dimen.icon_size)),
-                    )
-                    Text(
-                        text = module.mName,
-//                        style = MaterialTheme.typography.titleLarge.copy(),
-                        modifier = Modifier
-                            .padding(start = dimensionResource(R.dimen.padding_mid))
-                            .align(Alignment.Bottom),
-
-                    )
-                }
+                // Module Title
+                Text(
+                    text = module.mName,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .padding(start = dimensionResource(R.dimen.padding_mid))
+                )
 
                 // Latest value + unit + associated date
                 compLastData(module, lastCall)
 
-                // Label for warning / normal info based on last value
-                compLabel(module)
-            }
+//
+//                    // Label for warning / normal info based on last value
+//                    compLabel(module)
+//
+                    }
 
-            // Right side - Contains chart
-            // module.formatAsColumn()
 
-            Column(){
-                //compChart(context, module)
+
+//            // Right side - Contains chart
+
+            Column(
+                modifier=Modifier
+                    .weight(.3f)
+                    .height(60.dp)
+
+        ){
                 var ctx = LocalContext.current
 
-                Text(text = lastCall.value.toString())
+                Text(
+                    modifier = Modifier.height(0.dp),
+                    text = lastCall.value.toString()
+                )
 
                 compChart(context = ctx, module = module )
-//                AndroidView(
-//
-//                    modifier = Modifier.size(200.dp),
-//                    factory = { ctx: Context ->
-//
-//
-//                        //  Initialize a View or View hierarchy here
-//                        LineChartView(ctx).apply {
-//                            lineChartData = module.kChart_Data
-//                        }
-//
-//                    },
-//                    update = {
-//                        it.lineChartData = module.kChart_Data
-////                        module.kYAxis = Axis(hasLines = true, maxLabels = 4)
-////                        module.kYAxis.name = lastCall.value.toString()
-//                    }
-//
-//                )
-
-
-
-
-
             }
         }
     }
@@ -323,35 +327,47 @@ fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
 
     var lastDPoint = module.getLastData()
 
+    Row(
+        verticalAlignment = Alignment.Bottom,
+        modifier = Modifier
+            .width(width = 178.dp)
+            .height(height = 40.dp)
+            .padding(start = dimensionResource(R.dimen.padding_mid))
+    ) {
 
-    Row(modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))) {
         if (lastCall.value != 0L) {
             // Display last value(s)
-            if (module.mName == "Blood Pressure"){
+            if (module.mName == "Blood Pressure") {
                 Text(
                     text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
-                    style = MaterialTheme.typography.titleLarge.copy(),
-
+                    color = MaterialTheme.colorScheme.surfaceTint,
+                    style = MaterialTheme.typography.displaySmall,
                 )
-            }
-            else{
+            } else {
                 Text(
                     text = "%.2f".format(lastDPoint.value[0]),
-                    style = MaterialTheme.typography.titleLarge.copy(),
-
+                    color = MaterialTheme.colorScheme.surfaceTint,
+                    style = MaterialTheme.typography.displaySmall,
                 )
             }
         }
-        Text(
-            modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_mid)),
-            text = module.mUnit!!,
-            style = MaterialTheme.typography.titleMedium.copy(),
-
+        Spacer(
+            modifier = Modifier
+                .width(width = 3.dp)
         )
-    }
 
+
+        Text(
+            modifier = Modifier.padding(bottom = 1.7.dp),
+            text = module.mUnit!!,
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.titleMedium
+        )
+
+    }
     // Display Date of last value(s)
     Text(
+        modifier = Modifier.padding(start = dimensionResource(R.dimen.padding_mid)),
         text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d - h:mm a "),
         style = MaterialTheme.typography.titleSmall.copy(),
     )
@@ -390,72 +406,3 @@ fun compLabel(module: ModuleData) {
 
 
 
-
-//
-//@Composable
-//fun NavigationBar() {
-//    NavigationBar(
-//        containerColor = Color(0xfffffbfe),
-//        contentColor = Color(0xff1c1b1f)
-//    ) {
-//        NavigationBarItem(
-//            icon = {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.home),
-//                    contentDescription = "Icon",
-//                    tint = Color(0xff1c1b1f))
-//            },
-//            label = { Text(text = "Home") },
-//            colors = NavigationBarItemDefaults.colors(
-//                selectedIconColor = Color(0xff1c1b1f),
-//                selectedTextColor = Color(0xff1c1b1f)
-//            ),
-//            alwaysShowLabel = true,
-//            selected = true,
-//            onClick = { })
-//        NavigationBarItem(
-//            icon = {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.bloodglucose_outline),
-//                    contentDescription = "Icon",
-//                    tint = Color(0xff1c1b1f))
-//            },
-//            label = { Text(text = "Glucose") },
-//            alwaysShowLabel = true,
-//            selected = false,
-//            onClick = { })
-//        NavigationBarItem(
-//            icon = {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.steps_outlined),
-//                    contentDescription = "Icon",
-//                    tint = Color(0xff1c1b1f))
-//            },
-//            label = { Text(text = "Steps") },
-//            alwaysShowLabel = true,
-//            selected = false,
-//            onClick = { })
-//        NavigationBarItem(
-//            icon = {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.heartrate_outlined),
-//                    contentDescription = "Icon",
-//                    tint = Color(0xff1c1b1f))
-//            },
-//            label = { Text(text = "Heart") },
-//            alwaysShowLabel = true,
-//            selected = false,
-//            onClick = { })
-//        NavigationBarItem(
-//            icon = {
-//                Icon(
-//                    painter = painterResource(id = R.drawable.bloodpressure_outlined),
-//                    contentDescription = "Icon",
-//                    tint = Color(0xff1c1b1f))
-//            },
-//            label = { Text(text = "Pressure") },
-//            alwaysShowLabel = true,
-//            selected = false,
-//            onClick = { })
-//    }
-//}

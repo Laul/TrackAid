@@ -26,6 +26,7 @@ data class ModuleData(
     val mName: String,
     val mUnit: String?,
     val mIcon: Int,
+    val mIcon_outlined : Int,
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
     val gFitDataType: DataType?,
@@ -213,39 +214,41 @@ data class ModuleData(
 
 
     fun formatAsColumn() {
-        // Clear all lines
-       kCol.clear()
+        if (dPoints.size != 0) {
+            // Clear all lines
+            kCol.clear()
 
-        // Group data per Day
-        var tempVal = arrayListOf(dPoints[0].value)
-        var currentDate = dPoints[0].dateMillis_bucket
+            // Group data per Day
+            var tempVal = arrayListOf(dPoints[0].value)
+            var currentDate = dPoints[0].dateMillis_bucket
 
-        for (i in 1 until dPoints.size) {
-            var tempDate = dPoints[i].dateMillis_bucket
+            for (i in 1 until dPoints.size) {
+                var tempDate = dPoints[i].dateMillis_bucket
 
 
-            if (currentDate != tempDate){
+                if (currentDate != tempDate) {
 
-                // if steps: we aggregate data for a day
-                if (mName == "Steps") {
-                    computeStepsData(tempVal, currentDate)
+                    // if steps: we aggregate data for a day
+                    if (mName == "Steps") {
+                        computeStepsData(tempVal, currentDate)
+                    }
+
+                    // else: calculate the mean, max, and min per day
+                    else {
+                        computeOtherData(tempVal, currentDate)
+                    }
+                    currentDate = tempDate
+                    //currentDayMilli = dPoints[i].dateMillis_bucket
+                    tempVal = arrayListOf(dPoints[i].value)
+                } else {
+                    tempVal.add(dPoints[i].value)
                 }
-
-                // else: calculate the mean, max, and min per day
-                else {
-                    computeOtherData(tempVal, currentDate)
-                }
-                currentDate = tempDate
-                //currentDayMilli = dPoints[i].dateMillis_bucket
-                tempVal = arrayListOf(dPoints[i].value)
-            } else {
-                tempVal.add(dPoints[i].value)
             }
-        }
 
-        if (kCol.size >2) {
-            formatChart(kCol)
+            if (kCol.size > 2) {
+                formatChart(kCol)
 
+            }
         }
     }
 

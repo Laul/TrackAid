@@ -21,6 +21,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight.Companion.Black
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.res.ResourcesCompat.getColor
 import androidx.navigation.NavController
@@ -29,10 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.laul.trackaid.R
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
-import com.laul.trackaid.theme.md_theme_light_onSurface
-import com.laul.trackaid.theme.md_theme_light_onSurfaceVariant
-import com.laul.trackaid.theme.md_theme_light_secondaryContainer
-import com.laul.trackaid.theme.md_theme_light_surface
+import com.laul.trackaid.theme.*
 
 
 @Composable
@@ -42,7 +40,9 @@ fun BottomNavigationBar(navController: NavController) {
 
 //        containerColor = md_theme_light_surface,
 //        contentColor = md_theme_light_onSurface
-        modifier = Modifier.background(Color(0x673C4F))
+        modifier = Modifier
+//            .background(Color(0x673C4F))
+            .height(65.dp)
         ) {
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -62,9 +62,17 @@ fun BottomNavigationBar(navController: NavController) {
                 }
             }
 
-            BottomNavigationItem(
+            NavigationBarItem(
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.Green,
+                    unselectedIconColor = Color.Gray,
+                    selectedTextColor = Color.Transparent,
+                    indicatorColor = Color.White
+                ),  
                 alwaysShowLabel = true,
-
+                selected =  selected,
+//                selectedContentColor =md_theme_light_secondary,
+//                unselectedContentColor = md_theme_light_primary,
 //                modifier = Modifier.background(Color(0x673C4F)),
                 label = {
                     Text(
@@ -77,15 +85,13 @@ fun BottomNavigationBar(navController: NavController) {
                         ImageVector.vectorResource(
                             id = item.value.mIcon
                         ),
-                        tint = if (selected) Color.White else Color.Black,
+                        tint = if (selected) md_theme_light_secondary else md_theme_light_primary,
 
                         contentDescription = "",
-                        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_large))
+                        modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_medium))
                     )
                 },
-                selected =  selected,
-                selectedContentColor =Color(R.color.red_primary) ,
-                unselectedContentColor = md_theme_light_onSurfaceVariant,
+
                 onClick = {
                     navController.navigate(item.key) {
 
@@ -103,3 +109,4 @@ fun BottomNavigationBar(navController: NavController) {
         }
     }
 }
+
