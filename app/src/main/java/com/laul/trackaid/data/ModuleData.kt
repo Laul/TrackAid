@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import co.csadev.kellocharts.model.*
+import co.csadev.kellocharts.view.AbstractChartView
+import co.csadev.kellocharts.view.LineChartView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
@@ -36,6 +38,10 @@ data class ModuleData(
     var kCol = ArrayList<Line>()
     var dPoints = ArrayList<LDataPoint>()
 
+    // Views to plot graph and add values
+    var kChartView_Week: AbstractChartView? = null
+    var kChartView_Day: AbstractChartView? = null
+    var kChartView_PreviewWeek: AbstractChartView? = null
 
     /** GFit connection to retrieve fit data
      * @param duration: duration to cover (default: last 7 days)
@@ -208,7 +214,7 @@ data class ModuleData(
 
     fun formatAsColumn() {
         // Clear all lines
-        kCol.clear()
+       kCol.clear()
 
         // Group data per Day
         var tempVal = arrayListOf(dPoints[0].value)
@@ -218,7 +224,7 @@ data class ModuleData(
             var tempDate = dPoints[i].dateMillis_bucket
 
 
-            if (getDate(currentDate, "EEE") != getDate(tempDate, "EEE")) {
+            if (currentDate != tempDate){
 
                 // if steps: we aggregate data for a day
                 if (mName == "Steps") {
@@ -226,9 +232,9 @@ data class ModuleData(
                 }
 
                 // else: calculate the mean, max, and min per day
-//                else {
-//                    computeOtherData(dH, tempVal, currentDayMilli)
-//                }
+                else {
+                    computeOtherData(tempVal, currentDate)
+                }
                 currentDate = tempDate
                 //currentDayMilli = dPoints[i].dateMillis_bucket
                 tempVal = arrayListOf(dPoints[i].value)
@@ -246,7 +252,7 @@ data class ModuleData(
 
     /** Create lines to display steps. Must be the total of steps per day
      */
-    fun computeStepsData(tempVal: ArrayList<ArrayList<Float>>, currentDayMilli: Long) {
+    fun computeStepsData(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
         var tempValDay = 0f
         for (j in 0 until tempVal.size) {
             tempValDay += tempVal[j][0]
@@ -255,11 +261,64 @@ data class ModuleData(
         kCol.add(
             Line(
                 arrayListOf(
-                    PointValue(currentDayMilli.toFloat(), 0f, ""),
-                    PointValue(currentDayMilli.toFloat(), tempValDay, tempValDay.toString()),
+                    PointValue(currentDate.toFloat(), 0f, ""),
+                    PointValue(currentDate.toFloat(), tempValDay, tempValDay.toString()),
                 )
             )
         )
+    }
+
+    /** Create lines to display everything except steps.
+    * 2 cases:
+    *      - Blood Glucose + Heart Rate : min, max,mean - we display min and max
+    *      - Blood Pressure : display mean of diastol + systol
+    */
+    fun computeOtherData(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
+        var tempValMean = ArrayList<Float>()
+        var tempValMin = ArrayList<Float>()
+        var tempValMax = ArrayList<Float>()
+        for (k in 0 until tempVal[0].size) {
+            tempValMean.add(0f)
+            tempValMin.add(10000f)
+            tempValMax.add(0f)
+
+            var sizeDay = 0
+
+            for (j in 0 until tempVal.size) {
+                tempValMean[k] += tempVal[j][k]
+                if (tempValMin[k] > tempVal[j][k]) {
+                    tempValMin[k] = tempVal[j][k]
+                }
+                if (tempValMax[k] < tempVal[j][k]) {
+                    tempValMax[k] = tempVal[j][k]
+                }
+                sizeDay += 1
+            }
+
+            tempValMean[k] = tempValMean[k] / sizeDay
+        }
+        // Create a line for a given day
+        if (mName == "Glucose" || mName == "Heart Rate") {
+            kCol.add(
+                Line(
+                    arrayListOf(
+                        PointValue(currentDate.toFloat(), tempValMin[0], tempValMin[0].toString()),
+                        PointValue(currentDate.toFloat(), tempValMax[0], tempValMax[0].toString()),
+                    )
+                )
+            )
+        }
+        if (mName == "Blood Pressure") {
+            kCol.add(
+                Line(
+                    arrayListOf(
+                        PointValue(currentDate.toFloat(), tempValMean[0], tempValMean[0].toString()),
+                        PointValue(currentDate.toFloat(), tempValMean[1], tempValMean[1].toString()),
+                    )
+                )
+            )
+        }
+
     }
 
 
@@ -291,9 +350,52 @@ data class ModuleData(
                     )
                 )
             }
+
+            // Create a LineChartData using time and Line data
             kChart_Data = LineChartData(ArrayList<Line>(kCol))
 
 
+            // Add axis values and push it in the chart + formatting
+            kXAxis.textColor = mColor_Primary!!
+            kYAxis.textColor = mColor_Primary!!
+
+//            if( context::class == MainActivity::class) {e
+                kXAxis.name = mName
+                kChart_Data.axisYRight = kYAxis
+//            }
+//            else{
+//                dH.kXAxis.name = ""
+//                kChart_Data.axisYLeft = dH.kYAxis
+//            }
+//
+            kChart_Data.axisXBottom = kXAxis
+
+//
+//            if (isWeek){
+//                (kChartView_Week as LineChartView).lineChartData = kChart_Data
+//            }
+//            else{
+//                (dH.kChartView_Day as LineChartView).lineChartData = kChart_Data
+//            }
+//            val tempViewport = kChartView_Week?.maximumViewport.copy()
+//            val tempPreViewport = tempViewport.copy()
+
+//            // If in main activity, add an inset to have the entire labels for axis
+//            tempViewport.inset(-tempViewport.width() * 0.05f, -tempViewport.height() * 0.05f)
+//            dH.kChartView_Week?.maximumViewport = tempViewport
+//            dH.kChartView_Week?.currentViewport = tempViewport
+
+
+            // Format Chart
+            kCol.forEach {
+                it.hasLabelsOnlyForSelected = true
+                it.isFilled = true
+                it.hasPoints = true
+                it.strokeWidth = 5
+                it.color = mColor_Primary
+                it.pointRadius = 1
+                it.hasLabels = false
+            }
         }
     }
 }

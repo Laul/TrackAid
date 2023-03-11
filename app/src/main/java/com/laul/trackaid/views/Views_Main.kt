@@ -2,8 +2,10 @@ package com.laul.trackaid
 
 
 import android.content.Context
+import android.media.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,12 +21,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role.Companion.Image
 import androidx.compose.ui.semantics.SemanticsProperties.Text
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -43,10 +52,109 @@ import com.laul.trackaid.views.BottomNavigationBar
 
 //import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable @Preview
+fun Header() {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .height(150.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(all = 16.dp)
+            ) {
+                val badgeNumber = "A"
+                Badge(
+                    contentColor = Color(0xfffffbff)
+                ) {
+                    Text(
+                        text = badgeNumber)
+                }
+                Spacer(
+                    modifier = Modifier
+                        .width(width = 16.dp))
+                Column(
+                    modifier = Modifier
+                        .width(width = 192.dp)
+                ) {
+                    Text(
+                        text = "Welcome Lauranne",
+                        color = Color(0xff201a1b),
+                        lineHeight = 24.sp,
+                        style = TextStyle(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            letterSpacing = 0.15.sp),
+                        modifier = Modifier
+                            .width(width = 192.dp))
+                    Spacer(
+                        modifier = Modifier
+                            .height(height = 4.dp))
+//                    Text(
+//                        text = "Subhead",
+//                        color = Color(0xff201a1b),
+//                        textAlign = TextAlign.Center,
+//                        lineHeight = 20.sp,
+//                        style = TextStyle(
+//                            fontSize = 14.sp,
+//                            letterSpacing = 0.25.sp),
+//                        modifier = Modifier
+//                            .width(width = 57.dp))
+                }
+            }
+
+    }
+
+//    TopAppBar(
+//        modifier = Modifier.height(200.dp),
+//        title = {
+//            Column(
+//                verticalArrangement = Arrangement.Center,
+//                horizontalAlignment = Alignment.End,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(height = 88.dp)
+//            ) {
+//                Row(
+//                    horizontalArrangement = Arrangement.Center,
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier
+//                        .width(width = 346.dp)
+//                        .height(height = 67.dp)
+//                        .padding(horizontal = 20.dp,
+//                            vertical = 15.dp)
+//                ) {
+//                    Text(
+//                        text = "LaulAid",
+//                        color = Color(0xff673c4f),
+//                        style = TextStyle(
+//                            fontSize = 35.sp,
+//                            fontWeight = FontWeight.Bold),
+//                        modifier = Modifier
+//                            .height(height = 59.dp))
+//                }
+//                Spacer(
+//                    modifier = Modifier
+//                        .height(height = -18.dp))
+//                Text(
+//                    text = "Welcome",
+//                    color = Color(0xff673c4f),
+//                    lineHeight = 36.sp,
+//                    style = MaterialTheme.typography.headlineSmall,
+//                    modifier = Modifier
+//                        .height(height = 59.dp))
+//            }
+//        })
+}
 
 
 @Composable
 fun compCommon(gFitConnectManager: GFitConnectManager) {
+    Header()
 
     val navController = rememberNavController()
 
@@ -73,27 +181,28 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavController) {
+        Scaffold(
+            topBar = { Header()},
+            content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
+            bottomBar = {BottomNavigationBar(navController)}
 
-    Scaffold(
-        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
-        bottomBar = {BottomNavigationBar(navController)}
+        )
 
-    )
 }
 
 @Composable
 private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavController, innerPadding: PaddingValues) {
-
     val moduleList = DataProvider.moduleList.values.toList().drop(1)
+
     LazyColumn(
         contentPadding = innerPadding
 
     ) {
         items(
             items = moduleList,
-
             itemContent = {
-                compModule(module = it, gFitConnectManager, navController )
+                compModule(
+                    module = it, gFitConnectManager, navController )
             })
     }
 }
@@ -114,31 +223,38 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
 
     // Card as button so that we can click on it to launch it as dedicated module
-    OutlinedButton(
-        onClick = {
-            navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
-        },
+    Card(
+
         shape = RoundedCornerShape(5.dp),
-        modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_mid)),
-//        elevation = elevation(defaultElevation = 0.dp, pressedElevation = -2.dp)
+        modifier = Modifier
+            .padding(dimensionResource(id = R.dimen.padding_mid)),
 
     ) {
         // Structure for module box
         Row(
-            modifier = Modifier.padding(
-                vertical = dimensionResource(id = R.dimen.padding_mid),
-                horizontal = dimensionResource(id = R.dimen.padding_small)
-            )
+            modifier = Modifier
+                .clickable(
+                    onClick = {
+                        navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
+                    },
+                )
+                .background(Color(0xFFF3F3F3))
+                .padding(
+                    vertical = dimensionResource(id = R.dimen.padding_large),
+                    horizontal = dimensionResource(id = R.dimen.padding_large)
+                )
         ) {
 
             // Left side - Contains title, latest value(s) and label
             Column(
                 modifier = Modifier
+
                     .weight(1f)
                     .padding(bottom = 5.dp)
             ) {
                 // Title and icon with primary color/tint
                 Row(
+                    modifier = Modifier.background(Color(0xFFF3F3F3))
                 ) {
                     Icon(
                         painterResource(id = module.mIcon),
@@ -259,3 +375,87 @@ fun compLabel(module: ModuleData) {
         )
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//@Composable
+//fun NavigationBar() {
+//    NavigationBar(
+//        containerColor = Color(0xfffffbfe),
+//        contentColor = Color(0xff1c1b1f)
+//    ) {
+//        NavigationBarItem(
+//            icon = {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.home),
+//                    contentDescription = "Icon",
+//                    tint = Color(0xff1c1b1f))
+//            },
+//            label = { Text(text = "Home") },
+//            colors = NavigationBarItemDefaults.colors(
+//                selectedIconColor = Color(0xff1c1b1f),
+//                selectedTextColor = Color(0xff1c1b1f)
+//            ),
+//            alwaysShowLabel = true,
+//            selected = true,
+//            onClick = { })
+//        NavigationBarItem(
+//            icon = {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.bloodglucose_outline),
+//                    contentDescription = "Icon",
+//                    tint = Color(0xff1c1b1f))
+//            },
+//            label = { Text(text = "Glucose") },
+//            alwaysShowLabel = true,
+//            selected = false,
+//            onClick = { })
+//        NavigationBarItem(
+//            icon = {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.steps_outlined),
+//                    contentDescription = "Icon",
+//                    tint = Color(0xff1c1b1f))
+//            },
+//            label = { Text(text = "Steps") },
+//            alwaysShowLabel = true,
+//            selected = false,
+//            onClick = { })
+//        NavigationBarItem(
+//            icon = {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.heartrate_outlined),
+//                    contentDescription = "Icon",
+//                    tint = Color(0xff1c1b1f))
+//            },
+//            label = { Text(text = "Heart") },
+//            alwaysShowLabel = true,
+//            selected = false,
+//            onClick = { })
+//        NavigationBarItem(
+//            icon = {
+//                Icon(
+//                    painter = painterResource(id = R.drawable.bloodpressure_outlined),
+//                    contentDescription = "Icon",
+//                    tint = Color(0xff1c1b1f))
+//            },
+//            label = { Text(text = "Pressure") },
+//            alwaysShowLabel = true,
+//            selected = false,
+//            onClick = { })
+//    }
+//}

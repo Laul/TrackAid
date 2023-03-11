@@ -37,15 +37,22 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 @Composable
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
     var ctx = LocalContext.current
+    Text(
+        text ="Plop" + moduleID.toString(),
+        modifier = Modifier
+            .padding(start = dimensionResource(R.dimen.padding_mid))
 
-    Card() {
-        Text(
-            text ="Plop" + moduleID.toString(),
-            modifier = Modifier
-                .padding(start = dimensionResource(R.dimen.padding_mid))
+    )
+    compChart_Detailed(context = ctx, module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! )
 
-            )
-        compChart(context = ctx, module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! )
+//    Card() {
+//        Text(
+//            text ="Plop" + moduleID.toString(),
+//            modifier = Modifier
+//                .padding(start = dimensionResource(R.dimen.padding_mid))
+//
+//            )
+//        compChart(context = ctx, module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! )
 //
 //        AndroidView(
 //
@@ -67,5 +74,5 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
 //
 //        )
 
-    }
+//    }
 }

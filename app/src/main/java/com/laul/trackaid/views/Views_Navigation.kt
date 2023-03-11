@@ -1,6 +1,7 @@
 package com.laul.trackaid.views
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.BottomNavigationItem
 
@@ -28,14 +29,20 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.laul.trackaid.R
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.md_theme_light_onSurface
 import com.laul.trackaid.theme.md_theme_light_onSurfaceVariant
 import com.laul.trackaid.theme.md_theme_light_secondaryContainer
+import com.laul.trackaid.theme.md_theme_light_surface
 
 
 @Composable
 fun BottomNavigationBar(navController: NavController) {
 
     NavigationBar(
+
+//        containerColor = md_theme_light_surface,
+//        contentColor = md_theme_light_onSurface
+        modifier = Modifier.background(Color(0x673C4F))
         ) {
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -56,9 +63,14 @@ fun BottomNavigationBar(navController: NavController) {
             }
 
             BottomNavigationItem(
+                alwaysShowLabel = true,
+
+//                modifier = Modifier.background(Color(0x673C4F)),
                 label = {
-                    Text(text = item.value.mName,
-                    fontSize = 10.sp)
+                    Text(
+                        text = item.value.mName,
+                        fontSize = 10.sp
+                    )
                 },
                 icon = {
                     Icon(

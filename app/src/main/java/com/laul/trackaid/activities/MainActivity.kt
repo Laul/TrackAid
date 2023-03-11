@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.laul.trackaid.Header
 import com.laul.trackaid.compCommon
 import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.theme.TrackAidTheme
@@ -22,6 +23,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TrackAidTheme{
+                Header()
                 compCommon(gFitConnectManager = healthConnectManager)
             }
         }
