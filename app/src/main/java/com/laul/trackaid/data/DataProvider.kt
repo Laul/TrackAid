@@ -1,5 +1,6 @@
 package com.laul.trackaid.data
 
+import androidx.compose.runtime.mutableStateOf
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
@@ -19,7 +20,8 @@ object DataProvider {
             mColor_Primary = null,
             mColor_Secondary = null,
             gFitDataType = null,
-            gFitOptions = null
+            gFitOptions = null,
+            lastDate = mutableStateOf(0)
         ),
 
         NavRoutes.Detailed.route + "/1" to ModuleData(
@@ -34,7 +36,9 @@ object DataProvider {
             gFitOptions = FitnessOptions.builder()
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
-                .build()
+                .build(),
+            lastDate = mutableStateOf(0)
+
         ),
 
         NavRoutes.Detailed.route + "/2" to ModuleData(
@@ -47,15 +51,11 @@ object DataProvider {
             mColor_Secondary = R.color.orange_secondary,
             gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
             gFitOptions = FitnessOptions.builder()
-                .addDataType(DataType.TYPE_HEIGHT, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-                .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-                .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
-                .build()
+                .build(),
+            lastDate = mutableStateOf(0)
+
         ),
 
         NavRoutes.Detailed.route + "/3"  to ModuleData(
@@ -70,7 +70,9 @@ object DataProvider {
             gFitOptions = FitnessOptions.builder()
                 .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
-                .build()
+                .build(),
+            lastDate = mutableStateOf(0)
+
         ),
 
         NavRoutes.Detailed.route + "/4" to ModuleData(
@@ -84,7 +86,8 @@ object DataProvider {
             gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
             gFitOptions = FitnessOptions.builder()
                 .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-                .build()
+                .build(),
+            lastDate = mutableStateOf(0)
         )
     )
 }

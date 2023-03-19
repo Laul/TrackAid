@@ -30,7 +30,8 @@ data class ModuleData(
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
     val gFitDataType: DataType?,
-    val gFitOptions: FitnessOptions?
+    val gFitOptions: FitnessOptions?,
+    var lastDate : MutableState<Long>
 ) {
     // Chart variables
     var kChart_Data = LineChartData(arrayListOf<Line>())
@@ -50,7 +51,6 @@ data class ModuleData(
     fun getGFitData(
         permission: Boolean,
         context: Context,
-        lastCall: MutableState<Long>,
         time_start: Long,
         time_end: Long
     ) {
@@ -79,13 +79,13 @@ data class ModuleData(
                 GoogleSignIn.getAccountForExtension(context, gFitOptions!!)
             )
                 .readData(gFitReq)
-                .addOnSuccessListener { response -> formatDatapoint(response, lastCall) }
+                .addOnSuccessListener { response -> formatDatapoint(response ) }
                 .addOnFailureListener { response -> Log.i("Response", response.toString()) }
         }
     }
 
 
-    fun formatDatapoint(response: DataReadResponse, lastCall: MutableState<Long>) {
+    fun formatDatapoint(response: DataReadResponse) {
         var result = 0f
         for (bucket in response.buckets) {
 
@@ -185,7 +185,10 @@ data class ModuleData(
 
         // Update Call timestamp to force recomposition
         formatAsColumn()
-        lastCall.value = GregorianCalendar().timeInMillis
+        val lastDPoint = getLastData()
+
+        lastDate.value= lastDPoint.dateMillis_bucket
+//        lastValue = lastDPoint.value
 
 //            // Main View: display everything as columns
 //            if (dataHealth.context::class == MainActivity::class) {

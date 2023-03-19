@@ -45,44 +45,44 @@ import com.laul.trackaid.views.NavRoutes
 @Composable @Preview
 fun Header() {
 
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .height(150.dp)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .height(150.dp)
+                .fillMaxWidth()
+                .padding(all = 16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 16.dp)
+            val badgeNumber = "A"
+            Badge(
+                contentColor = Color(0xfffffbff)
             ) {
-                val badgeNumber = "A"
-                Badge(
-                    contentColor = Color(0xfffffbff)
-                ) {
-                    Text(
-                        text = badgeNumber)
-                }
+                Text(
+                    text = badgeNumber)
+            }
+            Spacer(
+                modifier = Modifier
+                    .width(width = 16.dp))
+            Column(
+                modifier = Modifier
+                    .width(width = 192.dp)
+            ) {
+                Text(
+                    text = "Welcome Lauranne",
+                    color = Color(0xff201a1b),
+                    lineHeight = 24.sp,
+                    style = TextStyle(
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        letterSpacing = 0.15.sp),
+                    modifier = Modifier
+                        .width(width = 192.dp))
                 Spacer(
                     modifier = Modifier
-                        .width(width = 16.dp))
-                Column(
-                    modifier = Modifier
-                        .width(width = 192.dp)
-                ) {
-                    Text(
-                        text = "Welcome Lauranne",
-                        color = Color(0xff201a1b),
-                        lineHeight = 24.sp,
-                        style = TextStyle(
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            letterSpacing = 0.15.sp),
-                        modifier = Modifier
-                            .width(width = 192.dp))
-                    Spacer(
-                        modifier = Modifier
-                            .height(height = 4.dp))
+                        .height(height = 4.dp))
 //                    Text(
 //                        text = "Subhead",
 //                        color = Color(0xff201a1b),
@@ -93,8 +93,8 @@ fun Header() {
 //                            letterSpacing = 0.25.sp),
 //                        modifier = Modifier
 //                            .width(width = 57.dp))
-                }
             }
+        }
 
     }
 
@@ -170,12 +170,12 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavController) {
-        Scaffold(
-            topBar = { Header()},
-            content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
-            bottomBar = {BottomNavigationBar(navController)}
+    Scaffold(
+        topBar = { Header()},
+        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
+        bottomBar = {BottomNavigationBar(navController)}
 
-        )
+    )
 
 }
 
@@ -190,35 +190,43 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
         items(
             items = moduleList,
             itemContent = {
+
+                val lastDate = remember { it.lastDate    }
                 compModule(
-                    module = it, gFitConnectManager, navController )
+                    module = it, gFitConnectManager, navController , lastDate.value!!)
             })
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController) {
+private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDate: Long?) {
 
     // Variables to be used to get data from GFit
     var context = LocalContext.current
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(6)
 
     // Observer to trigger recomposition
-    val lastCall = remember { mutableStateOf(0f.toLong() )    }
-//    if (module.dPoints.size == 0) {
-        module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_Start,time_end = Time_End        )
-        module.getGFitData(permission = gFitConnectManager.permission,context = context,lastCall = lastCall,time_start = Time_End,time_end = Time_Now        )
-//    }
+//    val lastValue = remember { mutableStateOf(0f.toLong() )    }
+//    val lastDate = remember { mutableStateOf(module.lastDate)    }
+
+    if (module.dPoints.size == 0) {
+        module.getGFitData(permission = gFitConnectManager.permission,context = context,time_start = Time_Start,time_end = Time_End        )
+        module.getGFitData(permission = gFitConnectManager.permission,context = context,time_start = Time_End,time_end = Time_Now        )
+    }
+
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
+
+
+
 
     // Card as button so that we can click on it to launch it as dedicated module
     Card(
         border =BorderStroke(1.dp,md_theme_light_outlineVariant ),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = md_theme_light_surfaceVariant ,
+            containerColor = md_theme_light_onError,
 
-        ),
+            ),
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier
 
@@ -226,151 +234,143 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                 horizontal = dimensionResource(id = R.dimen.padding_large),
                 vertical = dimensionResource(id = R.dimen.padding_mid)
             )
-            .height(height = 120.dp)
-
-//            .padding(top = 23.dp,
-//                bottom = 28.dp)
+            .height(height = 140.dp)
+            .fillMaxWidth()
 
     ) {
-        // Structure for module box
+
+        // Top of the card: Title + Last update timestamp
         Row(
             verticalAlignment = Alignment.CenterVertically,
-//            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
+                .height(50.dp)
+                .fillMaxWidth()
                 .padding(
-                    vertical = dimensionResource(id = R.dimen.padding_mid),
-                    horizontal = 20.dp
+                    all = dimensionResource(id = R.dimen.padding_mid)
                 )
-//                    horizontal = dimensionResource(id = R.dimen.padding_large))
-
-                .height(height = 110.dp)
-
                 .clickable(
                     onClick = {
                         navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
                     },
-                )
+
+                    )
         ) {
-            // Icon
-            Badge(
+            Icon(
+                painterResource(id = module.mIcon),
+                contentDescription = "icon",
                 modifier = Modifier
+                    .size(dimensionResource(R.dimen.icon_size_large))
+            )
 
-                    .align(Alignment.CenterVertically)
-                    .size(size = 50.dp)
-                    .clip(shape = RoundedCornerShape(percent = 50))
-                    .background(color = Color.Green),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
-            ) {
-                Icon(
-                    painterResource(id = module.mIcon),
-                    contentDescription = "Favorite",
-                    modifier = Modifier
-                        .size(dimensionResource(R.dimen.icon_size))
-                        .padding(dimensionResource(id = R.dimen.padding_small))
-                )
+            Spacer(modifier = Modifier.width(10.dp))
 
-            }
+            Text(
+                text = module.mName,
+                color = MaterialTheme.colorScheme.onSurface,
+                style =MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(.7f)
+            )
 
 
+            Text(
+                modifier = Modifier
+                    .padding(start = dimensionResource(R.dimen.padding_mid))
+                    .weight(.25f),
+                text = getDate(lastDate!!, "EEE, MMM\nd - h:mm a "),
+                textAlign = TextAlign.End,
+                style = MaterialTheme.typography.bodySmall,
+            )
+
+        }
+
+
+//    // Label for warning / normal info based on last value
+//    compLabel(module)
+//
+        // Bottom of the card: current value + graph
+//        Row(
+//            modifier=Modifier
+//                .height(90.dp)
+//        ) {
+//            var ctx = LocalContext.current
+//
+//
+//            compLastData(module, lastCall)
+//
+
+//
+//            Text(
+//                modifier = Modifier.height(0.dp),
+//                text = lastCall.value.toString()
+//            )
 
             // Left side - Contains title, latest value(s) and label
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = dimensionResource(id = R.dimen.padding_mid))
-                    .weight(.7f)
-            ) {
-                // Module Title
-                Text(
-                    text = module.mName,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier
-                        .padding(start = dimensionResource(R.dimen.padding_mid))
-                )
-
-                // Latest value + unit + associated date
-                compLastData(module, lastCall)
-
+//            Column(
+//                modifier = Modifier
+//                    .padding(horizontal = dimensionResource(id = R.dimen.padding_mid))
+//                    .weight(.7f)
+//            ) {
+//                // Module Title
 //
-//                    // Label for warning / normal info based on last value
-//                    compLabel(module)
 //
-                    }
+//                // Latest value + unit + associated date
+//
+//            }
+//            compChart(context = ctx, module = module)
 
-
-
-//            // Right side - Contains chart
-
-            Column(
-                modifier=Modifier
-                    .weight(.3f)
-                    .height(60.dp)
-
-        ){
-                var ctx = LocalContext.current
-
-                Text(
-                    modifier = Modifier.height(0.dp),
-                    text = lastCall.value.toString()
-                )
-
-                compChart(context = ctx, module = module )
-            }
         }
     }
-}
-
+//
+//}
 
 @Composable
 fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
-
-    var lastDPoint = module.getLastData()
-
-    Row(
-        verticalAlignment = Alignment.Bottom,
-        modifier = Modifier
-            .width(width = 178.dp)
-            .height(height = 40.dp)
-            .padding(start = dimensionResource(R.dimen.padding_mid))
-    ) {
-
-        if (lastCall.value != 0L) {
-            // Display last value(s)
-            if (module.mName == "Blood Pressure") {
-                Text(
-                    text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
-                    color = MaterialTheme.colorScheme.surfaceTint,
-                    style = MaterialTheme.typography.displaySmall,
-                )
-            } else {
-                Text(
-                    text = "%.2f".format(lastDPoint.value[0]),
-                    color = MaterialTheme.colorScheme.surfaceTint,
-                    style = MaterialTheme.typography.displaySmall,
-                )
-            }
-        }
-        Spacer(
-            modifier = Modifier
-                .width(width = 3.dp)
-        )
-
-
-        Text(
-            modifier = Modifier.padding(bottom = 1.7.dp),
-            text = module.mUnit!!,
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium
-        )
-
-    }
-    // Display Date of last value(s)
-    Text(
-        modifier = Modifier.padding(start = dimensionResource(R.dimen.padding_mid)),
-        text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d - h:mm a "),
-        style = MaterialTheme.typography.titleSmall.copy(),
-    )
+//
+//    var lastDPoint = module.getLastData()
+//
+//    Column(
+//        modifier = Modifier
+//            .width(width = 178.dp)
+//            .height(height = 40.dp)
+//            .padding(start = dimensionResource(R.dimen.padding_mid))
+//    ) {
+//
+//        if (lastCall.value != 0L) {
+//            // Display last value(s)
+//            if (module.mName == "Blood Pressure") {
+//                Text(
+//                    text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
+//                    color = MaterialTheme.colorScheme.surfaceTint,
+//                    style = MaterialTheme.typography.displaySmall,
+//                )
+//            } else {
+//                Text(
+//                    text = "%.2f".format(lastDPoint.value[0]),
+//                    color = MaterialTheme.colorScheme.surfaceTint,
+//                    style = MaterialTheme.typography.displaySmall,
+//                )
+//            }
+//        }
+//        Spacer(
+//            modifier = Modifier
+//                .width(width = 3.dp)
+//        )
+//
+//
+//        Text(
+//            modifier = Modifier.padding(bottom = 1.7.dp),
+//            text = module.mUnit!!,
+//            color = MaterialTheme.colorScheme.onSurface,
+//            style = MaterialTheme.typography.titleMedium
+//        )
+//
+//    }
+//    // Display Date of last value(s)
+//    Text(
+//        modifier = Modifier.padding(start = dimensionResource(R.dimen.padding_mid)),
+//        text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d\nh:mm a "),
+//        style = MaterialTheme.typography.titleSmall.copy(),
+//    )
 }
 
 @Composable

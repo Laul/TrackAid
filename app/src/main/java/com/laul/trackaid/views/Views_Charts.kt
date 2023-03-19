@@ -21,9 +21,9 @@ fun compChart(context: Context, module: ModuleData){
 
 
     AndroidView(
-        modifier = Modifier
-            .width(100.dp)
-            .height(90.dp),
+//        modifier = Modifier
+//            .width(100.dp)
+//            .height(90.dp),
         factory = { ctx: Context ->
             //  Initialize a View or View hierarchy here
             LineChartView(ctx).apply {
