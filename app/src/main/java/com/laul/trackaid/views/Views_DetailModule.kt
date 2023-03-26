@@ -37,6 +37,7 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
     var ctx = LocalContext.current
 
+
     Text(
         text ="Plop" + moduleID.toString(),
         modifier = Modifier

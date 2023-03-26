@@ -1,10 +1,7 @@
 package com.laul.trackaid
 
 
-import android.content.Context
-import android.media.Image
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,7 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -83,16 +79,7 @@ fun Header() {
                 Spacer(
                     modifier = Modifier
                         .height(height = 4.dp))
-//                    Text(
-//                        text = "Subhead",
-//                        color = Color(0xff201a1b),
-//                        textAlign = TextAlign.Center,
-//                        lineHeight = 20.sp,
-//                        style = TextStyle(
-//                            fontSize = 14.sp,
-//                            letterSpacing = 0.25.sp),
-//                        modifier = Modifier
-//                            .width(width = 57.dp))
+
             }
         }
 
@@ -191,33 +178,29 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
             items = moduleList,
             itemContent = {
 
-                val lastDate = remember { it.lastDate    }
+                val lastDPoint = remember { it.lastDPoint    }
                 compModule(
-                    module = it, gFitConnectManager, navController , lastDate.value!!)
+                    module = it, gFitConnectManager, navController ,lastDPoint!!, it.duration)
             })
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDate: Long?) {
+private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDPoint :  MutableState<LDataPoint>?, duration: Int) {
 
     // Variables to be used to get data from GFit
-    var context = LocalContext.current
-    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(6)
+    var ctx = LocalContext.current
+    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)
 
     // Observer to trigger recomposition
-//    val lastValue = remember { mutableStateOf(0f.toLong() )    }
-//    val lastDate = remember { mutableStateOf(module.lastDate)    }
 
     if (module.dPoints.size == 0) {
-        module.getGFitData(permission = gFitConnectManager.permission,context = context,time_start = Time_Start,time_end = Time_End        )
-        module.getGFitData(permission = gFitConnectManager.permission,context = context,time_start = Time_End,time_end = Time_Now        )
+        module.getGFitData(permission = gFitConnectManager.permission,context = ctx,time_start = Time_Start,time_end = Time_End        )
+        module.getGFitData(permission = gFitConnectManager.permission,context = ctx,time_start = Time_End,time_end = Time_Now        )
     }
 
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
-
-
 
 
     // Card as button so that we can click on it to launch it as dedicated module
@@ -234,32 +217,36 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                 horizontal = dimensionResource(id = R.dimen.padding_large),
                 vertical = dimensionResource(id = R.dimen.padding_mid)
             )
-            .height(height = 140.dp)
+            .height(height = 120.dp)
             .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
+                },
 
+                )
     ) {
 
         // Top of the card: Title + Last update timestamp
         Row(
+
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .height(50.dp)
                 .fillMaxWidth()
                 .padding(
-                    all = dimensionResource(id = R.dimen.padding_mid)
+                    horizontal = dimensionResource(id = R.dimen.padding_mid)
                 )
-                .clickable(
-                    onClick = {
-                        navController.navigate(NavRoutes.Detailed.route + "/$moduleID")
-                    },
 
-                    )
         ) {
             Icon(
                 painterResource(id = module.mIcon),
+                tint = color_general_primary,
                 contentDescription = "icon",
                 modifier = Modifier
-                    .size(dimensionResource(R.dimen.icon_size_large))
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_mid)
+                    )
+                    .size(dimensionResource(R.dimen.icon_size_large)),
             )
 
             Spacer(modifier = Modifier.width(10.dp))
@@ -268,20 +255,88 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                 text = module.mName,
                 color = MaterialTheme.colorScheme.onSurface,
                 style =MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(.7f)
+                modifier = Modifier
+                    .weight(.7f)
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_mid)
+                    )
             )
 
 
             Text(
                 modifier = Modifier
                     .padding(start = dimensionResource(R.dimen.padding_mid))
+                    .padding(
+                        top = dimensionResource(id = R.dimen.padding_mid)
+                    )
                     .weight(.25f),
-                text = getDate(lastDate!!, "EEE, MMM\nd - h:mm a "),
+                text = getDate(lastDPoint!!.value.dateMillis_bucket, "EEE, MMM d\nh:mm a"),
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.bodySmall,
+                color = color_text_secondary
+
             )
 
         }
+
+        // Bottom of the card: last value + graph
+        Row(
+
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(95.dp)
+                .padding(
+                    horizontal = dimensionResource(id = R.dimen.padding_mid)
+                )
+//                .border(BorderStroke(1.dp, color_general_primary))
+
+        ) {
+            // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
+            Spacer(modifier = Modifier.width(42.dp))
+
+            Column(
+                modifier = Modifier.width(100.dp)
+            ) {
+
+                Text(
+                    text =
+
+                        if (module.mName == "Glucose") {
+                            "%.2f".format(lastDPoint!!.value.value[0])
+                        }
+//                        else if (module.mName == "Pressure") {
+//                            "%.0f-%.0f".format(lastDPoint!!.value.value[1] - lastDPoint!!.value.value[0])
+//                        }
+                        else {
+                            "%.0f".format(lastDPoint!!.value.value[0])
+                        }
+                    ,
+                    style = MaterialTheme.typography.displayMedium,
+                    color = color_general_primary,
+                    modifier = Modifier
+                        .padding(top = 10.dp)
+                        .height(45.dp)
+
+                )
+
+                Text(
+                    text = module.mUnit!!,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = color_text_secondary,
+                    modifier = Modifier
+                        .height(20.dp)
+
+                )
+
+
+            }
+            Spacer(modifier = Modifier.width(30.dp))
+
+            compChart(context = ctx, module = module)
+            Spacer(modifier = Modifier.width(10.dp))
+
+        }
+
 
 
 //    // Label for warning / normal info based on last value
@@ -316,7 +371,6 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
 //                // Latest value + unit + associated date
 //
 //            }
-//            compChart(context = ctx, module = module)
 
         }
     }

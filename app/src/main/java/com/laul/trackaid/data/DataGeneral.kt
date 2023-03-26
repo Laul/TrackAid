@@ -20,7 +20,7 @@ class DataGeneral {
             cal.set(Calendar.SECOND, 0)
             cal.set(Calendar.MILLISECOND, 0)
             val TimeEndInMilli =  cal.timeInMillis
-            val TimeStartInMilli = TimeEndInMilli - ((duration+1)*24*60*60*1000)
+            val TimeStartInMilli = TimeEndInMilli - ((duration-1)*24*60*60*1000)
             return listOf(TimeNowInMilli, TimeStartInMilli, TimeEndInMilli)
         }
 
@@ -41,7 +41,13 @@ class DataGeneral {
             return formatter.format(calendar.time)
         }
 
+
+
+        fun getDaysAgo(daysAgo: Int): Date {
+            val calendar = Calendar.getInstance()
+            calendar.add(Calendar.DAY_OF_YEAR, -daysAgo)
+
+            return calendar.time
+        }
     }
-
-
 }

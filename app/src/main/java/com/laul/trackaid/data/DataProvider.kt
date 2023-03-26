@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
+import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
 
@@ -21,7 +22,9 @@ object DataProvider {
             mColor_Secondary = null,
             gFitDataType = null,
             gFitOptions = null,
-            lastDate = mutableStateOf(0)
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
+            duration = 7
+
         ),
 
         NavRoutes.Detailed.route + "/1" to ModuleData(
@@ -29,7 +32,7 @@ object DataProvider {
             mName = "Glucose",
             mUnit = "mmol/L",
             mIcon = R.drawable.ic_bg,
-            mIcon_outlined = R.drawable.ic_home_outline,
+            mIcon_outlined = R.drawable.ic_bg_outline,
             mColor_Primary = R.color.red_primary,
             mColor_Secondary = R.color.red_secondary,
             gFitDataType = HealthDataTypes.TYPE_BLOOD_GLUCOSE,
@@ -37,7 +40,9 @@ object DataProvider {
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                 .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
                 .build(),
-            lastDate = mutableStateOf(0)
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
+            duration = 7
+
 
         ),
 
@@ -46,7 +51,7 @@ object DataProvider {
             mName = "Steps",
             mUnit = "steps",
             mIcon = R.drawable.ic_steps,
-            mIcon_outlined = R.drawable.ic_home_outline,
+            mIcon_outlined = R.drawable.ic_steps_outline,
             mColor_Primary = R.color.orange_primary,
             mColor_Secondary = R.color.orange_secondary,
             gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
@@ -54,8 +59,8 @@ object DataProvider {
                 .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                 .build(),
-            lastDate = mutableStateOf(0)
-
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
+            duration = 7
         ),
 
         NavRoutes.Detailed.route + "/3"  to ModuleData(
@@ -63,7 +68,7 @@ object DataProvider {
             mName = "Heart Rate",
             mUnit = "bpm",
             mIcon = R.drawable.ic_hr,
-            mIcon_outlined = R.drawable.ic_home_outline,
+            mIcon_outlined = R.drawable.ic_hr_outline,
             mColor_Primary = R.color.blue_primary,
             mColor_Secondary = R.color.blue_secondary,
             gFitDataType = DataType.TYPE_HEART_RATE_BPM,
@@ -71,7 +76,9 @@ object DataProvider {
                 .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
                 .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
                 .build(),
-            lastDate = mutableStateOf(0)
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
+            duration = 7
+
 
         ),
 
@@ -80,14 +87,16 @@ object DataProvider {
             mName = "Pressure",
             mUnit = "mmHg",
             mIcon = R.drawable.ic_bp,
-            mIcon_outlined = R.drawable.ic_home_outline,
+            mIcon_outlined = R.drawable.ic_bp_outline,
             mColor_Primary = R.color.pink_primary,
             mColor_Secondary = R.color.pink_secondary,
-            gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
+            gFitDataType = HealthDataTypes.TYPE_BLOOD_PRESSURE,
             gFitOptions = FitnessOptions.builder()
                 .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
                 .build(),
-            lastDate = mutableStateOf(0)
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f, 0f))),
+            duration = 7
+
         )
     )
 }

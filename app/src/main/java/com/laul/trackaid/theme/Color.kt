@@ -83,3 +83,13 @@ val md_theme_dark_scrim = Color(0xFF000000)
 
 
 val seed = Color(0xFF6750A4)
+
+
+val color_text_primary          =   Color(0xFF19323C)
+val color_text_secondary        =   Color(0xFFCAC4D0)
+val color_general_primary       =   Color(0xFF673C4F)
+val color_general_secondary     =   Color(0xFF19323C)
+val color_general_white         =   Color(0xFFFFFFFF)
+val color_surface_background    =   Color(0xFFF8F8F8)
+val color_surface_stroke         =   Color(0xFFCAC4D0)
+

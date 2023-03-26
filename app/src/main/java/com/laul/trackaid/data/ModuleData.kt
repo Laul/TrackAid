@@ -1,5 +1,4 @@
 package com.laul.trackaid.data
-
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
@@ -31,7 +30,8 @@ data class ModuleData(
     val mColor_Secondary: Int?,
     val gFitDataType: DataType?,
     val gFitOptions: FitnessOptions?,
-    var lastDate : MutableState<Long>
+    var lastDPoint : MutableState<LDataPoint>?,
+    var duration: Int
 ) {
     // Chart variables
     var kChart_Data = LineChartData(arrayListOf<Line>())
@@ -44,6 +44,60 @@ data class ModuleData(
     var kChartView_Week: AbstractChartView? = null
     var kChartView_Day: AbstractChartView? = null
     var kChartView_PreviewWeek: AbstractChartView? = null
+    var daysOfWeek  = ArrayList<Long>()
+    var daysOfWeek_str  = ArrayList<String>()
+
+
+    // Initialize graph data to avoid problems if no data is available for the past {duration} days in GFit buckets
+    init {
+        var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)
+//        var week = arrayListOf<>()
+        daysOfWeek.add(Time_Start)
+        for (i in 0 until (duration-1))
+        {
+            daysOfWeek.add(daysOfWeek[i]+((Time_End - Time_Start)/(duration-1)))
+        }
+
+        for (i in 0 until daysOfWeek.size) {
+            daysOfWeek_str.add(getDate(daysOfWeek[i], "yyyy-MM-dd'T'HH:mm:ss"))
+        }
+
+//
+        // Create axis values
+        for (i in 0 until daysOfWeek.size) {
+            kXAxis.values.add(
+                AxisValue(
+                    daysOfWeek[i].toFloat(),
+                    getDate(daysOfWeek[i], "EEE").toCharArray()
+                )
+            )
+
+            kCol.add(
+                Line(
+                    arrayListOf(
+                        PointValue(daysOfWeek[i].toFloat(), 0.toFloat(), ""),
+                        PointValue(daysOfWeek[i].toFloat(), 0.toFloat(), ""),
+                    )
+                )
+            )
+        }
+        kChart_Data = LineChartData(ArrayList<Line>(kCol))
+        kCol.forEach {
+
+            it.isSquare = true
+            it.hasLabelsOnlyForSelected = true
+            it.isFilled = true
+            it.hasPoints = false
+            it.strokeWidth = 8
+            it.pointRadius = 0
+            it.hasLabels = false
+        }
+
+
+
+
+    }
+
 
     /** GFit connection to retrieve fit data
      * @param duration: duration to cover (default: last 7 days)
@@ -73,6 +127,10 @@ data class ModuleData(
                 .build()
         }
 
+        if (mName == "Pressure")
+        {
+            Log.i("GFit Req pressure", gFitReq.toString())
+        }
         if (permission) {
             Fitness.getHistoryClient(
                 context,
@@ -86,7 +144,6 @@ data class ModuleData(
 
 
     fun formatDatapoint(response: DataReadResponse) {
-        var result = 0f
         for (bucket in response.buckets) {
 
             for (dataSet in bucket.dataSets) {
@@ -185,10 +242,10 @@ data class ModuleData(
 
         // Update Call timestamp to force recomposition
         formatAsColumn()
-        val lastDPoint = getLastData()
+        lastDPoint!!.value = getLastData()
 
-        lastDate.value= lastDPoint.dateMillis_bucket
-//        lastValue = lastDPoint.value
+
+    //        lastValue = lastDPoint.value
 
 //            // Main View: display everything as columns
 //            if (dataHealth.context::class == MainActivity::class) {
@@ -248,10 +305,22 @@ data class ModuleData(
                 }
             }
 
-            if (kCol.size > 2) {
+
+
+            // if steps: we aggregate data for a day
+            if (mName == "Steps") {
+                computeStepsData(tempVal, currentDate)
+            }
+
+            // else: calculate the mean, max, and min per day
+            else {
+                computeOtherData(tempVal, currentDate)
+            }
+
+//            if (kCol.size > 2) {
                 formatChart(kCol)
 
-            }
+//            }
         }
     }
 
@@ -314,7 +383,7 @@ data class ModuleData(
                 )
             )
         }
-        if (mName == "Blood Pressure") {
+        if (mName == "Pressure") {
             kCol.add(
                 Line(
                     arrayListOf(
@@ -341,7 +410,7 @@ data class ModuleData(
 
             // Get index of each distinct value in the list of string dates
             var kXAxisIndex = ArrayList<Int>()
-            if (kDateEEE.distinct().size > 1) {
+            if (kDateEEE.distinct().size > 0) {
                 kDateEEE.distinct().forEach {
                     kXAxisIndex.add(kDateEEE.indexOf(it))
                 }
@@ -394,12 +463,14 @@ data class ModuleData(
 
             // Format Chart
             kCol.forEach {
+
+                it.isSquare = true
                 it.hasLabelsOnlyForSelected = true
                 it.isFilled = true
-                it.hasPoints = true
-                it.strokeWidth = 5
+                it.hasPoints = false
+                it.strokeWidth = 8
                 it.color = mColor_Primary
-                it.pointRadius = 1
+                it.pointRadius = 0
                 it.hasLabels = false
             }
         }

@@ -83,14 +83,17 @@ fun BottomNavigationBar(navController: NavController) {
                 icon = {
                     Icon(
                         ImageVector.vectorResource(
-                            id = item.value.mIcon
-                        ),
+//                            id =  item.value.mIcon),
+
+                                    id =   if (selected) item.value.mIcon else item.value.mIcon_outlined ),
+
                         tint = if (selected) md_theme_light_secondary else md_theme_light_primary,
 
                         contentDescription = "",
                         modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_medium))
                     )
                 },
+
 
                 onClick = {
                     navController.navigate(item.key) {
