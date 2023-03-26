@@ -82,8 +82,9 @@ data class ModuleData(
             )
         }
         kChart_Data = LineChartData(ArrayList<Line>(kCol))
-        kCol.forEach {
 
+        kCol.forEach {
+//            it.color = mColor_Primary!!
             it.isSquare = true
             it.hasLabelsOnlyForSelected = true
             it.isFilled = true
@@ -269,7 +270,7 @@ data class ModuleData(
                 return dPoints[i]
             }
         }
-        return LDataPoint(0, 0, arrayListOf(0f))
+        return LDataPoint(0, 0, arrayListOf(0f, 0f))
     }
 
 
@@ -469,7 +470,7 @@ data class ModuleData(
                 it.isFilled = true
                 it.hasPoints = false
                 it.strokeWidth = 8
-                it.color = mColor_Primary
+//                it.color = mColor_Primary
                 it.pointRadius = 0
                 it.hasLabels = false
             }

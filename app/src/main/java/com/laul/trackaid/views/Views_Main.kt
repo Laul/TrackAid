@@ -1,7 +1,9 @@
 package com.laul.trackaid
 
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -37,54 +39,65 @@ import com.laul.trackaid.views.BottomNavigationBar
 
 //import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
-@OptIn(ExperimentalMaterial3Api::class)
+import java.time.LocalDateTime
+import java.util.*
+
 @Composable @Preview
 fun Header() {
+    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .height(150.dp)
-    ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height = 175.dp)
+            .padding(top = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+
+    ) {
+        Spacer(modifier = Modifier.width(24.dp))
+        Text(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(all = 16.dp)
+                .height(height = 85.dp),
+            text = getDate(Time_Now, "dd"),
+            color = color_general_primary,
+            textAlign = TextAlign.Left,
+            style = MaterialTheme.typography.displayLarge
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .width(width = 173.dp)
+                .height(height = 65.dp)
         ) {
-            val badgeNumber = "A"
-            Badge(
-                contentColor = Color(0xfffffbff)
-            ) {
-                Text(
-                    text = badgeNumber)
-            }
-            Spacer(
+            Text(
                 modifier = Modifier
-                    .width(width = 16.dp))
-            Column(
+                    .height(height =30.dp),
+                text = getDate(Time_Now, "EEEE"),
+                color = color_general_primary,
+//                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.headlineMedium,
+            )
+            Text(
                 modifier = Modifier
-                    .width(width = 192.dp)
-            ) {
-                Text(
-                    text = "Welcome Lauranne",
-                    color = Color(0xff201a1b),
-                    lineHeight = 24.sp,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 0.15.sp),
-                    modifier = Modifier
-                        .width(width = 192.dp))
-                Spacer(
-                    modifier = Modifier
-                        .height(height = 4.dp))
+                    .height(height =35.dp),
+                text = getDate(Time_Now, "MMMM"),
+                color = color_general_primary,
+//                textAlign = TextAlign.Start,
 
-            }
+                style = MaterialTheme.typography.headlineLarge
+            )
         }
+            Icon(
+                painterResource(id = R.drawable.ic_status),
+                tint = color_text_primary,
+                contentDescription = "icon",
+                modifier = Modifier
 
-    }
+                    .size(90.dp),
+            )
 
+        }
 //    TopAppBar(
 //        modifier = Modifier.height(200.dp),
 //        title = {
@@ -130,6 +143,7 @@ fun Header() {
 
 @Composable
 fun compCommon(gFitConnectManager: GFitConnectManager) {
+
     Header()
 
     val navController = rememberNavController()
@@ -171,8 +185,8 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
     val moduleList = DataProvider.moduleList.values.toList().drop(1)
 
     LazyColumn(
-        contentPadding = innerPadding
-
+        contentPadding = innerPadding,
+        modifier = Modifier.background(color_surface_background),
     ) {
         items(
             items = moduleList,
@@ -205,10 +219,13 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
 
     // Card as button so that we can click on it to launch it as dedicated module
     Card(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        ),
         border =BorderStroke(1.dp,md_theme_light_outlineVariant ),
         colors = CardDefaults.outlinedCardColors(
-            containerColor = md_theme_light_onError,
-
+            containerColor = color_general_white,
+            contentColor = Color( module.mColor_Primary!!)
             ),
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier
@@ -304,9 +321,9 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                         if (module.mName == "Glucose") {
                             "%.2f".format(lastDPoint!!.value.value[0])
                         }
-//                        else if (module.mName == "Pressure") {
-//                            "%.0f-%.0f".format(lastDPoint!!.value.value[1] - lastDPoint!!.value.value[0])
-//                        }
+                        else if (module.mName == "Pressure") {
+                            "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                        }
                         else {
                             "%.0f".format(lastDPoint!!.value.value[0])
                         }
@@ -315,7 +332,8 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                     color = color_general_primary,
                     modifier = Modifier
                         .padding(top = 10.dp)
-                        .height(45.dp)
+
+                        .height(38.dp)
 
                 )
 
@@ -323,8 +341,6 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                     text = module.mUnit!!,
                     style = MaterialTheme.typography.bodySmall,
                     color = color_text_secondary,
-                    modifier = Modifier
-                        .height(20.dp)
 
                 )
 

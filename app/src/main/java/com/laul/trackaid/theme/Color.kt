@@ -20,10 +20,10 @@ package com.laul.trackaid.theme
 import androidx.compose.ui.graphics.Color
 
 val md_theme_light_primary = Color(0xFF6750A4)
-val md_theme_light_primaryContainer = Color(0xFFEADDFF)
+val md_theme_light_primaryContainer = Color(0xFFF8F8F8)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
 val md_theme_light_onPrimaryContainer = Color(0xFF21005D)
-val md_theme_light_secondary = Color(0xFF625B71)
+val md_theme_light_secondary = Color(0xFFF8F8F8)
 val md_theme_light_secondaryContainer = Color(0xFFE8DEF8)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_onSecondaryContainer = Color(0xFF1D192B)
@@ -91,5 +91,6 @@ val color_general_primary       =   Color(0xFF673C4F)
 val color_general_secondary     =   Color(0xFF19323C)
 val color_general_white         =   Color(0xFFFFFFFF)
 val color_surface_background    =   Color(0xFFF8F8F8)
-val color_surface_stroke         =   Color(0xFFCAC4D0)
+val color_surface_stroke        =   Color(0xFFCAC4D0)
+val color_test      =   Color(0xFF)
 

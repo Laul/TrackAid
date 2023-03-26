@@ -10,11 +10,12 @@
 
 
     // Modules Colors
+
+    <color name="red_primary">#673C4F</color>
+    <color name="red_secondary">#CA746A</color>
+
     <color name="orange_primary">#C97507</color>
     <color name="orange_secondary">#FFDDB1</color>
-
-    <color name="red_primary">#5B061A</color>
-    <color name="red_secondary">#CA746A</color>
 
     <color name="grey_primary">#404446</color>
     <color name="grey_secondary">#DEE2E5</color>

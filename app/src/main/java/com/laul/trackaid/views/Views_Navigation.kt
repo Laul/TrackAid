@@ -38,10 +38,10 @@ fun BottomNavigationBar(navController: NavController) {
 
     NavigationBar(
 
-//        containerColor = md_theme_light_surface,
+        containerColor = color_surface_background,
 //        contentColor = md_theme_light_onSurface
         modifier = Modifier
-//            .background(Color(0x673C4F))
+            .background(color_surface_background)
             .height(65.dp)
         ) {
 
@@ -64,20 +64,22 @@ fun BottomNavigationBar(navController: NavController) {
 
             NavigationBarItem(
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color.Green,
-                    unselectedIconColor = Color.Gray,
-                    selectedTextColor = Color.Transparent,
-                    indicatorColor = Color.White
-                ),  
+////                    selectedIconColor = Color.Green,
+////                    unselectedIconColor = Color.Gray,
+////                    selectedTextColor = Color.Transparent,
+                    indicatorColor = color_surface_background
+                ),
                 alwaysShowLabel = true,
                 selected =  selected,
-//                selectedContentColor =md_theme_light_secondary,
+
+//                selectedContentColor = md_theme_light_primary,
 //                unselectedContentColor = md_theme_light_primary,
 //                modifier = Modifier.background(Color(0x673C4F)),
                 label = {
                     Text(
                         text = item.value.mName,
-                        fontSize = 10.sp
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(top =56.dp)
                     )
                 },
                 icon = {
@@ -87,7 +89,7 @@ fun BottomNavigationBar(navController: NavController) {
 
                                     id =   if (selected) item.value.mIcon else item.value.mIcon_outlined ),
 
-                        tint = if (selected) md_theme_light_secondary else md_theme_light_primary,
+//                        tint = if (selected) md_theme_light_secondary else primary,
 
                         contentDescription = "",
                         modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_medium))
