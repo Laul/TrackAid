@@ -81,6 +81,7 @@ implementation "androidx.compose.material3:material3:$material3_version"
 
     // Feature module Support
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
+    implementation 'com.android.volley:volley:1.2.1'
 
     // Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"

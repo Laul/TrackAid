@@ -29,6 +29,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.laul.trackaid.connection.BloodGlucoseUpdate
+import com.laul.trackaid.connection.BloodGlucoseUpdate.Companion.connectXDrip
 import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
@@ -42,17 +44,30 @@ import com.laul.trackaid.views.NavRoutes
 import java.time.LocalDateTime
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable @Preview
 fun Header() {
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
+    var ctx = LocalContext.current
+//
+    TopAppBar(
+        modifier = Modifier
+            .height(175.dp)
+            .background(color_surface_background),
+        title = {
 
-        Row(
+        }
+    )
+
+
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(height = 175.dp)
-            .padding(top = 10.dp),
+            .padding(top = 10.dp)
+            .background(color_surface_background),
         verticalAlignment = Alignment.CenterVertically,
-
     ) {
         Spacer(modifier = Modifier.width(24.dp))
         Text(
@@ -72,7 +87,7 @@ fun Header() {
         ) {
             Text(
                 modifier = Modifier
-                    .height(height =30.dp),
+                    .height(height = 30.dp),
                 text = getDate(Time_Now, "EEEE"),
                 color = color_general_primary,
 //                textAlign = TextAlign.Start,
@@ -80,7 +95,7 @@ fun Header() {
             )
             Text(
                 modifier = Modifier
-                    .height(height =35.dp),
+                    .height(height = 35.dp),
                 text = getDate(Time_Now, "MMMM"),
                 color = color_general_primary,
 //                textAlign = TextAlign.Start,
@@ -88,64 +103,31 @@ fun Header() {
                 style = MaterialTheme.typography.headlineLarge
             )
         }
-            Icon(
-                painterResource(id = R.drawable.ic_status),
-                tint = color_text_primary,
-                contentDescription = "icon",
-                modifier = Modifier
 
-                    .size(90.dp),
+        // Icon is used to show if all data are OK + push gluco from XDrip to Google Fit.
+        Icon(
+            painterResource(id = R.drawable.ic_status),
+            tint = color_text_primary,
+            contentDescription = "icon",
+            modifier = Modifier
+                .size(90.dp)
+                .clickable(
+                    onClick = {
+                        connectXDrip(ctx)
+                    }
+                ),
+
             )
 
-        }
-//    TopAppBar(
-//        modifier = Modifier.height(200.dp),
-//        title = {
-//            Column(
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.End,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(height = 88.dp)
-//            ) {
-//                Row(
-//                    horizontalArrangement = Arrangement.Center,
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    modifier = Modifier
-//                        .width(width = 346.dp)
-//                        .height(height = 67.dp)
-//                        .padding(horizontal = 20.dp,
-//                            vertical = 15.dp)
-//                ) {
-//                    Text(
-//                        text = "LaulAid",
-//                        color = Color(0xff673c4f),
-//                        style = TextStyle(
-//                            fontSize = 35.sp,
-//                            fontWeight = FontWeight.Bold),
-//                        modifier = Modifier
-//                            .height(height = 59.dp))
-//                }
-//                Spacer(
-//                    modifier = Modifier
-//                        .height(height = -18.dp))
-//                Text(
-//                    text = "Welcome",
-//                    color = Color(0xff673c4f),
-//                    lineHeight = 36.sp,
-//                    style = MaterialTheme.typography.headlineSmall,
-//                    modifier = Modifier
-//                        .height(height = 59.dp))
-//            }
-//        })
+    }
+
 }
 
 
 @Composable
 fun compCommon(gFitConnectManager: GFitConnectManager) {
 
-    Header()
-
+//    Header()
     val navController = rememberNavController()
 
     NavHost(
@@ -171,6 +153,7 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavController) {
+
     Scaffold(
         topBar = { Header()},
         content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
@@ -202,7 +185,7 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
 
 @Composable
 private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDPoint :  MutableState<LDataPoint>?, duration: Int) {
-
+    module.dPoints.clear()
     // Variables to be used to get data from GFit
     var ctx = LocalContext.current
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)

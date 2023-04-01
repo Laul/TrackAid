@@ -222,7 +222,18 @@ data class ModuleData(
                                 )
                             )
                         )
-
+                    } else if (dp.dataType == DataType.TYPE_WEIGHT) {
+                        dPoints.add(
+                            LDataPoint(
+                                bucket.getStartTime(TimeUnit.MILLISECONDS),
+                                dp.getTimestamp(TimeUnit.MILLISECONDS),
+                                arrayListOf(
+                                    dp.getValue(
+                                        Field.FIELD_WEIGHT
+                                    ).asFloat()
+                                )
+                            )
+                        )
                     }
                 }
             }
@@ -290,7 +301,7 @@ data class ModuleData(
                 if (currentDate != tempDate) {
 
                     // if steps: we aggregate data for a day
-                    if (mName == "Steps") {
+                    if (mName in arrayOf( "Steps") ) {
                         computeStepsData(tempVal, currentDate)
                     }
 
@@ -374,16 +385,6 @@ data class ModuleData(
             tempValMean[k] = tempValMean[k] / sizeDay
         }
         // Create a line for a given day
-        if (mName == "Glucose" || mName == "Heart Rate") {
-            kCol.add(
-                Line(
-                    arrayListOf(
-                        PointValue(currentDate.toFloat(), tempValMin[0], tempValMin[0].toString()),
-                        PointValue(currentDate.toFloat(), tempValMax[0], tempValMax[0].toString()),
-                    )
-                )
-            )
-        }
         if (mName == "Pressure") {
             kCol.add(
                 Line(
@@ -394,6 +395,17 @@ data class ModuleData(
                 )
             )
         }
+        else  {
+            kCol.add(
+                Line(
+                    arrayListOf(
+                        PointValue(currentDate.toFloat(), tempValMin[0], tempValMin[0].toString()),
+                        PointValue(currentDate.toFloat(), tempValMax[0], tempValMax[0].toString()),
+                    )
+                )
+            )
+        }
+
 
     }
 

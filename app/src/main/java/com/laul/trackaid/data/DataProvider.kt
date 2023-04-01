@@ -26,7 +26,6 @@ object DataProvider {
             gFitOptions = null,
             lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
             duration = 7
-
         ),
 
         NavRoutes.Detailed.route + "/1" to ModuleData(
@@ -44,8 +43,6 @@ object DataProvider {
                 .build(),
             lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
             duration = 7
-
-
         ),
 
         NavRoutes.Detailed.route + "/2" to ModuleData(
@@ -80,8 +77,6 @@ object DataProvider {
                 .build(),
             lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
             duration = 7
-
-
         ),
 
         NavRoutes.Detailed.route + "/4" to ModuleData(
@@ -98,7 +93,22 @@ object DataProvider {
                 .build(),
             lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f, 0f))),
             duration = 7
+        ),
 
+        NavRoutes.Detailed.route + "/5" to ModuleData(
+            mId = 4,
+            mName = "Weight",
+            mUnit = "kG",
+            mIcon = R.drawable.ic_weight,
+            mIcon_outlined = R.drawable.ic_weight_outline,
+            mColor_Primary = Color.rgb(22,155,0),
+            mColor_Secondary = Color.rgb(22,155,0),
+            gFitDataType = DataType.TYPE_WEIGHT,
+            gFitOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_WEIGHT, FitnessOptions.ACCESS_READ)
+                .build(),
+            lastDPoint = mutableStateOf( LDataPoint(0, 0, arrayListOf(0f))),
+            duration = 7
         )
     )
 }

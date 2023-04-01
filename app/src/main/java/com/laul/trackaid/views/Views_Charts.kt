@@ -21,7 +21,7 @@ import com.laul.trackaid.theme.color_general_primary
 
 @Composable
 fun compChart(context: Context, module: ModuleData){
-    module.formatAsColumn()
+//    module.formatAsColumn()
     module.kChart_Data.axisXBottom=null
     module.kChart_Data.axisYRight=null
 
