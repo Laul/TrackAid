@@ -185,7 +185,7 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
 
 @Composable
 private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDPoint :  MutableState<LDataPoint>?, duration: Int) {
-    module.dPoints.clear()
+//    module.dPoints.clear()
     // Variables to be used to get data from GFit
     var ctx = LocalContext.current
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)

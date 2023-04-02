@@ -14,6 +14,7 @@ import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.request.DataUpdateRequest
+import com.laul.trackaid.data.DataProvider
 import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 
@@ -103,20 +104,38 @@ companion object {
             .setTimeInterval(xDripValues[xDripValues.size -1 ].x.toLong(), xDripValues[0].x.toLong(), TimeUnit.MILLISECONDS)
             .build()
 
-        val gFitOptions_BG = FitnessOptions.builder()
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-            .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
-            .build()
+        val moduleBG = DataProvider.moduleList.values.toList().firstOrNull(){it.mName == "Glucose"}
+
+        if( moduleBG != null) {
+
+            // ---------------------
+            Fitness.getHistoryClient(
+                context,
+                GoogleSignIn.getAccountForExtension(
+                    context,
+                    moduleBG.gFitOptions!!
+                )
+            )
+                .updateData(request)
+                .addOnSuccessListener { Log.i("XDrip", "Data update was successful.") }
+                .addOnFailureListener { e ->
+                    Log.e("XDrip", "There was a problem updating the dataset.", e)
+                }
+
+            // Clear dPoints to update the graph
+            moduleBG.dPoints.clear()
+
+        }
+
 
         // ---------------------
-        Fitness.getHistoryClient(context, GoogleSignIn.getAccountForExtension(context, gFitOptions_BG))
-            .updateData(request)
-            .addOnSuccessListener { Log.i("XDrip", "Data update was successful.") }
-            .addOnFailureListener { e ->
-                Log.e("XDrip", "There was a problem updating the dataset.", e)
-            }
-        // ---------------------
+
+
+
+
         }
+
+
 
     }
 }
