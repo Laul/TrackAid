@@ -28,5 +28,6 @@
 
     // Label Colors
     <color name="state_normal">#146C40</color>
-    <color name="state_warning">#961618</color>
+
+
 </resources>

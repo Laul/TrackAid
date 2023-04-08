@@ -39,11 +39,10 @@ fun BottomNavigationBar(navController: NavController) {
     NavigationBar(
 
         containerColor = color_surface_background,
-//        contentColor = md_theme_light_onSurface
         modifier = Modifier
             .background(color_surface_background)
             .height(65.dp)
-        ) {
+    ) {
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -52,45 +51,34 @@ fun BottomNavigationBar(navController: NavController) {
         DataProvider.moduleList.forEach { item ->
             var selected = false
             if (currentRoute != null) {
-                if (currentRoute.startsWith("Detailed") && item.key.startsWith("Detailed")){
+                if (currentRoute.startsWith("Detailed") && item.key.startsWith("Detailed")) {
                     if (detailedID != null) {
                         selected = item.key.endsWith(detailedID)
                     }
-                }
-                else {
-                    selected = currentRoute == item.key // if current route equal to screen route it return true
+                } else {
+                    selected =
+                        currentRoute == item.key // if current route equal to screen route it return true
                 }
             }
 
             NavigationBarItem(
                 colors = NavigationBarItemDefaults.colors(
-////                    selectedIconColor = Color.Green,
-////                    unselectedIconColor = Color.Gray,
-////                    selectedTextColor = Color.Transparent,
                     indicatorColor = color_surface_background
                 ),
                 alwaysShowLabel = true,
-                selected =  selected,
-
-//                selectedContentColor = md_theme_light_primary,
-//                unselectedContentColor = md_theme_light_primary,
-//                modifier = Modifier.background(Color(0x673C4F)),
+                selected = selected,
                 label = {
                     Text(
                         text = item.value.mName,
                         fontSize = 10.sp,
-                        modifier = Modifier.padding(top =56.dp)
+                        modifier = Modifier.padding(top = 56.dp)
                     )
                 },
                 icon = {
                     Icon(
                         ImageVector.vectorResource(
-//                            id =  item.value.mIcon),
-
-                                    id =   if (selected) item.value.mIcon else item.value.mIcon_outlined ),
-
-//                        tint = if (selected) md_theme_light_secondary else primary,
-
+                            id = if (selected) item.value.mIcon else item.value.mIcon_outlined
+                        ),
                         contentDescription = "",
                         modifier = Modifier.size(dimensionResource(id = R.dimen.icon_size_medium))
                     )

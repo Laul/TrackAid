@@ -47,11 +47,12 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 
-@Composable @Preview
+@Composable
+@Preview
 fun Header() {
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
     var ctx = LocalContext.current
-//
+
     TopAppBar(
         modifier = Modifier
             .height(175.dp)
@@ -60,7 +61,6 @@ fun Header() {
 
         }
     )
-
 
     Row(
         modifier = Modifier
@@ -91,7 +91,6 @@ fun Header() {
                     .height(height = 30.dp),
                 text = getDate(Time_Now, "EEEE"),
                 color = color_general_primary,
-//                textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.headlineMedium,
             )
             Text(
@@ -99,8 +98,6 @@ fun Header() {
                     .height(height = 35.dp),
                 text = getDate(Time_Now, "MMMM"),
                 color = color_general_primary,
-//                textAlign = TextAlign.Start,
-
                 style = MaterialTheme.typography.headlineLarge
             )
         }
@@ -117,7 +114,6 @@ fun Header() {
                         connectXDrip(ctx)
                     }
                 ),
-
             )
 
     }
@@ -128,7 +124,7 @@ fun Header() {
 @Composable
 fun compCommon(gFitConnectManager: GFitConnectManager) {
 
-//    Header()
+    //    Header()
     val navController = rememberNavController()
 
     NavHost(
@@ -139,10 +135,10 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
             compMainModule(gFitConnectManager, navController = navController)
         }
 
-        composable(NavRoutes.Detailed.route +  "/{moduleID}") {backStackEntry ->
+        composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
             val moduleID = backStackEntry.arguments?.getString("moduleID")
             compDetailedModule(
-                navController = navController ,
+                navController = navController,
                 moduleID = moduleID
             )
         }
@@ -153,19 +149,23 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compMainModule(gFitConnectManager: GFitConnectManager, navController : NavController) {
+fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavController) {
 
     Scaffold(
-        topBar = { Header()},
-        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding)   },
-        bottomBar = {BottomNavigationBar(navController)}
+        topBar = { Header() },
+        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding) },
+        bottomBar = { BottomNavigationBar(navController) }
 
     )
 
 }
 
 @Composable
-private fun compModules(gFitConnectManager: GFitConnectManager, navController: NavController, innerPadding: PaddingValues) {
+private fun compModules(
+    gFitConnectManager: GFitConnectManager,
+    navController: NavController,
+    innerPadding: PaddingValues
+) {
     val moduleList = DataProvider.moduleList.values.toList().drop(1)
 
     LazyColumn(
@@ -176,26 +176,41 @@ private fun compModules(gFitConnectManager: GFitConnectManager, navController: N
             items = moduleList,
             itemContent = {
 
-                val lastDPoint = remember { it.lastDPoint    }
+                val lastDPoint = remember { it.lastDPoint }
                 compModule(
-                    module = it, gFitConnectManager, navController ,lastDPoint!!, it.duration)
+                    module = it, gFitConnectManager, navController, lastDPoint!!, it.duration
+                )
             })
     }
 }
 
 
 @Composable
-private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManager, navController: NavController, lastDPoint :  MutableState<LDataPoint>?, duration: Int) {
-//    module.dPoints.clear()
+private fun compModule(
+    module: ModuleData,
+    gFitConnectManager: GFitConnectManager,
+    navController: NavController,
+    lastDPoint: MutableState<LDataPoint>?,
+    duration: Int
+) {
     // Variables to be used to get data from GFit
     var ctx = LocalContext.current
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)
 
     // Observer to trigger recomposition
-
     if (module.dPoints.size == 0) {
-        module.getGFitData(permission = gFitConnectManager.permission,context = ctx,time_start = Time_Start,time_end = Time_End        )
-        module.getGFitData(permission = gFitConnectManager.permission,context = ctx,time_start = Time_End,time_end = Time_Now        )
+        module.getGFitData(
+            permission = gFitConnectManager.permission,
+            context = ctx,
+            time_start = Time_Start,
+            time_end = Time_End
+        )
+        module.getGFitData(
+            permission = gFitConnectManager.permission,
+            context = ctx,
+            time_start = Time_End,
+            time_end = Time_Now
+        )
     }
 
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
@@ -206,11 +221,11 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
         ),
-        border =BorderStroke(1.dp,md_theme_light_outlineVariant ),
+        border = BorderStroke(1.dp, md_theme_light_outlineVariant),
         colors = CardDefaults.outlinedCardColors(
             containerColor = color_general_white,
-            contentColor = Color( module.mColor_Primary!!)
-            ),
+            contentColor = Color(module.mColor_Primary!!)
+        ),
         shape = RoundedCornerShape(5.dp),
         modifier = Modifier
 
@@ -255,7 +270,7 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
             Text(
                 text = module.mName,
                 color = MaterialTheme.colorScheme.onSurface,
-                style =MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
                     .weight(.7f)
                     .padding(
@@ -302,16 +317,13 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                 Text(
                     text =
 
-                        if (module.mName == "Glucose") {
-                            "%.2f".format(lastDPoint!!.value.value[0])
-                        }
-                        else if (module.mName == "Pressure") {
-                            "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
-                        }
-                        else {
-                            "%.0f".format(lastDPoint!!.value.value[0])
-                        }
-                    ,
+                    if (module.mName == "Glucose") {
+                        "%.2f".format(lastDPoint!!.value.value[0])
+                    } else if (module.mName == "Pressure") {
+                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                    } else {
+                        "%.0f".format(lastDPoint!!.value.value[0])
+                    },
                     style = MaterialTheme.typography.displayMedium,
                     color = color_general_primary,
                     modifier = Modifier
@@ -326,106 +338,21 @@ private fun compModule(module: ModuleData, gFitConnectManager: GFitConnectManage
                     style = MaterialTheme.typography.bodySmall,
                     color = color_text_secondary,
 
-                )
+                    )
 
 
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(context = ctx, module = module)
+            compChart(module = module)
             Spacer(modifier = Modifier.width(10.dp))
 
         }
 
 
-
-//    // Label for warning / normal info based on last value
-//    compLabel(module)
-//
-        // Bottom of the card: current value + graph
-//        Row(
-//            modifier=Modifier
-//                .height(90.dp)
-//        ) {
-//            var ctx = LocalContext.current
-//
-//
-//            compLastData(module, lastCall)
-//
-
-//
-//            Text(
-//                modifier = Modifier.height(0.dp),
-//                text = lastCall.value.toString()
-//            )
-
-            // Left side - Contains title, latest value(s) and label
-//            Column(
-//                modifier = Modifier
-//                    .padding(horizontal = dimensionResource(id = R.dimen.padding_mid))
-//                    .weight(.7f)
-//            ) {
-//                // Module Title
-//
-//
-//                // Latest value + unit + associated date
-//
-//            }
-
-        }
     }
-//
-//}
-
-@Composable
-fun compLastData(module: ModuleData, lastCall: MutableState<Long>) {
-//
-//    var lastDPoint = module.getLastData()
-//
-//    Column(
-//        modifier = Modifier
-//            .width(width = 178.dp)
-//            .height(height = 40.dp)
-//            .padding(start = dimensionResource(R.dimen.padding_mid))
-//    ) {
-//
-//        if (lastCall.value != 0L) {
-//            // Display last value(s)
-//            if (module.mName == "Blood Pressure") {
-//                Text(
-//                    text = "%.0f-%.0f".format(lastDPoint.value[1], lastDPoint.value[0]),
-//                    color = MaterialTheme.colorScheme.surfaceTint,
-//                    style = MaterialTheme.typography.displaySmall,
-//                )
-//            } else {
-//                Text(
-//                    text = "%.2f".format(lastDPoint.value[0]),
-//                    color = MaterialTheme.colorScheme.surfaceTint,
-//                    style = MaterialTheme.typography.displaySmall,
-//                )
-//            }
-//        }
-//        Spacer(
-//            modifier = Modifier
-//                .width(width = 3.dp)
-//        )
-//
-//
-//        Text(
-//            modifier = Modifier.padding(bottom = 1.7.dp),
-//            text = module.mUnit!!,
-//            color = MaterialTheme.colorScheme.onSurface,
-//            style = MaterialTheme.typography.titleMedium
-//        )
-//
-//    }
-//    // Display Date of last value(s)
-//    Text(
-//        modifier = Modifier.padding(start = dimensionResource(R.dimen.padding_mid)),
-//        text = getDate(lastDPoint.dateMillis_bucket, "EEE, MMM d\nh:mm a "),
-//        style = MaterialTheme.typography.titleSmall.copy(),
-//    )
 }
+
 
 @Composable
 fun compLabel(module: ModuleData) {

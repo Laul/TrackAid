@@ -52,10 +52,6 @@ dependencies {
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
 //
-//    //Charting
-    implementation files('../libs/kellocharts-2.0.0-sources.jar')
-    implementation files('../libs/kellocharts-debug.aar')
-
     implementation 'com.google.accompanist:accompanist-permissions:0.21.1-beta'
 
     implementation 'androidx.core:core-ktx:1.7.0'
@@ -102,5 +98,19 @@ implementation "androidx.compose.material3:material3:$material3_version"
 
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     runtimeOnly 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
+
+    // Charting: composeCharts from PatryandPatrick (https://patrykandpatrick.com/vico/wiki/getting-started/)
+
+    // Includes the core logic for charts and other elements.
+    implementation "com.patrykandpatrick.vico:core:1.6.4"
+
+    // For Jetpack Compose.
+    implementation "com.patrykandpatrick.vico:compose:1.6.4"
+
+    // For the view system.
+    implementation "com.patrykandpatrick.vico:views:1.6.4"
+
+    // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
+    implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 
 }
