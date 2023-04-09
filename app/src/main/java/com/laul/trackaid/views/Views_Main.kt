@@ -45,8 +45,9 @@ import com.laul.trackaid.views.NavRoutes
 import java.time.LocalDateTime
 import java.util.*
 
+/** Header - Current date + button to retrieve gluco from XDrip and push it to Google Fit
+ */
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 @Preview
 fun Header() {
@@ -120,11 +121,12 @@ fun Header() {
 
 }
 
-
+/** Navhost management : dispatch to proper view
+ * @param gFitConnectManager: Manager to retrieve Google data
+ */
 @Composable
 fun compCommon(gFitConnectManager: GFitConnectManager) {
 
-    //    Header()
     val navController = rememberNavController()
 
     NavHost(
@@ -146,7 +148,10 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
     }
 }
 
-
+/** View structure for Main screen
+ * @param gFitConnectManager: Manager to retrieve Google data
+ * @param navController: Manager for bottom navigation bar
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavController) {
@@ -160,6 +165,11 @@ fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavCon
 
 }
 
+/** List of displayed modules in main view
+ * @param gFitConnectManager: Manager to retrieve Google data
+ * @param navController: Manager for bottom navigation bar
+ * @param innerPadding: Int value for lazycolumn padding
+ */
 @Composable
 private fun compModules(
     gFitConnectManager: GFitConnectManager,
@@ -184,7 +194,12 @@ private fun compModules(
     }
 }
 
-
+/** Content of each module in the lazycolumn
+ * @param module: module from DataProvider data class
+ * @param gFitConnectManager: Manager to retrieve Google data
+ * @param lastDPoint: last data point of current module
+ * @param duration: Int value that represents the duration to retrieve data
+ */
 @Composable
 private fun compModule(
     module: ModuleData,
@@ -304,7 +319,6 @@ private fun compModule(
                 .padding(
                     horizontal = dimensionResource(id = R.dimen.padding_mid)
                 )
-//                .border(BorderStroke(1.dp, color_general_primary))
 
         ) {
             // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
@@ -354,10 +368,12 @@ private fun compModule(
 }
 
 
+/** Label to display the "status" of a given module
+ * @param module: module from DataProvider data class
+ */
 @Composable
 fun compLabel(module: ModuleData) {
     Card(
-//        elevation = CardElevation(0.dp),
         modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))
     ) {
         Text(

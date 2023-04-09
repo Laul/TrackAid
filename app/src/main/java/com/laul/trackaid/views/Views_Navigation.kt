@@ -33,6 +33,9 @@ import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
 
 
+/** Bottom Navigation bar used across the entire application
+ * @param navController: Manager for bottom navigation bar
+ */
 @Composable
 fun BottomNavigationBar(navController: NavController) {
 

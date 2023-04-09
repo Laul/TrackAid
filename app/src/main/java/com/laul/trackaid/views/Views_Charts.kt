@@ -12,6 +12,9 @@ import com.patrykandpatrick.vico.core.chart.column.ColumnChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 
 
+/** Chart section in main view for each card module
+ * @param module: module from DataProvider data class
+ */
 @Composable
 fun compChart(module: ModuleData){
     androidx.compose.material.Surface {
@@ -42,6 +45,10 @@ fun compChart(module: ModuleData){
     }
 }
 
+
+/** Chart section in detailed views
+ * @param module: module from DataProvider data class
+ */
 @Composable
-fun compChart_Detailed(context: Context, module: ModuleData){
+fun compChart_Detailed(module: ModuleData){
 }

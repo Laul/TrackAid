@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit
 class BloodGlucoseUpdate {
     companion object {
         /** XDrip permissions verification and dispatch
-         * @param count: number of data to retrieve from XDrip. Max is 1000, XDrip does neither allow nor to specify time interval, nor more than the last 1000 values (~3.5 days of data)
          * @param context: App Context (typically main activity)
          */
         fun connectXDrip(context: Context) {
@@ -44,6 +43,7 @@ class BloodGlucoseUpdate {
 
         /** Gluco data parsing + formatting to push to Google
          * @param jsonstring: XDrip json string retrieved from connectXDrip
+         * @param context: App Context (typically main activi
          */
         fun getGlucoData(jsonstring: String, context: Context) {
             // parse gluco data
