@@ -113,4 +113,7 @@ implementation "androidx.compose.material3:material3:$material3_version"
     // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
     implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 
+
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
+
 }

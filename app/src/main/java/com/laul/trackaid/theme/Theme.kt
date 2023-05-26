@@ -5,6 +5,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 
 private val LightThemeColors = lightColorScheme(
@@ -86,4 +88,15 @@ fun TrackAidTheme(
         typography = AppTypography,
         content = content
     )
+
+    val systemUiController = rememberSystemUiController()
+    if (useDarkTheme) {
+        systemUiController.setSystemBarsColor(
+            color = Color.Transparent
+        )
+    } else {
+        systemUiController.setSystemBarsColor(
+            color = Color.White
+        )
+    }
 }

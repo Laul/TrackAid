@@ -1,6 +1,7 @@
 package com.laul.trackaid
 
 
+import android.Manifest
 import android.app.Activity
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
@@ -36,6 +37,7 @@ import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
+import com.laul.trackaid.data.DataProvider.Companion.gFitUpdate
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
@@ -58,17 +60,14 @@ fun Header() {
         modifier = Modifier
             .height(175.dp)
             .background(color_surface_background),
-        title = {
-
-        }
+        title = {},
     )
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(height = 175.dp)
-            .padding(top = 10.dp)
-            .background(color_surface_background),
+            .padding(top = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(modifier = Modifier.width(24.dp))
@@ -113,6 +112,7 @@ fun Header() {
                 .clickable(
                     onClick = {
                         connectXDrip(ctx)
+
                     }
                 ),
             )
@@ -128,6 +128,7 @@ fun Header() {
 fun compCommon(gFitConnectManager: GFitConnectManager) {
 
     val navController = rememberNavController()
+//    compMainModule(gFitConnectManager, navController = navController)
 
     NavHost(
         navController = navController,
@@ -146,6 +147,7 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
         }
 
     }
+
 }
 
 /** View structure for Main screen
@@ -155,6 +157,7 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavController) {
+
 
     Scaffold(
         topBar = { Header() },
@@ -211,25 +214,7 @@ private fun compModule(
     // Variables to be used to get data from GFit
     var ctx = LocalContext.current
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)
-
-    // Observer to trigger recomposition
-    if (module.dPoints.size == 0) {
-        module.getGFitData(
-            permission = gFitConnectManager.permission,
-            context = ctx,
-            time_start = Time_Start,
-            time_end = Time_End
-        )
-        module.getGFitData(
-            permission = gFitConnectManager.permission,
-            context = ctx,
-            time_start = Time_End,
-            time_end = Time_Now
-        )
-    }
-
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
-
 
     // Card as button so that we can click on it to launch it as dedicated module
     Card(

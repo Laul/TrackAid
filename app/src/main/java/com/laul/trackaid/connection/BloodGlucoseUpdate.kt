@@ -11,7 +11,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.data.*
 import com.google.android.gms.fitness.request.DataUpdateRequest
+import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataProvider
+import com.patrykandpatrick.vico.core.entry.entriesOf
+import com.patrykandpatrick.vico.core.entry.entryModelOf
 import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 
@@ -49,12 +52,6 @@ class BloodGlucoseUpdate {
             // parse gluco data
             val json = JSONArray(jsonstring)
 
-            // Initialize an empty variable to aggreagate and format glucose datapoints
-//        var xDripValues = ArrayList<PointValue>()
-            val sgv = ArrayList<Float>()
-            val date = ArrayList<Long>()
-
-
             // Create DataSource
             val gFitGlucoDSource = DataSource.Builder()
                 .setAppPackageName(context)
@@ -68,8 +65,6 @@ class BloodGlucoseUpdate {
             for (i in 0 until json.length()) {
                 // Get one set of data from JSON
                 var measure = json.getJSONObject(i)
-
-                // Get BG values and create associated PointValue
 
                 // Add new datapoint to dataset
                 gFitGlucoDSet.add(
@@ -107,13 +102,35 @@ class BloodGlucoseUpdate {
                     )
                 )
                     .updateData(request)
-                    .addOnSuccessListener { Log.i("XDrip", "Data update was successful.") }
+                    .addOnSuccessListener {
+
+                        // Clear dPoints to update the graph (avoid adding data in the graph, we need to completely clear it)
+                        moduleBG.dPoints.clear()
+                        moduleBG.cFloatEntries_Columns.forEach{ item -> item.clear()}
+                        moduleBG.cFloatEntries_Lines.forEach{ item -> item.clear()}
+
+                        var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = moduleBG.duration )
+
+                        moduleBG.getGFitData(
+                            permission = true,
+                            context = context,
+                            time_start = Time_Start,
+                            time_end = Time_End
+                        )
+                        moduleBG.getGFitData(
+                            permission = true,
+                            context = context,
+                            time_start = Time_End,
+                            time_end = Time_Now
+                        )
+
+
+
+                        Log.i("XDrip", "Data update was successful.") }
                     .addOnFailureListener { e ->
                         Log.e("XDrip", "There was a problem updating the dataset.", e)
                     }
 
-                // Clear dPoints to update the graph
-                moduleBG.dPoints.clear()
 
             }
         }

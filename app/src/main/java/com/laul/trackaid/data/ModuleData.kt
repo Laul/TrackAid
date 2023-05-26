@@ -16,7 +16,6 @@ import com.google.android.gms.fitness.result.DataReadResponse
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.entry.entriesOf
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.util.*
@@ -34,16 +33,30 @@ data class ModuleData(
     val gFitDataType: DataType?,
     val gFitOptions: FitnessOptions?,
     var lastDPoint: MutableState<LDataPoint>?,
-    var duration: Int
+    var duration: Int,
+    var chartType: String?,
+    var nCol: Int,
+    var nLines : Int
 ) {
     // Chart variables
     var dPoints = ArrayList<LDataPoint>()
-    var cFloatEntries1 = arrayListOf<FloatEntry>()
-    var cFloatEntries2 = arrayListOf<FloatEntry>()
-    var cChartModel = entryModelOf(
-        entriesOf(0f),
-        entriesOf(0f),
-    )
+    var cFloatEntries_Columns = arrayListOf<ArrayList<FloatEntry>>()
+    var cFloatEntries_Lines = arrayListOf<ArrayList<FloatEntry>>()
+    var cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
+    var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
+
+    init {
+        if (nCol>0) {
+            for (i in 0 until nCol+1 ) {
+                cFloatEntries_Columns.add(arrayListOf<FloatEntry>())
+            }
+        }
+        if (nLines>0) {
+            for (i in 0 until nCol ) {
+                cFloatEntries_Lines.add(arrayListOf<FloatEntry>())
+            }
+        }
+    }
 
     /** GFit connection to retrieve fit data
      * @param duration: duration to cover (default: last 7 days)
@@ -197,7 +210,7 @@ data class ModuleData(
         }
 
         // Update Call timestamp to force recomposition
-        formatAsColumn()
+        formatDPoints()
         lastDPoint!!.value = getLastData()
 
     }
@@ -212,7 +225,7 @@ data class ModuleData(
     }
 
 
-    fun formatAsColumn() {
+    fun formatDPoints() {
         if (dPoints.size != 0) {
 
             // Group data per Day
@@ -225,15 +238,9 @@ data class ModuleData(
 
                 if (currentDate != tempDate) {
 
-                    // if steps: we aggregate data for a day
-                    if (mName in arrayOf("Steps")) {
-                        computeStepsData(tempVal, currentDate)
-                    }
 
-                    // else: calculate the mean, max, and min per day
-                    else {
-                        computeOtherData(tempVal, currentDate)
-                    }
+                    formatChartModel(tempVal, currentDate)
+
                     currentDate = tempDate
                     tempVal = arrayListOf(dPoints[i].value)
                 } else {
@@ -243,16 +250,9 @@ data class ModuleData(
 
 
             // if steps: we aggregate data for a day
-            if (mName == "Steps" || mName == "Weight") {
-                computeStepsData(tempVal, currentDate)
-            }
 
-            // else: calculate the mean, max, and min per day
-            else {
-                computeOtherData(tempVal, currentDate)
-            }
+            formatChartModel(tempVal, currentDate)
 
-            formatChart()
 
         }
     }
@@ -260,58 +260,55 @@ data class ModuleData(
 
     /** Create lines to display steps. Must be the total of steps per day
      */
-    fun computeStepsData(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
-        var tempValDay = 0f
-        for (j in 0 until tempVal.size) {
-            tempValDay += tempVal[j][0]
-        }
-        cFloatEntries1.add(entryOf(cFloatEntries1.size, 0f))
-        cFloatEntries2.add(entryOf(cFloatEntries2.size, tempValDay))
-
-    }
-
-    /** Create lines to display everything except steps.
-     * 2 cases:
-     *      - Blood Glucose + Heart Rate : min, max,mean - we display min and max
-     *      - Blood Pressure : display mean of diastol + systol
-     */
-    fun computeOtherData(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
-        var tempValMean = ArrayList<Float>()
-        var tempValMin = ArrayList<Float>()
-        var tempValMax = ArrayList<Float>()
-        for (k in 0 until tempVal[0].size) {
-            tempValMean.add(0f)
-            tempValMin.add(10000f)
-            tempValMax.add(0f)
-
-            var sizeDay = 0
-
+    fun formatChartModel(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
+        if (mName == "Steps") {
+            var tempValDay = 0f
             for (j in 0 until tempVal.size) {
-                tempValMean[k] += tempVal[j][k]
-                if (tempValMin[k] > tempVal[j][k]) {
-                    tempValMin[k] = tempVal[j][k]
-                }
-                if (tempValMax[k] < tempVal[j][k]) {
-                    tempValMax[k] = tempVal[j][k]
-                }
-                sizeDay += 1
+                tempValDay += tempVal[j][0]
             }
 
-            tempValMean[k] = tempValMean[k] / sizeDay
+
+            cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size,0f))
+            cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValDay))
+
         }
-        // Create a line for a given day
-        if (mName == "Pressure") {
-            cFloatEntries1.add(entryOf(cFloatEntries1.size, tempValMean[0]))
-            cFloatEntries2.add(entryOf(cFloatEntries2.size, tempValMean[1] - tempValMean[0]))
-        } else {
-            cFloatEntries1.add(entryOf(cFloatEntries1.size, tempValMin[0]))
-            cFloatEntries2.add(entryOf(cFloatEntries2.size, tempValMax[0] + .1 - tempValMin[0]))
+
+        else {
+            // Compute the mean of min and max (needed if several values are taken the same day.
+            var tempValMean = ArrayList<Float>()
+            var tempValMin = ArrayList<Float>()
+            var tempValMax = ArrayList<Float>()
+            for (k in 0 until tempVal[0].size) {
+                tempValMean.add(0f)
+                tempValMin.add(10000f)
+                tempValMax.add(0f)
+
+                var sizeDay = 0
+
+                for (j in 0 until tempVal.size) {
+                    tempValMean[k] += tempVal[j][k]
+                    if (tempValMin[k] > tempVal[j][k]) {
+                        tempValMin[k] = tempVal[j][k]
+                    }
+                    if (tempValMax[k] < tempVal[j][k]) {
+                        tempValMax[k] = tempVal[j][k]
+                    }
+                    sizeDay += 1
+                }
+
+                tempValMean[k] = tempValMean[k] / sizeDay
+            }
+            // Create a line for a given day
+            if (mName == "Pressure") {
+                cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size, tempValMean[0]))
+                cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValMean[1] - tempValMean[0]))
+            } else {
+                cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size, tempValMin[0]))
+                cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValMax[0] + .1 - tempValMin[0]))
+            }
         }
+        cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
+
     }
 
-
-    fun formatChart() {
-
-        cChartModel = entryModelOf(cFloatEntries1, cFloatEntries2)
-    }
 }
