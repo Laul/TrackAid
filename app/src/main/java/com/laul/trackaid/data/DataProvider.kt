@@ -47,7 +47,7 @@ class DataProvider {
                     .build(),
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
-                chartType = "Columns",
+                chartType = "Combo",
                 nCol = 2,
                 nLines= 1
             ),
@@ -87,7 +87,7 @@ class DataProvider {
                     .build(),
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
-                chartType = "Columns",
+                chartType = "Combo",
                 nCol = 2,
                 nLines= 1
             ),

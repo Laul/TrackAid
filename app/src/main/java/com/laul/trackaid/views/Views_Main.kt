@@ -55,13 +55,19 @@ import java.util.*
 fun Header() {
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
     var ctx = LocalContext.current
-
-    TopAppBar(
-        modifier = Modifier
-            .height(175.dp)
-            .background(color_surface_background),
-        title = {},
-    )
+//
+//    TopAppBar(
+//
+//        modifier = Modifier
+//            .height(175.dp)
+//            .background(Color.Red),
+//        title  = {
+//            Text(
+//                "Large TopAppBar",
+//                maxLines = 1,
+//            )
+//        },
+//    )
 
     Row(
         modifier = Modifier
@@ -161,7 +167,7 @@ fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavCon
 
     Scaffold(
         topBar = { Header() },
-        content = { innerPadding -> compModules(gFitConnectManager, navController, innerPadding) },
+        content = { innerPadding -> compModules( navController, innerPadding) },
         bottomBar = { BottomNavigationBar(navController) }
 
     )
@@ -169,13 +175,11 @@ fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavCon
 }
 
 /** List of displayed modules in main view
- * @param gFitConnectManager: Manager to retrieve Google data
  * @param navController: Manager for bottom navigation bar
  * @param innerPadding: Int value for lazycolumn padding
  */
 @Composable
 private fun compModules(
-    gFitConnectManager: GFitConnectManager,
     navController: NavController,
     innerPadding: PaddingValues
 ) {
@@ -191,7 +195,7 @@ private fun compModules(
 
                 val lastDPoint = remember { it.lastDPoint }
                 compModule(
-                    module = it, gFitConnectManager, navController, lastDPoint!!, it.duration
+                    module = it, navController, lastDPoint!!, it.duration
                 )
             })
     }
@@ -206,14 +210,11 @@ private fun compModules(
 @Composable
 private fun compModule(
     module: ModuleData,
-    gFitConnectManager: GFitConnectManager,
     navController: NavController,
     lastDPoint: MutableState<LDataPoint>?,
     duration: Int
 ) {
     // Variables to be used to get data from GFit
-    var ctx = LocalContext.current
-    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration)
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
 
     // Card as button so that we can click on it to launch it as dedicated module
@@ -343,7 +344,7 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module)
+            compChart(module = module , isBottomAxis =false)
             Spacer(modifier = Modifier.width(10.dp))
 
         }
@@ -352,31 +353,31 @@ private fun compModule(
     }
 }
 
-
-/** Label to display the "status" of a given module
- * @param module: module from DataProvider data class
- */
-@Composable
-fun compLabel(module: ModuleData) {
-    Card(
-        modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))
-    ) {
-        Text(
-            modifier = Modifier.padding(
-                vertical = 2.dp,
-                horizontal = dimensionResource(R.dimen.padding_mid)
-            ),
-            textAlign = TextAlign.Center,
-            text = "Normal",
-            style = MaterialTheme.typography.bodyMedium.copy()
-
-        )
-    }
-}
-
-
-
-
+//
+///** Label to display the "status" of a given module
+// * @param module: module from DataProvider data class
+// */
+//@Composable
+//fun compLabel(module: ModuleData) {
+//    Card(
+//        modifier = Modifier.padding(top = dimensionResource(id = R.dimen.padding_large))
+//    ) {
+//        Text(
+//            modifier = Modifier.padding(
+//                vertical = 2.dp,
+//                horizontal = dimensionResource(R.dimen.padding_mid)
+//            ),
+//            textAlign = TextAlign.Center,
+//            text = "Normal",
+//            style = MaterialTheme.typography.bodyMedium.copy()
+//
+//        )
+//    }
+//}
+//
+//
+//
+//
 
 
 

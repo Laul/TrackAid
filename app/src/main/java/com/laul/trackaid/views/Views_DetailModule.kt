@@ -42,26 +42,6 @@ import com.patrykandpatrick.vico.core.entry.entriesOf
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.marker.Marker
 
-val chartModifier = Modifier.height(400.dp)
-
-private val model = entryModelOf(
-    entriesOf(0 to 1f, 1 to -2f),
-    entriesOf(0 to 2f, 1 to 3f),
-)
-
-private val columns: List<LineComponent>
-    @Composable
-    get() = listOf(
-        lineComponent(
-            color = Color.Transparent,
-            thickness = 8.dp,
-            shape = RoundedCornerShape(4.dp),
-            ),
-        lineComponent(
-            thickness = 8.dp,
-            shape = RoundedCornerShape(4.dp),
-            dynamicShader = verticalGradient(arrayOf(colors.primary, colors.secondary)),),
-    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,43 +55,8 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 
 @Composable
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
-    var ctx = LocalContext.current
-    StackedColumnChartWithNegativeValuesAndDataLabels(
-        module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!
-    )
+
+    compChart(module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! , isBottomAxis = true)
 }
 
 
-//@Preview
-@Composable
-public fun StackedColumnChartWithNegativeValuesAndDataLabels(module: ModuleData) {
-    compChart(module = module)
-//    androidx.compose.material.Surface {
-//        if (module.chartType == "Line") {
-//
-//            Chart(
-//                chart = getLineChart(
-//                    module = module ,
-//                    markerMap = markerMap
-//                ),
-//                model = module.cChartModel,
-//                bottomAxis = bottomAxis(),
-//                modifier = chartModifier,
-//                autoScaleUp = AutoScaleUp.None ,
-//            )
-//        }
-//        if (module.chartType == "Columns") {
-//
-//            Chart(
-//                chart = getColumnChart(
-//                    module = module ,
-//                    markerMap = markerMap
-//                ),
-//                model = module.cChartModel,
-//                bottomAxis = bottomAxis(),
-//                modifier = chartModifier,
-//                autoScaleUp = AutoScaleUp.None ,
-//            )
-//        }
-//    }
-}

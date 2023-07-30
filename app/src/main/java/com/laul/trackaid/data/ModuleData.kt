@@ -44,6 +44,7 @@ data class ModuleData(
     var cFloatEntries_Lines = arrayListOf<ArrayList<FloatEntry>>()
     var cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
     var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
+    var bottomAxisValues = listOf("")
 
     init {
         if (nCol>0) {
@@ -211,6 +212,7 @@ data class ModuleData(
 
         // Update Call timestamp to force recomposition
         formatDPoints()
+        bottomAxisValues = distinctDate
         lastDPoint!!.value = getLastData()
 
     }
@@ -237,8 +239,6 @@ data class ModuleData(
 
 
                 if (currentDate != tempDate) {
-
-
                     formatChartModel(tempVal, currentDate)
 
                     currentDate = tempDate
@@ -249,7 +249,6 @@ data class ModuleData(
             }
 
 
-            // if steps: we aggregate data for a day
 
             formatChartModel(tempVal, currentDate)
 
@@ -261,20 +260,21 @@ data class ModuleData(
     /** Create lines to display steps. Must be the total of steps per day
      */
     fun formatChartModel(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
+        // For steps, we aggregate the total number of steps per day
         if (mName == "Steps") {
             var tempValDay = 0f
             for (j in 0 until tempVal.size) {
                 tempValDay += tempVal[j][0]
             }
 
-
+            // Columns from 0 to the total number of steps
             cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size,0f))
             cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValDay))
 
         }
 
         else {
-            // Compute the mean of min and max (needed if several values are taken the same day.
+            // Compute the mean of min and max (needed if several values are taken the same day)
             var tempValMean = ArrayList<Float>()
             var tempValMin = ArrayList<Float>()
             var tempValMax = ArrayList<Float>()
@@ -298,16 +298,26 @@ data class ModuleData(
 
                 tempValMean[k] = tempValMean[k] / sizeDay
             }
-            // Create a line for a given day
+            // For pressure, compute the mean of diastole and systole per day and create columns from mean(diastole) to mean(systole)
             if (mName == "Pressure") {
                 cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size, tempValMean[0]))
                 cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValMean[1] - tempValMean[0]))
-            } else {
+            }
+
+            // For other data, create columns from min and max + points for the daily mean
+            else {
                 cFloatEntries_Columns[0].add(entryOf(cFloatEntries_Columns[0].size, tempValMin[0]))
                 cFloatEntries_Columns[1].add(entryOf(cFloatEntries_Columns[1].size,tempValMax[0] + .1 - tempValMin[0]))
+
+                if (nLines>0) {
+                    cFloatEntries_Lines[0].add(entryOf(cFloatEntries_Lines[0].size, tempValMean[0]))
+                }
             }
         }
+
+        // Create the model for columns and lines charts
         cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
+        cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
 
     }
 
