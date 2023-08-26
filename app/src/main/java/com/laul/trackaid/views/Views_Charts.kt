@@ -70,16 +70,16 @@ fun compChart(
                 model = module.cChartModel_Lines + module.cChartModel_Columns ,
                 autoScaleUp = AutoScaleUp.Full,
 
-                startAxis = startAxis(
-                    guideline = null,
-                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
-                    titleComponent = textComponent(
-                        background = shapeComponent(Shapes.pillShape, Color.Red),
-                        padding = dimensionsOf(2.dp, 2.dp),
-                        margins = dimensionsOf(2.dp),
-                    ),
-                    title = module.mUnit,
-                ),
+//                startAxis = startAxis(
+//                    guideline = null,
+//                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
+//                    titleComponent = textComponent(
+//                        background = shapeComponent(Shapes.pillShape, Color.Red),
+//                        padding = dimensionsOf(2.dp, 2.dp),
+//                        margins = dimensionsOf(2.dp),
+//                    ),
+//                    title = module.mUnit,
+//                ),
                 bottomAxis = if (isBottomAxis) bottomAxis(
                     guideline = null,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },

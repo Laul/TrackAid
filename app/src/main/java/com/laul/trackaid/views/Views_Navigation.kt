@@ -2,8 +2,11 @@ package com.laul.trackaid.views
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 
 import androidx.compose.material3.*
 
@@ -11,14 +14,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight.Companion.Black
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -28,9 +34,38 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.laul.trackaid.R
+import com.laul.trackaid.connection.BloodGlucoseUpdate
+import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopNavigationBar(navController: NavController, moduleID: String?) {
+
+
+    TopAppBar(
+        title = {
+
+            Text(
+
+                text = DataProvider.moduleList[NavRoutes.Detailed.route + "/$moduleID"]!!.mName,
+                color = color_text_primary,
+                maxLines = 1,
+
+                )
+        },
+
+
+        navigationIcon = {
+            IconButton(onClick = { navController.navigateUp() }) {
+                Icon(Icons.Filled.ArrowBack, null)
+            }
+        }
+    )
+}
+
 
 
 /** Bottom Navigation bar used across the entire application

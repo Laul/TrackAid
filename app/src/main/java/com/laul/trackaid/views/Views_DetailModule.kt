@@ -1,6 +1,7 @@
 package com.laul.trackaid
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.CutCornerShape
@@ -14,13 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.color_text_primary
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
+import com.laul.trackaid.views.TopNavigationBar
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
@@ -46,8 +50,8 @@ import com.patrykandpatrick.vico.core.marker.Marker
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compDetailedModule(navController: NavHostController, moduleID : String?){
-
     Scaffold(
+        topBar = { TopNavigationBar(navController, moduleID) },
         content = {innerPadding -> compDetailed(navController, innerPadding, moduleID) },
         bottomBar = {BottomNavigationBar(navController)}
     )
@@ -55,8 +59,10 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 
 @Composable
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
+    Column(modifier = Modifier.padding(innerPaddingValues)) {
+        compChart(module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! , isBottomAxis = true)
 
-    compChart(module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! , isBottomAxis = true)
+    }
+
+
 }
-
-

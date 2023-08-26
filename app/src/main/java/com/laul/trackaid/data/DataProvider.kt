@@ -136,11 +136,6 @@ class DataProvider {
                 // Clear all data before recomposition
                 it.dPoints.clear()
 
-
-                it.cFloatEntries_Columns.forEach{ item -> item.clear()}
-                it.cFloatEntries_Lines.forEach{ item -> item.clear()}
-
-
                 var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
 
                 it.getGFitData(
@@ -155,6 +150,7 @@ class DataProvider {
                     time_start = Time_End,
                     time_end = Time_Now
                 )
+
             }
         }
     }

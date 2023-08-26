@@ -44,6 +44,7 @@ import com.laul.trackaid.views.BottomNavigationBar
 
 //import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
+import com.laul.trackaid.views.TopNavigationBar
 import java.time.LocalDateTime
 import java.util.*
 
@@ -55,19 +56,7 @@ import java.util.*
 fun Header() {
     var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
     var ctx = LocalContext.current
-//
-//    TopAppBar(
-//
-//        modifier = Modifier
-//            .height(175.dp)
-//            .background(Color.Red),
-//        title  = {
-//            Text(
-//                "Large TopAppBar",
-//                maxLines = 1,
-//            )
-//        },
-//    )
+
 
     Row(
         modifier = Modifier

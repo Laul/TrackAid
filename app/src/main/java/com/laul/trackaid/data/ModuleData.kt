@@ -87,8 +87,8 @@ data class ModuleData(
                 .build()
         }
 
-        if (mName == "Pressure") {
-            Log.i("GFit Req pressure", gFitReq.toString())
+        if (mName == "Heart Rate") {
+            Log.i("Heart Rate Req", gFitReq.toString())
         }
         if (permission) {
             Fitness.getHistoryClient(
@@ -198,17 +198,15 @@ data class ModuleData(
         }
 
         var tempDate = ArrayList<String>()
+
+
+        dPoints = dPoints.sortedWith(compareBy({ it.dateMillis_bucket }))
+            .toCollection(ArrayList<LDataPoint>())
+
         dPoints.forEach {
             tempDate.add(getDate(it.dateMillis_bucket, "EEE"))
         }
         val distinctDate = tempDate.distinct()
-
-
-        // Display Graph
-        if (distinctDate.size > 1 && dPoints.size > 0) {
-            dPoints = dPoints.sortedWith(compareBy({ it.dateMillis_bucket }))
-                .toCollection(ArrayList<LDataPoint>())
-        }
 
         // Update Call timestamp to force recomposition
         formatDPoints()
@@ -228,6 +226,10 @@ data class ModuleData(
 
 
     fun formatDPoints() {
+//
+        cFloatEntries_Columns.forEach{ item -> item.clear()}
+        cFloatEntries_Lines.forEach{ item -> item.clear()}
+
         if (dPoints.size != 0) {
 
             // Group data per Day
@@ -248,8 +250,6 @@ data class ModuleData(
                 }
             }
 
-
-
             formatChartModel(tempVal, currentDate)
 
 
@@ -260,6 +260,7 @@ data class ModuleData(
     /** Create lines to display steps. Must be the total of steps per day
      */
     fun formatChartModel(tempVal: ArrayList<ArrayList<Float>>, currentDate: Long) {
+
         // For steps, we aggregate the total number of steps per day
         if (mName == "Steps") {
             var tempValDay = 0f
