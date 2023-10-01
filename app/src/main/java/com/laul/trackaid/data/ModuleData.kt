@@ -3,6 +3,7 @@ package com.laul.trackaid.data
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.health.connect.client.records.Record
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -21,8 +22,9 @@ import com.patrykandpatrick.vico.core.entry.entryOf
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
+import kotlin.reflect.KClass
 
-data class ModuleData(
+data class ModuleData<T : Record>(
     val mId: Int,
     val mName: String,
     val mUnit: String?,
@@ -30,7 +32,7 @@ data class ModuleData(
     val mIcon_outlined: Int,
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
-    val gFitDataType: DataType?,
+    val healthConnectDataType: KClass<T>?,
     val gFitOptions: FitnessOptions?,
     var lastDPoint: MutableState<LDataPoint>?,
     var duration: Int,
@@ -73,7 +75,7 @@ data class ModuleData(
         // Default request using ".read" - For steps, we need to use ".aggregate"
 
         var gFitReq = DataReadRequest.Builder()
-            .read(gFitDataType!!)
+            .read(healthConnectDataType!!)
             .bucketByTime(1, TimeUnit.DAYS)
             .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
             .build()
@@ -81,7 +83,7 @@ data class ModuleData(
         if (mName == "Steps") {
             // Request for past (completed) days / hours
             gFitReq = DataReadRequest.Builder()
-                .aggregate(gFitDataType)
+                .aggregate(healthConnectDataType)
                 .bucketByTime(1, TimeUnit.DAYS)
                 .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
                 .build()

@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import com.laul.trackaid.Header
 import com.laul.trackaid.compCommon
 import com.laul.trackaid.connection.GFitConnectManager
+import com.laul.trackaid.connection.HealthConnectManager
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.theme.TrackAidTheme
 import java.io.DataOutput
@@ -21,7 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 6
         val healthConnectManager by lazy {
-            GFitConnectManager(this as Activity)
+            HealthConnectManager(this as Activity)
         }
 
         DataProvider.gFitUpdate(this as Activity, healthConnectManager.permission )

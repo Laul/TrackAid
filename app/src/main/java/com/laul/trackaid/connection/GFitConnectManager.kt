@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit
 
 
 // The minimum android level that can use Health Connect
-const val MIN_SUPPORTED_SDK = Build.VERSION_CODES.O_MR1
 
 /**
  * Demonstrates reading and writing from Health Connect.

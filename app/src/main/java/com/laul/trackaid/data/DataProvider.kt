@@ -23,7 +23,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_home_outline,
                 mColor_Primary = R.color.red_primary,
                 mColor_Secondary = R.color.red_primary,
-                gFitDataType = null,
+                healthConnectDataType = null,
                 gFitOptions = null,
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
@@ -40,7 +40,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_bg_outline,
                 mColor_Primary = Color.rgb(156, 75, 194),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                gFitDataType = HealthDataTypes.TYPE_BLOOD_GLUCOSE,
+                healthConnectDataType = TYPE_BLOOD_GLUCOSE,
                 gFitOptions = FitnessOptions.builder()
                     .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
                     .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
@@ -60,7 +60,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_steps_outline,
                 mColor_Primary = Color.rgb(201, 117, 7),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                gFitDataType = DataType.TYPE_STEP_COUNT_DELTA,
+                healthConnectDataType = TYPE_STEP_COUNT_DELTA,
                 gFitOptions = FitnessOptions.builder()
                     .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
                     .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
@@ -80,7 +80,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_hr_outline,
                 mColor_Primary = Color.rgb(0, 119, 113),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                gFitDataType = DataType.TYPE_HEART_RATE_BPM,
+                healthConnectDataType = DataType.TYPE_HEART_RATE_BPM,
                 gFitOptions = FitnessOptions.builder()
                     .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
                     .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
@@ -100,7 +100,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_bp_outline,
                 mColor_Primary = Color.rgb(55, 138, 215),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                gFitDataType = HealthDataTypes.TYPE_BLOOD_PRESSURE,
+                healthConnectDataType = HealthDataTypes.TYPE_BLOOD_PRESSURE,
                 gFitOptions = FitnessOptions.builder()
                     .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
                     .build(),
@@ -139,6 +139,28 @@ class DataProvider {
                 var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
 
                 it.getGFitData(
+                    permission = permission,
+                    context = context,
+                    time_start = Time_Start,
+                    time_end = Time_End
+                )
+                it.getGFitData(
+                    permission = permission,
+                    context = context,
+                    time_start = Time_End,
+                    time_end = Time_Now
+                )
+
+            }
+        }
+        fun HealthConnectUpdate(context: Context, permission: Boolean){
+            moduleList.values.toList().drop(1).forEach{
+                // Clear all data before recomposition
+                it.dPoints.clear()
+
+                var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
+
+                it.getGFitData(z
                     permission = permission,
                     context = context,
                     time_start = Time_Start,
