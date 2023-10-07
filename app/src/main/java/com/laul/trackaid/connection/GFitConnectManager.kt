@@ -19,8 +19,12 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 
 import androidx.compose.runtime.*
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -29,6 +33,7 @@ import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.laul.trackaid.data.DataProvider
 import kotlinx.coroutines.channels.ActorScope
 import java.util.concurrent.TimeUnit
 

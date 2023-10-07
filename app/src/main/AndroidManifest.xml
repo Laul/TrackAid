@@ -30,7 +30,9 @@
             android:name=".DetailedActivity"
             android:exported="false"
             android:label="@string/title_activity_detailed"
-            android:theme="@style/Theme.TrackAid" />
+            android:theme="@style/Theme.TrackAid">
+        </activity>
+
         <activity
             android:name=".activities.MainActivity"
             android:exported="true"
@@ -47,6 +49,7 @@
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

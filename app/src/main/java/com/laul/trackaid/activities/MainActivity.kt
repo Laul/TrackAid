@@ -1,36 +1,31 @@
 package com.laul.trackaid.activities
 
 
-import android.app.Activity
-import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
-import com.laul.trackaid.Header
+import androidx.compose.ui.platform.LocalContext
+import androidx.health.connect.client.HealthConnectClient
 import com.laul.trackaid.compCommon
-import com.laul.trackaid.connection.GFitConnectManager
-import com.laul.trackaid.connection.HealthConnectManager
-import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.theme.TrackAidTheme
-import java.io.DataOutput
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 6
-        val healthConnectManager by lazy {
-            HealthConnectManager(this as Activity)
-        }
-
-        DataProvider.gFitUpdate(this as Activity, healthConnectManager.permission )
-
-        setContent {
-            TrackAidTheme{
-                compCommon(gFitConnectManager = healthConnectManager)
+        if (HealthConnectClient.sdkStatus(this) == HealthConnectClient.SDK_AVAILABLE) {
+            // Health Connect is available.
+            setContent {
+                TrackAidTheme{
+                    compCommon()
+                }
             }
+        } else
+            Toast.makeText(
+                this, "Health Connect is not available", Toast.LENGTH_SHORT
+            ).show()
         }
-    }
+
 }

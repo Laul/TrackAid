@@ -1,8 +1,11 @@
 package com.laul.trackaid.data
 
 import android.content.Context
+import android.os.RemoteException
 import android.util.Log
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.Record
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -19,12 +22,13 @@ import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 
-data class ModuleData<T : Record>(
+data class ModuleData(
     val mId: Int,
     val mName: String,
     val mUnit: String?,
@@ -32,13 +36,14 @@ data class ModuleData<T : Record>(
     val mIcon_outlined: Int,
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
-    val healthConnectDataType: KClass<T>?,
-    val gFitOptions: FitnessOptions?,
     var lastDPoint: MutableState<LDataPoint>?,
     var duration: Int,
     var chartType: String?,
     var nCol: Int,
-    var nLines : Int
+    var nLines : Int,
+
+    var recordType : KClass<out Record>?,
+
 ) {
     // Chart variables
     var dPoints = ArrayList<LDataPoint>()
@@ -48,6 +53,9 @@ data class ModuleData<T : Record>(
     var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
     var bottomAxisValues = listOf("")
 
+
+
+    // Init variables
     init {
         if (nCol>0) {
             for (i in 0 until nCol+1 ) {
@@ -61,46 +69,47 @@ data class ModuleData<T : Record>(
         }
     }
 
+
+
     /** GFit connection to retrieve fit data
      * @param duration: duration to cover (default: last 7 days)
      */
-    fun getGFitData(
-        permission: Boolean,
+    fun getHealthConnectData(
         context: Context,
         time_start: Long,
         time_end: Long
     ) {
 
-
-        // Default request using ".read" - For steps, we need to use ".aggregate"
-
-        var gFitReq = DataReadRequest.Builder()
-            .read(healthConnectDataType!!)
-            .bucketByTime(1, TimeUnit.DAYS)
-            .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
-            .build()
-
-        if (mName == "Steps") {
-            // Request for past (completed) days / hours
-            gFitReq = DataReadRequest.Builder()
-                .aggregate(healthConnectDataType)
-                .bucketByTime(1, TimeUnit.DAYS)
-                .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
-                .build()
-        }
-
-        if (mName == "Heart Rate") {
-            Log.i("Heart Rate Req", gFitReq.toString())
-        }
-        if (permission) {
-            Fitness.getHistoryClient(
-                context,
-                GoogleSignIn.getAccountForExtension(context, gFitOptions!!)
-            )
-                .readData(gFitReq)
-                .addOnSuccessListener { response -> formatDatapoint(response) }
-                .addOnFailureListener { response -> Log.i("Response", response.toString()) }
-        }
+//
+//        // Default request using ".read" - For steps, we need to use ".aggregate"
+//
+//        var gFitReq = DataReadRequest.Builder()
+//            .read(healthConnectDataType!!)
+//            .bucketByTime(1, TimeUnit.DAYS)
+//            .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
+//            .build()
+//
+//        if (mName == "Steps") {
+//            // Request for past (completed) days / hours
+//            gFitReq = DataReadRequest.Builder()
+//                .aggregate(healthConnectDataType)
+//                .bucketByTime(1, TimeUnit.DAYS)
+//                .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
+//                .build()
+//        }
+//
+//        if (mName == "Heart Rate") {
+//            Log.i("Heart Rate Req", gFitReq.toString())
+//        }
+//        if (permission) {
+//            Fitness.getHistoryClient(
+//                context,
+//                GoogleSignIn.getAccountForExtension(context, gFitOptions!!)
+//            )
+//                .readData(gFitReq)
+//                .addOnSuccessListener { response -> formatDatapoint(response) }
+//                .addOnFailureListener { response -> Log.i("Response", response.toString()) }
+//        }
     }
 
 

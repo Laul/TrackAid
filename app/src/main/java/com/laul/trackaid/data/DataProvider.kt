@@ -3,9 +3,9 @@ package com.laul.trackaid.data
 import android.content.Context
 import android.graphics.Color
 import androidx.compose.runtime.mutableStateOf
+import androidx.health.connect.client.records.HeartRateRecord
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.HealthDataTypes
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
@@ -23,54 +23,53 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_home_outline,
                 mColor_Primary = R.color.red_primary,
                 mColor_Secondary = R.color.red_primary,
-                healthConnectDataType = null,
-                gFitOptions = null,
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
                 chartType = null,
                 nCol = 0 ,
-                nLines = 0
+                nLines = 0,
+                recordType = null
             ),
-
-            NavRoutes.Detailed.route + "/1" to ModuleData(
-                mId = 1,
-                mName = "Glucose",
-                mUnit = "mmol/L",
-                mIcon = R.drawable.ic_bg,
-                mIcon_outlined = R.drawable.ic_bg_outline,
-                mColor_Primary = Color.rgb(156, 75, 194),
-                mColor_Secondary = Color.rgb(103, 60, 79),
-                healthConnectDataType = TYPE_BLOOD_GLUCOSE,
-                gFitOptions = FitnessOptions.builder()
-                    .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
-                    .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
-                    .build(),
-                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
-                duration = 7,
-                chartType = "Combo",
-                nCol = 2,
-                nLines= 1
-            ),
-
-            NavRoutes.Detailed.route + "/2" to ModuleData(
-                mId = 2,
-                mName = "Steps",
-                mUnit = "steps",
-                mIcon = R.drawable.ic_steps,
-                mIcon_outlined = R.drawable.ic_steps_outline,
-                mColor_Primary = Color.rgb(201, 117, 7),
-                mColor_Secondary = Color.rgb(103, 60, 79),
-                healthConnectDataType = TYPE_STEP_COUNT_DELTA,
-                gFitOptions = FitnessOptions.builder()
-                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-                    .build(),
-                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
-                duration = 7,
-                chartType = "Columns",
-                nCol = 1,
-                nLines= 0
-            ),
+//
+//            NavRoutes.Detailed.route + "/1" to ModuleData(
+//                mId = 1,
+//                mName = "Glucose",
+//                mUnit = "mmol/L",
+//                mIcon = R.drawable.ic_bg,
+//                mIcon_outlined = R.drawable.ic_bg_outline,
+//                mColor_Primary = Color.rgb(156, 75, 194),
+//                mColor_Secondary = Color.rgb(103, 60, 79),
+//                healthConnectDataType = TYPE_BLOOD_GLUCOSE,
+//                gFitOptions = FitnessOptions.builder()
+//                    .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_READ)
+//                    .addDataType(HealthDataTypes.TYPE_BLOOD_GLUCOSE, FitnessOptions.ACCESS_WRITE)
+//                    .build(),
+//                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
+//                duration = 7,
+//                chartType = "Combo",
+//                nCol = 2,
+//                nLines= 1
+//            ),
+//
+//            NavRoutes.Detailed.route + "/2" to ModuleData(
+//                mId = 2,
+//                mName = "Steps",
+//                mUnit = "steps",
+//                mIcon = R.drawable.ic_steps,
+//                mIcon_outlined = R.drawable.ic_steps_outline,
+//                mColor_Primary = Color.rgb(201, 117, 7),
+//                mColor_Secondary = Color.rgb(103, 60, 79),
+//                healthConnectDataType = TYPE_STEP_COUNT_DELTA,
+//                gFitOptions = FitnessOptions.builder()
+//                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                    .build(),
+//                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
+//                duration = 7,
+//                chartType = "Columns",
+//                nCol = 1,
+//                nLines= 0
+//            ),
 
             NavRoutes.Detailed.route + "/3" to ModuleData(
                 mId = 3,
@@ -80,36 +79,32 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_hr_outline,
                 mColor_Primary = Color.rgb(0, 119, 113),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                healthConnectDataType = DataType.TYPE_HEART_RATE_BPM,
-                gFitOptions = FitnessOptions.builder()
-                    .addDataType(DataType.TYPE_HEART_RATE_BPM, FitnessOptions.ACCESS_READ)
-                    .addDataType(DataType.AGGREGATE_HEART_RATE_SUMMARY, FitnessOptions.ACCESS_READ)
-                    .build(),
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
                 chartType = "Combo",
                 nCol = 2,
-                nLines= 1
+                nLines= 1,
+                recordType = HeartRateRecord::class
             ),
-
-            NavRoutes.Detailed.route + "/4" to ModuleData(
-                mId = 4,
-                mName = "Pressure",
-                mUnit = "mmHg",
-                mIcon = R.drawable.ic_bp,
-                mIcon_outlined = R.drawable.ic_bp_outline,
-                mColor_Primary = Color.rgb(55, 138, 215),
-                mColor_Secondary = Color.rgb(103, 60, 79),
-                healthConnectDataType = HealthDataTypes.TYPE_BLOOD_PRESSURE,
-                gFitOptions = FitnessOptions.builder()
-                    .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
-                    .build(),
-                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f, 0f))),
-                duration = 7,
-                chartType = "Columns",
-                nCol = 2,
-                nLines= 0
-            ),
+//
+//            NavRoutes.Detailed.route + "/4" to ModuleData(
+//                mId = 4,
+//                mName = "Pressure",
+//                mUnit = "mmHg",
+//                mIcon = R.drawable.ic_bp,
+//                mIcon_outlined = R.drawable.ic_bp_outline,
+//                mColor_Primary = Color.rgb(55, 138, 215),
+//                mColor_Secondary = Color.rgb(103, 60, 79),
+//                healthConnectDataType = HealthDataTypes.TYPE_BLOOD_PRESSURE,
+//                gFitOptions = FitnessOptions.builder()
+//                    .addDataType(HealthDataTypes.TYPE_BLOOD_PRESSURE, FitnessOptions.ACCESS_READ)
+//                    .build(),
+//                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f, 0f))),
+//                duration = 7,
+//                chartType = "Columns",
+//                nCol = 2,
+//                nLines= 0
+//            ),
 
 //            NavRoutes.Detailed.route + "/5" to ModuleData(
 //                mId = 4,
@@ -131,28 +126,8 @@ class DataProvider {
 //            )
         )
 
-        fun gFitUpdate(context: Context, permission: Boolean){
-            moduleList.values.toList().drop(1).forEach{
-                // Clear all data before recomposition
-                it.dPoints.clear()
 
-                var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
 
-                it.getGFitData(
-                    permission = permission,
-                    context = context,
-                    time_start = Time_Start,
-                    time_end = Time_End
-                )
-                it.getGFitData(
-                    permission = permission,
-                    context = context,
-                    time_start = Time_End,
-                    time_end = Time_Now
-                )
-
-            }
-        }
         fun HealthConnectUpdate(context: Context, permission: Boolean){
             moduleList.values.toList().drop(1).forEach{
                 // Clear all data before recomposition
@@ -160,14 +135,12 @@ class DataProvider {
 
                 var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
 
-                it.getGFitData(z
-                    permission = permission,
+                it.getHealthConnectData(
                     context = context,
                     time_start = Time_Start,
                     time_end = Time_End
                 )
-                it.getGFitData(
-                    permission = permission,
+                it.getHealthConnectData(
                     context = context,
                     time_start = Time_End,
                     time_end = Time_Now

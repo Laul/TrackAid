@@ -1,9 +1,8 @@
 package com.laul.trackaid
 
 
-import android.Manifest
-import android.app.Activity
-import android.util.Log
+//import com.laul.trackaid.views.BottomNavigationBar
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,41 +10,32 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.dp
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.laul.trackaid.connection.BloodGlucoseUpdate
 import com.laul.trackaid.connection.BloodGlucoseUpdate.Companion.connectXDrip
 import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
-import com.laul.trackaid.data.DataProvider.Companion.gFitUpdate
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
-
-//import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
-import com.laul.trackaid.views.TopNavigationBar
-import java.time.LocalDateTime
 import java.util.*
 
 /** Header - Current date + button to retrieve gluco from XDrip and push it to Google Fit
@@ -120,29 +110,48 @@ fun Header() {
  * @param gFitConnectManager: Manager to retrieve Google data
  */
 @Composable
-fun compCommon(gFitConnectManager: GFitConnectManager) {
+fun compCommon() {
+    // Create list of permissions to request
+    val permissionsSet = mutableSetOf<String>()
 
-    val navController = rememberNavController()
-//    compMainModule(gFitConnectManager, navController = navController)
-
-    NavHost(
-        navController = navController,
-        startDestination = NavRoutes.Home.route,
-    ) {
-        composable(NavRoutes.Home.route) {
-            compMainModule(gFitConnectManager, navController = navController)
-        }
-
-        composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
-            val moduleID = backStackEntry.arguments?.getString("moduleID")
-            compDetailedModule(
-                navController = navController,
-                moduleID = moduleID
-            )
-        }
-
+    DataProvider.moduleList.values.toList().drop(1).forEach{
+        permissionsSet.add(HealthPermission.getReadPermission(it.recordType!!))
     }
 
+    // Create the permissions launcher.
+    val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
+
+    var permissionGranted by remember {
+        mutableStateOf(false)
+    }
+
+    val requestPermissions = rememberLauncherForActivityResult(
+        requestPermissionActivityContract
+    ) {
+        granted -> permissionGranted =  granted.containsAll(permissionsSet)
+    }
+
+    if (permissionGranted) {
+        val navController = rememberNavController()
+
+        NavHost(
+            navController = navController,
+            startDestination = NavRoutes.Home.route,
+        ) {
+            composable(NavRoutes.Home.route) {
+                compMainModule(navController = navController)
+            }
+
+            composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
+                val moduleID = backStackEntry.arguments?.getString("moduleID")
+                compDetailedModule(
+                    navController = navController,
+                    moduleID = moduleID
+                )
+            }
+
+        }
+    }
 }
 
 /** View structure for Main screen
@@ -151,7 +160,7 @@ fun compCommon(gFitConnectManager: GFitConnectManager) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compMainModule(gFitConnectManager: GFitConnectManager, navController: NavController) {
+fun compMainModule(navController: NavController) {
 
 
     Scaffold(
