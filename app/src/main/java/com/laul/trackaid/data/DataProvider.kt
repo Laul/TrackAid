@@ -3,12 +3,17 @@ package com.laul.trackaid.data
 import android.content.Context
 import android.graphics.Color
 import androidx.compose.runtime.mutableStateOf
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.time.TimeRangeFilter
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 
 class DataProvider {
@@ -50,42 +55,38 @@ class DataProvider {
 //                nCol = 2,
 //                nLines= 1
 //            ),
-//
-//            NavRoutes.Detailed.route + "/2" to ModuleData(
-//                mId = 2,
-//                mName = "Steps",
-//                mUnit = "steps",
-//                mIcon = R.drawable.ic_steps,
-//                mIcon_outlined = R.drawable.ic_steps_outline,
-//                mColor_Primary = Color.rgb(201, 117, 7),
-//                mColor_Secondary = Color.rgb(103, 60, 79),
-//                healthConnectDataType = TYPE_STEP_COUNT_DELTA,
-//                gFitOptions = FitnessOptions.builder()
-//                    .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-//                    .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
-//                    .build(),
-//                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
-//                duration = 7,
-//                chartType = "Columns",
-//                nCol = 1,
-//                nLines= 0
-//            ),
 
-            NavRoutes.Detailed.route + "/3" to ModuleData(
-                mId = 3,
-                mName = "Heart Rate",
-                mUnit = "bpm",
-                mIcon = R.drawable.ic_hr,
-                mIcon_outlined = R.drawable.ic_hr_outline,
-                mColor_Primary = Color.rgb(0, 119, 113),
+            NavRoutes.Detailed.route + "/2" to ModuleData(
+                mId = 2,
+                mName = "Steps",
+                mUnit = "steps",
+                mIcon = R.drawable.ic_steps,
+                mIcon_outlined = R.drawable.ic_steps_outline,
+                mColor_Primary = Color.rgb(201, 117, 7),
                 mColor_Secondary = Color.rgb(103, 60, 79),
                 lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
                 duration = 7,
-                chartType = "Combo",
-                nCol = 2,
-                nLines= 1,
-                recordType = HeartRateRecord::class
+                chartType = "Columns",
+                nCol = 1,
+                nLines= 0,
+                recordType = StepsRecord::class
             ),
+//
+//            NavRoutes.Detailed.route + "/3" to ModuleData(
+//                mId = 3,
+//                mName = "Heart Rate",
+//                mUnit = "bpm",
+//                mIcon = R.drawable.ic_hr,
+//                mIcon_outlined = R.drawable.ic_hr_outline,
+//                mColor_Primary = Color.rgb(0, 119, 113),
+//                mColor_Secondary = Color.rgb(103, 60, 79),
+//                lastDPoint = mutableStateOf(LDataPoint(0, 0, arrayListOf(0f))),
+//                duration = 7,
+//                chartType = "Combo",
+//                nCol = 2,
+//                nLines= 1,
+//                recordType = HeartRateRecord::class
+//            ),
 //
 //            NavRoutes.Detailed.route + "/4" to ModuleData(
 //                mId = 4,
@@ -128,23 +129,13 @@ class DataProvider {
 
 
 
-        fun HealthConnectUpdate(context: Context, permission: Boolean){
+        suspend fun healthConnectUpdate(client: HealthConnectClient){
+
             moduleList.values.toList().drop(1).forEach{
                 // Clear all data before recomposition
                 it.dPoints.clear()
 
-                var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(duration = it.duration )
-
-                it.getHealthConnectData(
-                    context = context,
-                    time_start = Time_Start,
-                    time_end = Time_End
-                )
-                it.getHealthConnectData(
-                    context = context,
-                    time_start = Time_End,
-                    time_end = Time_Now
-                )
+                it.getHealthConnectData(client)
 
             }
         }

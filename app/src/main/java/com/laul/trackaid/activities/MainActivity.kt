@@ -1,6 +1,7 @@
 package com.laul.trackaid.activities
 
 
+import android.content.Context
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -14,12 +15,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-6
+
         if (HealthConnectClient.sdkStatus(this) == HealthConnectClient.SDK_AVAILABLE) {
             // Health Connect is available.
             setContent {
                 TrackAidTheme{
-                    compCommon()
+                    compCommon(this)
                 }
             }
         } else

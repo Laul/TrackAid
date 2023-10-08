@@ -2,6 +2,7 @@ package com.laul.trackaid
 
 
 //import com.laul.trackaid.views.BottomNavigationBar
+import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.navigation.NavController
@@ -28,7 +30,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.laul.trackaid.connection.BloodGlucoseUpdate.Companion.connectXDrip
-import com.laul.trackaid.connection.GFitConnectManager
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
@@ -36,6 +37,7 @@ import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
+import kotlinx.coroutines.launch
 import java.util.*
 
 /** Header - Current date + button to retrieve gluco from XDrip and push it to Google Fit
@@ -110,7 +112,10 @@ fun Header() {
  * @param gFitConnectManager: Manager to retrieve Google data
  */
 @Composable
-fun compCommon() {
+fun compCommon(context: Context) {
+    // Create client
+    val client = HealthConnectClient.getOrCreate(context = context )
+
     // Create list of permissions to request
     val permissionsSet = mutableSetOf<String>()
 
@@ -120,10 +125,11 @@ fun compCommon() {
 
     // Create the permissions launcher.
     val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
-
     var permissionGranted by remember {
         mutableStateOf(false)
     }
+    // Create a CoroutineScope bound to the request for HealthConnect
+    val coroutineScope = rememberCoroutineScope()
 
     val requestPermissions = rememberLauncherForActivityResult(
         requestPermissionActivityContract
@@ -131,6 +137,24 @@ fun compCommon() {
         granted -> permissionGranted =  granted.containsAll(permissionsSet)
     }
 
+    LaunchedEffect(permissionGranted) {
+        if (!permissionGranted) {
+            coroutineScope.launch {
+                val granted = client.permissionController
+                    .getGrantedPermissions()
+                if (granted.containsAll(permissionsSet)) {
+                    permissionGranted = true
+                    DataProvider.healthConnectUpdate(client )
+
+                } else {
+                    // Permissions not granted, request permissions.
+                    requestPermissions.launch(permissionsSet)
+                }
+            }
+        }
+    }
+
+    // If permissions are granted, we display the home view
     if (permissionGranted) {
         val navController = rememberNavController()
 

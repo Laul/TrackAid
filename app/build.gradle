@@ -48,7 +48,8 @@ android {
 
 dependencies {
     // For Health Connect
-    implementation "androidx.health.connect:connect-client:$health_connect_version"
+     implementation "androidx.health.connect:connect-client:$health_connect_version"
+//    implementation 'androidx.health:health-connect-client:1.0.0-alpha03'
 
     // For viewmodel support
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
@@ -114,6 +115,7 @@ implementation "androidx.compose.material3:material3:$material3_version"
     // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
     implementation "com.patrykandpatrick.vico:compose-m3:1.6.4"
 
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
 
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
 

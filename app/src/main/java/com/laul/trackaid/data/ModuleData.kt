@@ -5,8 +5,14 @@ import android.os.RemoteException
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.Record
+import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.request.ReadRecordsRequest
+import androidx.health.connect.client.time.TimeRangeFilter
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.fitness.Fitness
@@ -23,6 +29,9 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.io.IOException
+import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
@@ -74,12 +83,28 @@ data class ModuleData(
     /** GFit connection to retrieve fit data
      * @param duration: duration to cover (default: last 7 days)
      */
-    fun getHealthConnectData(
-        context: Context,
-        time_start: Long,
-        time_end: Long
+    suspend fun getHealthConnectData(
+        client: HealthConnectClient
     ) {
 
+        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+        val now = Instant.now()
+        val start = startOfDay.toInstant().minus(duration.toLong(), ChronoUnit.DAYS)
+
+        val request = ReadRecordsRequest(
+            recordType = StepsRecord::class,
+            timeRangeFilter = TimeRangeFilter.between(start, now)
+        )
+
+
+        val response =  client.readRecords(request)
+        val values = response.records
+        val numberOfStepsToday = client.readRecords(request)
+            .records
+            .sumOf { it.count }
+            recordType
+
+    //
 //
 //        // Default request using ".read" - For steps, we need to use ".aggregate"
 //
@@ -98,9 +123,9 @@ data class ModuleData(
 //                .build()
 //        }
 //
-//        if (mName == "Heart Rate") {
-//            Log.i("Heart Rate Req", gFitReq.toString())
-//        }
+        if (mName == "Steps") {
+            Log.i("Heart Rate Req", numberOfStepsToday.toString())
+        }
 //        if (permission) {
 //            Fitness.getHistoryClient(
 //                context,
