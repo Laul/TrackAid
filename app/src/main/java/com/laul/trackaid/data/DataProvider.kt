@@ -12,6 +12,8 @@ import com.google.android.gms.fitness.data.DataType
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
+import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
@@ -71,7 +73,7 @@ class DataProvider {
                 nLines= 0,
                 recordType = StepsRecord::class
             ),
-//
+
 //            NavRoutes.Detailed.route + "/3" to ModuleData(
 //                mId = 3,
 //                mName = "Heart Rate",
@@ -131,11 +133,22 @@ class DataProvider {
 
         suspend fun healthConnectUpdate(client: HealthConnectClient){
 
+
             moduleList.values.toList().drop(1).forEach{
+
+                // Create dates as Instants for HealthConnect
+                val now = Instant.now()
+                val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
+                val start = startOfDay.toInstant().minus(it.duration.toLong(), ChronoUnit.DAYS)
+
+                // Convert to localDateTime  for aggregation
+                val nowLocal = LocalDateTime.ofInstant(now, java.time.ZoneId.systemDefault())
+                val startLocal = LocalDateTime.ofInstant(start, java.time.ZoneId.systemDefault())
+
                 // Clear all data before recomposition
                 it.dPoints.clear()
-
-                it.getHealthConnectData(client)
+                 it.getHealthConnectData(client, nowLocal, startLocal)
+                it.aggregateStepsIntoDays(client,nowLocal, startLocal)
 
             }
         }

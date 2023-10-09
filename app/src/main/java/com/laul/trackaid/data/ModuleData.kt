@@ -8,9 +8,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 
@@ -28,9 +31,11 @@ import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
-import java.io.IOException
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.Period
 import java.time.ZonedDateTime
+
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -84,57 +89,50 @@ data class ModuleData(
      * @param duration: duration to cover (default: last 7 days)
      */
     suspend fun getHealthConnectData(
-        client: HealthConnectClient
+        client: HealthConnectClient,
+        now: LocalDateTime,
+        start: LocalDateTime
     ) {
-
-        val startOfDay = ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS)
-        val now = Instant.now()
-        val start = startOfDay.toInstant().minus(duration.toLong(), ChronoUnit.DAYS)
 
         val request = ReadRecordsRequest(
             recordType = StepsRecord::class,
             timeRangeFilter = TimeRangeFilter.between(start, now)
         )
 
+        val records = client.readRecords(request).records
 
-        val response =  client.readRecords(request)
-        val values = response.records
-        val numberOfStepsToday = client.readRecords(request)
-            .records
-            .sumOf { it.count }
-            recordType
 
-    //
-//
-//        // Default request using ".read" - For steps, we need to use ".aggregate"
-//
-//        var gFitReq = DataReadRequest.Builder()
-//            .read(healthConnectDataType!!)
-//            .bucketByTime(1, TimeUnit.DAYS)
-//            .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
-//            .build()
-//
-//        if (mName == "Steps") {
-//            // Request for past (completed) days / hours
-//            gFitReq = DataReadRequest.Builder()
-//                .aggregate(healthConnectDataType)
-//                .bucketByTime(1, TimeUnit.DAYS)
-//                .setTimeRange(time_start, time_end, TimeUnit.MILLISECONDS)
-//                .build()
-//        }
-//
         if (mName == "Steps") {
-            Log.i("Heart Rate Req", numberOfStepsToday.toString())
+//            Log.i("Heart Rate Req", numberOfStepsToday.toString())
+            Log.i("StepsTo", records.toString())
         }
-//        if (permission) {
-//            Fitness.getHistoryClient(
-//                context,
-//                GoogleSignIn.getAccountForExtension(context, gFitOptions!!)
-//            )
-//                .readData(gFitReq)
-//                .addOnSuccessListener { response -> formatDatapoint(response) }
-//                .addOnFailureListener { response -> Log.i("Response", response.toString()) }
-//        }
+
+    }
+
+
+    suspend fun aggregateStepsIntoDays(
+        healthConnectClient: HealthConnectClient,
+        now: LocalDateTime,
+        start: LocalDateTime
+    ) {
+        try {
+            val response =
+                healthConnectClient.aggregateGroupByPeriod(
+                    AggregateGroupByPeriodRequest(
+                        metrics = setOf(StepsRecord.COUNT_TOTAL),
+                        timeRangeFilter = TimeRangeFilter.between(start, now),
+                        timeRangeSlicer = Period.ofDays(1)
+                    )
+                )
+            for (monthlyResult in response) {
+                // The result may be null if no data is available in the time range
+                val totalSteps = monthlyResult.result[StepsRecord.COUNT_TOTAL]
+                Log.i("StepsTotal: " , totalSteps.toString())
+            }
+        } catch (e: Exception) {
+            Log.i("StepsToException:" , e.toString())
+            // Run error handling here
+        }
     }
 
 
