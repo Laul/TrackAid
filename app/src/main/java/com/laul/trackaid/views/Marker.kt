@@ -29,7 +29,7 @@ import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
 import com.patrykandpatrick.vico.core.chart.insets.Insets
-import com.patrykandpatrick.vico.core.chart.segment.SegmentProperties
+//import com.patrykandpatrick.vico.core.chart.segment.SegmentProperties
 import com.patrykandpatrick.vico.core.component.marker.MarkerComponent
 import com.patrykandpatrick.vico.core.component.shape.DashedShape
 import com.patrykandpatrick.vico.core.component.shape.ShapeComponent
@@ -84,15 +84,15 @@ internal fun rememberMarker(): Marker {
                         setShadow(radius = INDICATOR_CENTER_COMPONENT_SHADOW_RADIUS, color = entryColor)
                     }
                 }
-                labelFormatter = CustomMarkerLabelFormatter
+                // labelFormatter = CustomMarkerLabelFormatter
             }
 
-            override fun getInsets(context: MeasureContext, outInsets: Insets, segmentProperties: SegmentProperties) =
-                with(context) {
-                    outInsets.top = label.getHeight(context) + labelBackgroundShape.tickSizeDp.pixels +
-                        LABEL_BACKGROUND_SHADOW_RADIUS.pixels * SHADOW_RADIUS_MULTIPLIER -
-                        LABEL_BACKGROUND_SHADOW_DY.pixels
-                }
+//            override fun getInsets(context: MeasureContext, outInsets: Insets, segmentProperties: SegmentProperties) =
+//                with(context) {
+//                    outInsets.top = label.getHeight(context) + labelBackgroundShape.tickSizeDp.pixels +
+//                        LABEL_BACKGROUND_SHADOW_RADIUS.pixels * SHADOW_RADIUS_MULTIPLIER -
+//                        LABEL_BACKGROUND_SHADOW_DY.pixels
+//                }
         }
     }
 }

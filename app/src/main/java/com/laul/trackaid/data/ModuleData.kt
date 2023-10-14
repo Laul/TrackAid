@@ -1,46 +1,34 @@
 package com.laul.trackaid.data
 
-import android.content.Context
-import android.os.RemoteException
 import android.util.Log
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.WeightRecord
-import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
-
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.fitness.Fitness
-import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.data.DataType
 import com.google.android.gms.fitness.data.Field
 import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.android.gms.fitness.data.HealthFields
-import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
-import java.time.Instant
+import com.patrykandpatrick.vico.core.extension.setFieldValue
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
-import java.time.ZonedDateTime
-
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
+
 
 data class ModuleData(
     val mId: Int,
@@ -65,12 +53,16 @@ data class ModuleData(
     var cFloatEntries_Lines = arrayListOf<ArrayList<FloatEntry>>()
     var cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
     var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
-    var bottomAxisValues = listOf("")
+
+    var bottomAxisValues = arrayListOf("")
 
 
 
     // Init variables
     init {
+
+
+
         if (nCol>0) {
             for (i in 0 until nCol+1 ) {
                 cFloatEntries_Columns.add(arrayListOf<FloatEntry>())
@@ -91,7 +83,8 @@ data class ModuleData(
     suspend fun getHealthConnectData(
         client: HealthConnectClient,
         now: LocalDateTime,
-        start: LocalDateTime
+        start: LocalDateTime,
+        listOfDates: ArrayList<LocalDateTime>
     ) {
 
         val request = ReadRecordsRequest(
@@ -103,7 +96,6 @@ data class ModuleData(
 
 
         if (mName == "Steps") {
-//            Log.i("Heart Rate Req", numberOfStepsToday.toString())
             Log.i("StepsTo", records.toString())
         }
 
@@ -113,27 +105,46 @@ data class ModuleData(
     suspend fun aggregateStepsIntoDays(
         healthConnectClient: HealthConnectClient,
         now: LocalDateTime,
-        start: LocalDateTime
+        start: LocalDateTime,
+        listOfDates: ArrayList<LocalDateTime>
+
     ) {
-        try {
-            val response =
-                healthConnectClient.aggregateGroupByPeriod(
-                    AggregateGroupByPeriodRequest(
-                        metrics = setOf(StepsRecord.COUNT_TOTAL),
-                        timeRangeFilter = TimeRangeFilter.between(start, now),
-                        timeRangeSlicer = Period.ofDays(1)
-                    )
-                )
-            for (monthlyResult in response) {
-                // The result may be null if no data is available in the time range
-                val totalSteps = monthlyResult.result[StepsRecord.COUNT_TOTAL]
-                Log.i("StepsTotal: " , totalSteps.toString())
+        cFloatEntries_Columns.forEach { item ->
+            item.clear()
+            for (i in 0 until listOfDates.size) {
+                item.add(entryOf(item.size, 0f))
             }
-        } catch (e: Exception) {
-            Log.i("StepsToException:" , e.toString())
-            // Run error handling here
         }
-    }
+
+            try {
+                val response =
+                    healthConnectClient.aggregateGroupByPeriod(
+                        AggregateGroupByPeriodRequest(
+                            metrics = setOf(StepsRecord.COUNT_TOTAL),
+                            timeRangeFilter = TimeRangeFilter.between(start, now),
+                            timeRangeSlicer = Period.ofDays(1)
+                        )
+                    )
+                for (result in response) {
+                    var idDay = listOfDates.indexOf(result.startTime)
+                    // The result may be null if no data is available in the time range
+                    val totalSteps = result.result[StepsRecord.COUNT_TOTAL]
+                    bottomAxisValues.add(result.startTime.dayOfWeek.name)
+
+                    // Columns from 0 to the total number of steps
+                    cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(totalSteps!!.toFloat()) as FloatEntry
+                    Log.i("StepsTotal: ", totalSteps.toString())
+                }
+            } catch (e: Exception) {
+                Log.i("StepsToException:", e.toString())
+                // Run error handling here
+            }
+
+            cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
+            lastDPoint!!.value = LDataPoint(0, 0, arrayListOf(1f))
+        }
+
+
 
 
     fun formatDatapoint(response: DataReadResponse) {
@@ -244,7 +255,7 @@ data class ModuleData(
 
         // Update Call timestamp to force recomposition
         formatDPoints()
-        bottomAxisValues = distinctDate
+        //bottomAxisValues = distinctDate
         lastDPoint!!.value = getLastData()
 
     }
@@ -260,7 +271,7 @@ data class ModuleData(
 
 
     fun formatDPoints() {
-//
+// Clear data
         cFloatEntries_Columns.forEach{ item -> item.clear()}
         cFloatEntries_Lines.forEach{ item -> item.clear()}
 

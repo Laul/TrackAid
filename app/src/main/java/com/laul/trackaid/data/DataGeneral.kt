@@ -1,7 +1,9 @@
 package com.laul.trackaid.data
 
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
+import kotlin.collections.ArrayList
 
 class DataGeneral {
 
@@ -42,12 +44,5 @@ class DataGeneral {
         }
 
 
-
-        fun getDaysAgo(daysAgo: Int): Date {
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DAY_OF_YEAR, -daysAgo)
-
-            return calendar.time
-        }
     }
 }

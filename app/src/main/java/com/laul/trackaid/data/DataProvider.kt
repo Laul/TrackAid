@@ -145,10 +145,16 @@ class DataProvider {
                 val nowLocal = LocalDateTime.ofInstant(now, java.time.ZoneId.systemDefault())
                 val startLocal = LocalDateTime.ofInstant(start, java.time.ZoneId.systemDefault())
 
+                var listOfDates = arrayListOf<LocalDateTime>()
+                for (i in 0 until it.duration+1 ){
+                    listOfDates.add(LocalDateTime.ofInstant(start.plus(i.toLong(), ChronoUnit.DAYS) , java.time.ZoneId.systemDefault()))
+                }
+
+
                 // Clear all data before recomposition
                 it.dPoints.clear()
-                 it.getHealthConnectData(client, nowLocal, startLocal)
-                it.aggregateStepsIntoDays(client,nowLocal, startLocal)
+                 it.getHealthConnectData(client, nowLocal, startLocal,listOfDates)
+                it.aggregateStepsIntoDays(client,nowLocal, startLocal,listOfDates)
 
             }
         }
