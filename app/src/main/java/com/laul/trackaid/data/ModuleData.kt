@@ -19,9 +19,11 @@ import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import com.patrykandpatrick.vico.core.extension.setFieldValue
+import java.text.DateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
+import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -54,14 +56,10 @@ data class ModuleData(
     var cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
     var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
 
-    var bottomAxisValues = arrayListOf("")
+    var bottomAxisValues = ArrayList<String>()
 
-
-
-    // Init variables
+    // Init variables to set the size of the buckets.
     init {
-
-
 
         if (nCol>0) {
             for (i in 0 until nCol+1 ) {
@@ -115,34 +113,37 @@ data class ModuleData(
                 item.add(entryOf(item.size, 0f))
             }
         }
-
-            try {
-                val response =
-                    healthConnectClient.aggregateGroupByPeriod(
-                        AggregateGroupByPeriodRequest(
-                            metrics = setOf(StepsRecord.COUNT_TOTAL),
-                            timeRangeFilter = TimeRangeFilter.between(start, now),
-                            timeRangeSlicer = Period.ofDays(1)
-                        )
-                    )
-                for (result in response) {
-                    var idDay = listOfDates.indexOf(result.startTime)
-                    // The result may be null if no data is available in the time range
-                    val totalSteps = result.result[StepsRecord.COUNT_TOTAL]
-                    bottomAxisValues.add(result.startTime.dayOfWeek.name)
-
-                    // Columns from 0 to the total number of steps
-                    cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(totalSteps!!.toFloat()) as FloatEntry
-                    Log.i("StepsTotal: ", totalSteps.toString())
-                }
-            } catch (e: Exception) {
-                Log.i("StepsToException:", e.toString())
-                // Run error handling here
-            }
-
-            cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
-            lastDPoint!!.value = LDataPoint(0, 0, arrayListOf(1f))
+        listOfDates.forEach {
+            bottomAxisValues.add(it.format(DateTimeFormatter.ofPattern("EEE")))
         }
+
+        try {
+            val response =
+                healthConnectClient.aggregateGroupByPeriod(
+                    AggregateGroupByPeriodRequest(
+                        metrics = setOf(StepsRecord.COUNT_TOTAL),
+                        timeRangeFilter = TimeRangeFilter.between(start, now),
+                        timeRangeSlicer = Period.ofDays(1)
+                    )
+                )
+            for (result in response) {
+                var idDay = listOfDates.indexOf(result.startTime)
+                // The result may be null if no data is available in the time range
+                val totalSteps = result.result[StepsRecord.COUNT_TOTAL]
+
+
+                // Columns from 0 to the total number of steps
+                cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(totalSteps!!.toFloat()) as FloatEntry
+                Log.i("StepsTotal: ", totalSteps.toString())
+            }
+        } catch (e: Exception) {
+            Log.i("StepsToException:", e.toString())
+            // Run error handling here
+        }
+
+        cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
+        lastDPoint!!.value = LDataPoint(0, 0, arrayListOf(1f))
+    }
 
 
 

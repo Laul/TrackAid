@@ -47,7 +47,14 @@ fun compChart(
 
                 chart = getColumnChart(module = module, isBottomAxis),
                 model = module.cChartModel_Columns,
-
+                bottomAxis = if (isBottomAxis) bottomAxis(
+                    guideline = null,
+                    valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+                    titleComponent = textComponent(
+                        padding = dimensionsOf(2.dp, 2.dp),
+                        margins = dimensionsOf(2.dp),
+                    )
+                ) else null,
             )
         }
         if (module.chartType == "Line") {
@@ -58,8 +65,15 @@ fun compChart(
                     ),
                 marker =rememberMarker(),
                 model = module.cChartModel_Columns,
-                autoScaleUp = AutoScaleUp.Full
-
+                autoScaleUp = AutoScaleUp.Full,
+                bottomAxis = if (isBottomAxis) bottomAxis(
+                    guideline = null,
+                    valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+                    titleComponent = textComponent(
+                        padding = dimensionsOf(2.dp, 2.dp),
+                        margins = dimensionsOf(2.dp),
+                    )
+                ) else null,
             )
 
         }
