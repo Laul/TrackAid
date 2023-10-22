@@ -27,6 +27,7 @@ import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.Component
+import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import kotlinx.coroutines.supervisorScope
 
@@ -38,12 +39,12 @@ import kotlinx.coroutines.supervisorScope
 fun compChart(
     module: ModuleData,
     isBottomAxis: Boolean
-){
+) {
     androidx.compose.material.Surface {
         if (module.chartType == "Columns") {
             Chart(
                 autoScaleUp = AutoScaleUp.Full,
-                marker =rememberMarker(),
+                marker = rememberMarker(),
 
                 chart = getColumnChart(module = module, isBottomAxis),
                 model = module.cChartModel_Columns,
@@ -62,8 +63,8 @@ fun compChart(
                 chart = getLineChart(
                     module = module,
                     type = "Line"
-                    ),
-                marker =rememberMarker(),
+                ),
+                marker = rememberMarker(),
                 model = module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
                 bottomAxis = if (isBottomAxis) bottomAxis(
@@ -79,9 +80,12 @@ fun compChart(
         }
         if (module.chartType == "Combo") {
             Chart(
-                chart = getLineChart(module = module, type = "Points") + getColumnChart(module =module, isBottomAxis),
-                marker =rememberMarker(),
-                model = module.cChartModel_Lines + module.cChartModel_Columns ,
+                chart = getLineChart(
+                    module = module,
+                    type = "Points"
+                ) + getColumnChart(module = module, isBottomAxis),
+                marker = rememberMarker(),
+                model = module.cChartModel_Lines + module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
 
 //                startAxis = startAxis(
@@ -113,10 +117,8 @@ fun compChart(
  * @param module: module from DataProvider data class
  */
 @Composable
-fun compChart_Detailed(module: ModuleData){
+fun compChart_Detailed(module: ModuleData) {
 }
-
-
 
 
 /** LineChart creation and display set-up
@@ -131,15 +133,20 @@ fun getLineChart(
 ): LineChart = com.patrykandpatrick.vico.compose.chart.line.lineChart(
     lines = listOf(
         com.patrykandpatrick.vico.compose.chart.line.lineSpec(
-            lineColor = if (type == "Line" ) Color(module.mColor_Primary!!) else Color.Transparent,
-            lineThickness = if (type == "Line" ) 2.dp else 0.dp,
-            pointSize = if (type == "Line" ) 0.dp else 7.dp,
+            lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
+            lineThickness = if (type == "Line") 2.dp else 0.dp,
+            pointSize = if (type == "Line") 0.dp else 7.dp,
             point = shapeComponent(shape = Shapes.pillShape),
             lineBackgroundShader =
-                if (type == "Line" )
-                    verticalGradient( arrayOf(Color(module.mColor_Primary!!), Color(module.mColor_Primary!!).copy(alpha = 0f)))
-                else
-                    null,
+            if (type == "Line")
+                verticalGradient(
+                    arrayOf(
+                        Color(module.mColor_Primary!!),
+                        Color(module.mColor_Primary!!).copy(alpha = 0f)
+                    )
+                )
+            else
+                null,
         ),
     ),
     spacing = 5.dp
@@ -149,25 +156,49 @@ fun getLineChart(
 @Composable
 fun getColumnChart(
     module: ModuleData,
-    isBottomAxis : Boolean
-): ColumnChart = columnChart(
-    columns = listOf(
-        lineComponent(
-            color =Color.Transparent,
-            thickness = 8.dp,
-            shape = RoundedCornerShape(4.dp),
-            dynamicShader = verticalGradient(arrayOf(Color(module.mColor_Primary!!), Color(module.mColor_Primary!!).copy(alpha = 0.1f))),
-        ),
-        lineComponent(
-            thickness = 8.dp,
-            shape = RoundedCornerShape(4.dp),
-            color = Color(module.mColor_Primary!!),
-            dynamicShader = verticalGradient(arrayOf(Color(module.mColor_Primary!!), Color(module.mColor_Primary!!).copy(alpha = 0.3f), Color(module.mColor_Primary!!))),
+    isBottomAxis: Boolean
+): ColumnChart {
+    var columns = arrayListOf<LineComponent>()
 
-            ),
+    for (i in 0 until module.nCol) {
+        if (module.nCol== 1 || i % 2 == 1) {
+            columns.add(
+                lineComponent(
+                    thickness = 8.dp,
+                    shape = RoundedCornerShape(4.dp),
+                    color = Color(module.mColor_Primary!!),
+                    dynamicShader = verticalGradient(
+                        arrayOf(
+                            Color(module.mColor_Primary!!),
+                            Color(module.mColor_Primary!!).copy(alpha = 0.3f),
+                            Color(module.mColor_Primary!!)
+                        )
+                    ),
+                )
+            )
+        } else {
+            columns.add(
 
-    ),
-    spacing = 9.dp,
-    mergeMode = ColumnChart.MergeMode.Stack,
-)
+                lineComponent(
+                    color = Color.Transparent,
+                    thickness = 8.dp,
+                    shape = RoundedCornerShape(4.dp),
+                    dynamicShader = verticalGradient(
+                        arrayOf(
+                            Color(module.mColor_Primary!!),
+                            Color(module.mColor_Primary!!).copy(alpha = 0.1f)
+                        )
 
+                    ),
+                )
+            )
+        }
+    }
+
+    return columnChart(
+        columns = columns,
+        spacing = 9.dp,
+        mergeMode = ColumnChart.MergeMode.Stack,
+    )
+
+}

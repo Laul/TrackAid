@@ -29,7 +29,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.laul.trackaid.connection.BloodGlucoseUpdate.Companion.connectXDrip
 import com.laul.trackaid.data.DataGeneral
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
@@ -98,7 +97,6 @@ fun Header() {
                 .size(90.dp)
                 .clickable(
                     onClick = {
-                        connectXDrip(ctx)
 
                     }
                 ),
@@ -109,7 +107,6 @@ fun Header() {
 }
 
 /** Navhost management : dispatch to proper view
- * @param gFitConnectManager: Manager to retrieve Google data
  */
 @Composable
 fun compCommon(context: Context) {
@@ -179,7 +176,6 @@ fun compCommon(context: Context) {
 }
 
 /** View structure for Main screen
- * @param gFitConnectManager: Manager to retrieve Google data
  * @param navController: Manager for bottom navigation bar
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -188,6 +184,7 @@ fun compMainModule(navController: NavController) {
 
 
     Scaffold(
+        containerColor = color_surface_background,
         topBar = { Header() },
         content = { innerPadding -> compModules( navController, innerPadding) },
         bottomBar = { BottomNavigationBar(navController) }
@@ -309,7 +306,7 @@ private fun compModule(
                         top = dimensionResource(id = R.dimen.padding_mid)
                     )
                     .weight(.25f),
-                text = getDate(lastDPoint!!.value.dateMillis_bucket, "EEE, MMM d\nh:mm a"),
+                text = lastDPoint!!.value.date,
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.bodySmall,
                 color = color_text_secondary
@@ -341,9 +338,11 @@ private fun compModule(
 
                     if (module.mName == "Glucose") {
                         "%.2f".format(lastDPoint!!.value.value[0])
-                    } else if (module.mName == "Pressure") {
-                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
-                    } else {
+                    }
+                    //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                //    }
+            else {
                         "%.0f".format(lastDPoint!!.value.value[0])
                     },
                     style = MaterialTheme.typography.displayMedium,
