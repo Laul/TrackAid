@@ -28,6 +28,12 @@ fun TopNavigationBar(navController: NavController, moduleID: String?) {
 
 
     TopAppBar(
+        colors = TopAppBarColors(
+            containerColor = color_surface_background,
+            scrolledContainerColor = color_text_primary,
+            navigationIconContentColor = color_text_primary ,
+            titleContentColor = color_text_primary,
+            actionIconContentColor = color_text_primary),
         title = {
 
             Text(

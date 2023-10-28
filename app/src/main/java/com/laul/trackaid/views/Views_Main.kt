@@ -365,7 +365,7 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module , isBottomAxis =false)
+            compChart(module = module , isBottomAxis =false, backgroundColor = color_general_white)
             Spacer(modifier = Modifier.width(10.dp))
 
         }

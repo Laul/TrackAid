@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -21,11 +23,13 @@ import com.google.android.gms.fitness.data.HealthDataTypes
 import com.google.android.gms.fitness.data.HealthFields
 import com.google.android.gms.fitness.result.DataReadResponse
 import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.data.DataGeneral.Companion.createTimes
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.lang.Float.max
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.Period
@@ -84,9 +88,7 @@ data class ModuleData(
      * @param healthConnectClient: client to retrieve healthconnect data
      */
     suspend fun getGlucoseData(healthConnectClient: HealthConnectClient){
-        val now = LocalDateTime.now()
-        val startOfDay = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS)
-        val start = startOfDay.minus(duration.toLong(), ChronoUnit.DAYS)
+        val (start, now) = createTimes(duration)
 
         val request = ReadRecordsRequest(
             recordType = BloodGlucoseRecord::class,
@@ -118,7 +120,7 @@ data class ModuleData(
 
         cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
         cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
-        lastDPoint!!.value = getLastData()
+        lastDPoint!!.value = getLastData(healthConnectClient)
     }
 
 
@@ -145,15 +147,11 @@ data class ModuleData(
      */
     suspend fun getHealthConnectData(
         healthConnectClient: HealthConnectClient,
+        durationSlicer : Duration
     ) {
+        val (start, now) = createTimes(duration)
 
-        // Create dates as Instants for HealthConnect
-        val now = LocalDateTime.now()
-        val startOfDay = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS)
-        val start = startOfDay.minus(duration.toLong(), ChronoUnit.DAYS)
-
-
-       var response = listOf<AggregationResultGroupedByPeriod>()
+       var response = listOf<AggregationResultGroupedByDuration>()
        var metrics = setOf<AggregateMetric<*>>()
 
        if (mName == "Steps") {metrics = setOf(StepsRecord.COUNT_TOTAL)}
@@ -162,11 +160,11 @@ data class ModuleData(
 
        try {
            response =
-                healthConnectClient.aggregateGroupByPeriod(
-                    AggregateGroupByPeriodRequest(
+                healthConnectClient.aggregateGroupByDuration(
+                    AggregateGroupByDurationRequest(
                         metrics = metrics,
                         timeRangeFilter = TimeRangeFilter.between(start, now),
-                        timeRangeSlicer = Period.ofDays(1)
+                        timeRangeSlicer = durationSlicer
                     )
                 )
         }
@@ -177,6 +175,7 @@ data class ModuleData(
         }
 
         formatData(start, response)
+        lastDPoint!!.value = getLastData(healthConnectClient)
 
 
     }
@@ -215,11 +214,11 @@ data class ModuleData(
      * @param start:  Date of start of daily values (between start and now)
      * @param response: response of aggregated data from health connect
      */
-    suspend private fun formatData(start: LocalDateTime, response: List<AggregationResultGroupedByPeriod>) {
+    suspend private fun formatData(start: LocalDateTime, response: List<AggregationResultGroupedByDuration>) {
         val listOfDates = createDateList(start)
 
         for (result in response) {
-            var idDay = listOfDates.indexOf(result.startTime)
+            var idDay = listOfDates.indexOf(LocalDateTime.ofInstant(result.startTime, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS))
 
             if (mName == "Steps") {
                 // Columns from 0 to the total number of steps
@@ -258,7 +257,6 @@ data class ModuleData(
             }
             cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
             cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
-            lastDPoint!!.value = getLastData()
         }
     }
 
@@ -268,9 +266,36 @@ data class ModuleData(
      * @param start:  Date of start of daily values (between start and now)
      * @param response: response of aggregated data from health connect
      */
-    fun getLastData(): LDataPoint {
+    suspend fun getLastData(healthConnectClient: HealthConnectClient): LDataPoint {
+        val (start, now) = createTimes(duration)
 
-        return LDataPoint("", arrayListOf(0f, 0f))
+        val request = ReadRecordsRequest(
+            recordType = recordType!!,
+            timeRangeFilter = TimeRangeFilter.between(start, now),
+            ascendingOrder = false,
+            pageSize = 1
+        )
+
+        val response = healthConnectClient.readRecords(request)
+        val records = response.records
+
+        var value = arrayListOf<Float>()
+        var date =LocalDateTime.now()
+
+        if (mName== "Steps") {
+            value.add(cFloatEntries_Columns[0].last().y)
+            date = now
+        }
+
+        else if (mName== "Glucose") {
+            value.add((records[0] as BloodGlucoseRecord).level.inMillimolesPerLiter.toFloat())
+            date = LocalDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
+        }
+        else if (mName== "Heart Rate") {
+            value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
+            date = LocalDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
+        }
+        return LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd - hh:mm a")),  value)
     }
 
 

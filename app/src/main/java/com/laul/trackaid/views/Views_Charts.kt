@@ -1,13 +1,16 @@
 package com.laul.trackaid
 
 import android.graphics.Typeface
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
@@ -38,14 +41,15 @@ import kotlinx.coroutines.supervisorScope
 @Composable
 fun compChart(
     module: ModuleData,
-    isBottomAxis: Boolean
+    isBottomAxis: Boolean,
+    backgroundColor: Color
 ) {
     androidx.compose.material.Surface {
-        if (module.chartType == "Columns") {
+            if (module.chartType == "Columns") {
             Chart(
                 autoScaleUp = AutoScaleUp.Full,
                 marker = rememberMarker(),
-
+                modifier = Modifier.background(backgroundColor),
                 chart = getColumnChart(module = module, isBottomAxis),
                 model = module.cChartModel_Columns,
                 bottomAxis = if (isBottomAxis) bottomAxis(
@@ -64,6 +68,8 @@ fun compChart(
                     module = module,
                     type = "Line"
                 ),
+                modifier = Modifier.background(backgroundColor),
+
                 marker = rememberMarker(),
                 model = module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
@@ -85,6 +91,8 @@ fun compChart(
                     type = "Points"
                 ) + getColumnChart(module = module, isBottomAxis),
                 marker = rememberMarker(),
+                modifier = Modifier.background(backgroundColor),
+
                 model = module.cChartModel_Lines + module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
 

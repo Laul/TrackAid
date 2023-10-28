@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_primary
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
@@ -51,6 +52,7 @@ import com.patrykandpatrick.vico.core.marker.Marker
 @Composable
 fun compDetailedModule(navController: NavHostController, moduleID : String?){
     Scaffold(
+        containerColor = color_surface_background,
         topBar = { TopNavigationBar(navController, moduleID) },
         content = {innerPadding -> compDetailed(navController, innerPadding, moduleID) },
         bottomBar = {BottomNavigationBar(navController)}
@@ -59,8 +61,16 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 
 @Composable
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
-    Column(modifier = Modifier.padding(innerPaddingValues)) {
-        compChart(module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! , isBottomAxis = true)
+    Row(
+        modifier = Modifier
+            .padding(innerPaddingValues)
+            .background(color_surface_background)
+    ) {
+        compChart(
+            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! ,
+            isBottomAxis = true,
+            backgroundColor = color_surface_background
+            )
 
     }
 

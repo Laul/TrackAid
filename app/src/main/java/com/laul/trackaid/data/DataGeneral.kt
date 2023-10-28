@@ -2,6 +2,7 @@ package com.laul.trackaid.data
 
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -26,6 +27,13 @@ class DataGeneral {
             return listOf(TimeNowInMilli, TimeStartInMilli, TimeEndInMilli)
         }
 
+        fun createTimes(duration: Int): List<LocalDateTime>{
+            val now = LocalDateTime.now()
+            val startOfDay = LocalDateTime.now().truncatedTo(ChronoUnit.DAYS)
+            val start = startOfDay.minus(duration.toLong(), ChronoUnit.DAYS)
+
+            return listOf(start, now)
+        }
 
         /**
          * Return date in specified format.

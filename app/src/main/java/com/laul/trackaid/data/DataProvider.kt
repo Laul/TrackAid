@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.StepsRecord
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
+import java.time.Duration
 
 
 class DataProvider {
@@ -79,23 +80,23 @@ class DataProvider {
                 nLines= 1,
                 recordType = HeartRateRecord::class
             ),
-
-            NavRoutes.Detailed.route + "/4" to ModuleData(
-                mId = 4,
-                mName = "Pressure",
-                mUnit = "mmHg",
-                mIcon = R.drawable.ic_bp,
-                mIcon_outlined = R.drawable.ic_bp_outline,
-                mColor_Primary = Color.rgb(55, 138, 215),
-                mColor_Secondary = Color.rgb(103, 60, 79),
-                lastDPoint = mutableStateOf(LDataPoint("",  arrayListOf(0f, 0f))),
-                duration = 7,
-                chartType = "Combo",
-                nCol = 4,
-                nLines= 2,
-                recordType = BloodPressureRecord::class
-
-            ),
+//
+//            NavRoutes.Detailed.route + "/4" to ModuleData(
+//                mId = 4,
+//                mName = "Pressure",
+//                mUnit = "mmHg",
+//                mIcon = R.drawable.ic_bp,
+//                mIcon_outlined = R.drawable.ic_bp_outline,
+//                mColor_Primary = Color.rgb(55, 138, 215),
+//                mColor_Secondary = Color.rgb(103, 60, 79),
+//                lastDPoint = mutableStateOf(LDataPoint("",  arrayListOf(0f, 0f))),
+//                duration = 7,
+//                chartType = "Combo",
+//                nCol = 4,
+//                nLines= 2,
+//                recordType = BloodPressureRecord::class
+//
+//            ),
 
 //            NavRoutes.Detailed.route + "/5" to ModuleData(
 //                mId = 4,
@@ -125,7 +126,7 @@ class DataProvider {
                 if (it.mName == "Glucose") {
                     it.getGlucoseData(client)
                 } else {
-                    it.getHealthConnectData(client)
+                    it.getHealthConnectData(client, Duration.ofDays(1))
                 }
 
             }
