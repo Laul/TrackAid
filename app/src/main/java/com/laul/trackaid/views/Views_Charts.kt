@@ -1,16 +1,12 @@
 package com.laul.trackaid
 
-import android.graphics.Typeface
 import androidx.compose.foundation.background
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.ModuleData
-import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
@@ -22,17 +18,13 @@ import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
-import com.patrykandpatrick.vico.core.axis.AxisPosition
-import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.column.ColumnChart
 import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
-import com.patrykandpatrick.vico.core.component.Component
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
-import kotlinx.coroutines.supervisorScope
 
 
 /** Chart section in main view for each card module
@@ -42,10 +34,11 @@ import kotlinx.coroutines.supervisorScope
 fun compChart(
     module: ModuleData,
     isBottomAxis: Boolean,
+    isLeftAxis: Boolean,
     backgroundColor: Color
 ) {
     androidx.compose.material.Surface {
-            if (module.chartType == "Columns") {
+        if (module.chartType == "Columns") {
             Chart(
                 autoScaleUp = AutoScaleUp.Full,
                 marker = rememberMarker(),
@@ -60,6 +53,16 @@ fun compChart(
                         margins = dimensionsOf(2.dp),
                     )
                 ) else null,
+                startAxis =  if (isLeftAxis) startAxis(
+                    guideline = null,
+                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+                    titleComponent = textComponent(
+                        padding = dimensionsOf(2.dp, 2.dp),
+                        margins = dimensionsOf(2.dp),
+                    ),
+                    title = module.mUnit,
+                ) else null,
+
             )
         }
         if (module.chartType == "Line") {
@@ -96,16 +99,16 @@ fun compChart(
                 model = module.cChartModel_Lines + module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
 
-//                startAxis = startAxis(
-//                    guideline = null,
-//                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Inside,
-//                    titleComponent = textComponent(
-//                        background = shapeComponent(Shapes.pillShape, Color.Red),
-//                        padding = dimensionsOf(2.dp, 2.dp),
-//                        margins = dimensionsOf(2.dp),
-//                    ),
-//                    title = module.mUnit,
-//                ),
+
+                startAxis =  if (isLeftAxis) startAxis(
+                    guideline = null,
+                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+                    titleComponent = textComponent(
+                        padding = dimensionsOf(2.dp, 2.dp),
+                        margins = dimensionsOf(2.dp),
+                    ),
+                    title = module.mUnit,
+                ) else null,
                 bottomAxis = if (isBottomAxis) bottomAxis(
                     guideline = null,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },

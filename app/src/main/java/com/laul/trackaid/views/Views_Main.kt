@@ -37,6 +37,8 @@ import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 /** Header - Current date + button to retrieve gluco from XDrip and push it to Google Fit
@@ -45,10 +47,6 @@ import java.util.*
 @Composable
 @Preview
 fun Header() {
-    var (Time_Now, Time_Start, Time_End) = DataGeneral.getTimes(1)
-    var ctx = LocalContext.current
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -60,7 +58,7 @@ fun Header() {
         Text(
             modifier = Modifier
                 .height(height = 85.dp),
-            text = getDate(Time_Now, "dd"),
+            text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd")),
             color = color_general_primary,
             textAlign = TextAlign.Left,
             style = MaterialTheme.typography.displayLarge
@@ -75,14 +73,14 @@ fun Header() {
             Text(
                 modifier = Modifier
                     .height(height = 30.dp),
-                text = getDate(Time_Now, "EEEE"),
+                text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("EEEE")),
                 color = color_general_primary,
                 style = MaterialTheme.typography.headlineMedium,
             )
             Text(
                 modifier = Modifier
                     .height(height = 35.dp),
-                text = getDate(Time_Now, "MMMM"),
+                text = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMMM")),
                 color = color_general_primary,
                 style = MaterialTheme.typography.headlineLarge
             )
@@ -214,7 +212,7 @@ private fun compModules(
 
                 val lastDPoint = remember { it.lastDPoint }
                 compModule(
-                    module = it, navController, lastDPoint!!, it.duration
+                    module = it, navController, lastDPoint!!
                 )
             })
     }
@@ -230,8 +228,7 @@ private fun compModules(
 private fun compModule(
     module: ModuleData,
     navController: NavController,
-    lastDPoint: MutableState<LDataPoint>?,
-    duration: Int
+    lastDPoint: MutableState<LDataPoint>?
 ) {
     // Variables to be used to get data from GFit
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
@@ -365,7 +362,7 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module , isBottomAxis =false, backgroundColor = color_general_white)
+            compChart(module = module , isBottomAxis =false, isLeftAxis= false, backgroundColor = color_general_white)
             Spacer(modifier = Modifier.width(10.dp))
 
         }

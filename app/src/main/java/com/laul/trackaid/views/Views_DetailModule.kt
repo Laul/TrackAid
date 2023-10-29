@@ -69,6 +69,7 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
         compChart(
             module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! ,
             isBottomAxis = true,
+            isLeftAxis = true,
             backgroundColor = color_surface_background
             )
 

@@ -39,6 +39,7 @@ import com.patrykandpatrick.vico.core.component.shape.cornered.MarkerCorneredSha
 import com.patrykandpatrick.vico.core.context.MeasureContext
 import com.patrykandpatrick.vico.core.extension.copyColor
 import com.patrykandpatrick.vico.core.marker.Marker
+import com.patrykandpatrick.vico.core.marker.MarkerLabelFormatter
 
 @Composable
 internal fun rememberMarker(): Marker {
@@ -84,7 +85,7 @@ internal fun rememberMarker(): Marker {
                         setShadow(radius = INDICATOR_CENTER_COMPONENT_SHADOW_RADIUS, color = entryColor)
                     }
                 }
-                // labelFormatter = CustomMarkerLabelFormatter
+                labelFormatter = CustomMarkerLabelFormatter
             }
 
 //            override fun getInsets(context: MeasureContext, outInsets: Insets, segmentProperties: SegmentProperties) =
