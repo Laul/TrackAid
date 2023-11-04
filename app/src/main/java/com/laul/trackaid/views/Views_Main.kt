@@ -16,7 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -29,8 +28,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.laul.trackaid.data.DataGeneral
-import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
@@ -163,6 +160,7 @@ fun compCommon(context: Context) {
 
             composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
                 val moduleID = backStackEntry.arguments?.getString("moduleID")
+
                 compDetailedModule(
                     navController = navController,
                     moduleID = moduleID
@@ -214,7 +212,8 @@ private fun compModules(
                 compModule(
                     module = it, navController, lastDPoint!!
                 )
-            })
+            }
+        )
     }
 }
 
@@ -362,7 +361,7 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module , isBottomAxis =false, isLeftAxis= false, backgroundColor = color_general_white)
+            compChart(module = module , isBottomAxis =false, isStartAxis= false, backgroundColor = color_general_white)
             Spacer(modifier = Modifier.width(10.dp))
 
         }

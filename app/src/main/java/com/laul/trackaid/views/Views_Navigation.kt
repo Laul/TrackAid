@@ -9,11 +9,14 @@ import androidx.compose.material3.*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -25,33 +28,32 @@ import com.laul.trackaid.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopNavigationBar(navController: NavController, moduleID: String?) {
-
-
-    TopAppBar(
-        colors = TopAppBarColors(
-            containerColor = color_surface_background,
-            scrolledContainerColor = color_text_primary,
-            navigationIconContentColor = color_text_primary ,
-            titleContentColor = color_text_primary,
-            actionIconContentColor = color_text_primary),
-        title = {
-
-            Text(
-
-                text = DataProvider.moduleList[NavRoutes.Detailed.route + "/$moduleID"]!!.mName,
-                color = color_text_primary,
-                maxLines = 1,
-
-                )
-        },
-
-
-        navigationIcon = {
-            IconButton(onClick = { navController.navigateUp() }) {
-                Icon(Icons.Filled.ArrowBack, null)
-            }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height = 75.dp)
+            .padding(top = 5.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(
+            colors = IconButtonColors(
+                contentColor = color_general_primary,
+                containerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = color_text_secondary
+            ),
+            onClick = { navController.navigateUp() }) {
+            Icon(Icons.Filled.ArrowBack, null)
         }
-    )
+        Text(
+            text = DataProvider.moduleList[NavRoutes.Detailed.route + "/$moduleID"]!!.mName,
+            color = color_text_primary,
+            maxLines = 1,
+            textAlign = TextAlign.Center
+
+        )
+    }
+
 }
 
 

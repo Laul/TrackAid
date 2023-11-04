@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.component.shape.shader.fromBrush
 import com.patrykandpatrick.vico.compose.style.ChartStyle
 import com.patrykandpatrick.vico.core.DefaultAlpha
@@ -44,11 +45,13 @@ internal fun rememberChartStyle(columnChartColors: List<Color>, lineChartColors:
                 axisLineColor = Color(defaultColors.axisLineColor),
             ),
             ChartStyle.ColumnChart(
+
                 columnChartColors.map { columnChartColor ->
                     LineComponent(
                         columnChartColor.toArgb(),
                         DefaultDimens.COLUMN_WIDTH,
                         Shapes.roundedCornerShape(DefaultDimens.COLUMN_ROUNDNESS_PERCENT),
+
                     )
                 },
             ),

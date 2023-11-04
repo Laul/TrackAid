@@ -86,7 +86,7 @@ val seed = Color(0xFF6750A4)
 
 
 val color_text_primary          =   Color(0xFF19323C)
-val color_text_secondary        =   Color(0xFFCAC4D0)
+val color_text_secondary        =   Color(0xFF99959C)
 val color_general_primary       =   Color(0xFF673C4F)
 val color_general_secondary     =   Color(0xFF19323C)
 val color_general_white         =   Color(0xFFFFFFFF)

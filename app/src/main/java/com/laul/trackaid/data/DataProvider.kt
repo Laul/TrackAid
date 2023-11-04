@@ -8,6 +8,7 @@ import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.LDataStats
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
 import java.time.Duration
@@ -26,6 +27,7 @@ class DataProvider {
                 mColor_Primary = R.color.red_primary,
                 mColor_Secondary = R.color.red_primary,
                 lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = null,
                 nCol = 0 ,
@@ -42,6 +44,7 @@ class DataProvider {
                 mColor_Primary = Color.rgb(156, 75, 194),
                 mColor_Secondary = Color.rgb(103, 60, 79),
                 lastDPoint = mutableStateOf(LDataPoint("",  arrayListOf(0f))),
+                stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Combo",
                 nCol = 2,
@@ -58,6 +61,7 @@ class DataProvider {
                 mColor_Primary = Color.rgb(201, 117, 7),
                 mColor_Secondary = Color.rgb(103, 60, 79),
                 lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Columns",
                 nCol = 1,
@@ -74,6 +78,7 @@ class DataProvider {
                 mColor_Primary = Color.rgb(0, 119, 113),
                 mColor_Secondary = Color.rgb(103, 60, 79),
                 lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Combo",
                 nCol = 2,

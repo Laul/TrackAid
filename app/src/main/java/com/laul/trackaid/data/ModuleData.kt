@@ -5,41 +5,26 @@ import androidx.compose.runtime.MutableState
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
-import androidx.health.connect.client.aggregate.AggregationResultGroupedByPeriod
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
-import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
-import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
-import androidx.health.connect.client.units.BloodGlucose
-import com.google.android.gms.fitness.data.DataType
-import com.google.android.gms.fitness.data.Field
-import com.google.android.gms.fitness.data.HealthDataTypes
-import com.google.android.gms.fitness.data.HealthFields
-import com.google.android.gms.fitness.result.DataReadResponse
 import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.LDataStats
 import com.laul.trackaid.data.DataGeneral.Companion.createTimes
-import com.laul.trackaid.data.DataGeneral.Companion.getDate
+import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
-import java.lang.Float.max
 import java.time.Duration
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.Period
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 import kotlin.reflect.KClass
 
 
@@ -52,6 +37,7 @@ data class ModuleData(
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
     var lastDPoint: MutableState<LDataPoint>?,
+    var stats: MutableState<LDataStats>?,
     var duration: Int,
     var chartType: String?,
     var nCol: Int,
@@ -59,7 +45,7 @@ data class ModuleData(
 
     var recordType : KClass<out Record>?,
 
-) {
+    ) {
     // Chart variables
     var cFloatEntries_Columns = arrayListOf<ArrayList<FloatEntry>>()
     var cFloatEntries_Lines = arrayListOf<ArrayList<FloatEntry>>()
@@ -67,18 +53,19 @@ data class ModuleData(
     var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
 
     var bottomAxisValues = ArrayList<String>()
+    var startAxisValues = ArrayList<Double>()
 
     // Init variables to set the size of the buckets.
     init {
 
         if (nCol>0) {
             for (i in 0 until nCol ) {
-                cFloatEntries_Columns.add(arrayListOf<FloatEntry>())
+                cFloatEntries_Columns.add(arrayListOf())
             }
         }
         if (nLines>0) {
             for (i in 0 until nLines ) {
-                cFloatEntries_Lines.add(arrayListOf<FloatEntry>())
+                cFloatEntries_Lines.add(arrayListOf())
             }
         }
     }
@@ -121,6 +108,9 @@ data class ModuleData(
         cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
         cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
         lastDPoint!!.value = getLastData(healthConnectClient)
+        stats!!.value = getStats()
+        createStartAxisValues()
+
     }
 
 
@@ -129,8 +119,8 @@ data class ModuleData(
      * @param listOfDates: list of dates based on the duration
      * @param listOfValues: list of values of the current day
      */
-    suspend fun aggregateGlucoseData(currentDate: LocalDateTime, listOfDates: ArrayList<LocalDateTime>, listOfValues : ArrayList<Double>){
-        var idDay = listOfDates.indexOf(currentDate)
+    private fun aggregateGlucoseData(currentDate: LocalDateTime, listOfDates: ArrayList<LocalDateTime>, listOfValues : ArrayList<Double>){
+        val idDay = listOfDates.indexOf(currentDate)
 
         cFloatEntries_Columns[0][idDay] =
             cFloatEntries_Columns[0][idDay].withY(listOfValues.min().toFloat()) as FloatEntry
@@ -176,7 +166,8 @@ data class ModuleData(
 
         formatData(start, response)
         lastDPoint!!.value = getLastData(healthConnectClient)
-
+        stats!!.value = getStats()
+        createStartAxisValues()
 
     }
 
@@ -184,9 +175,9 @@ data class ModuleData(
     /** Create the list of dates to get each day based on the duration
      * @param start: start date based on the duration
      */
-    fun createDateList(start: LocalDateTime) : ArrayList<LocalDateTime> {
+    private fun createDateList(start: LocalDateTime) : ArrayList<LocalDateTime> {
         // Create a list of dates to assign proper values to days
-        var listOfDates = arrayListOf<LocalDateTime>()
+        val listOfDates = arrayListOf<LocalDateTime>()
         for (i in 0 until duration + 1) {
             listOfDates.add(start.plus(i.toLong(), ChronoUnit.DAYS))
         }
@@ -214,47 +205,48 @@ data class ModuleData(
      * @param start:  Date of start of daily values (between start and now)
      * @param response: response of aggregated data from health connect
      */
-    suspend private fun formatData(start: LocalDateTime, response: List<AggregationResultGroupedByDuration>) {
+    private fun formatData(start: LocalDateTime, response: List<AggregationResultGroupedByDuration>) {
         val listOfDates = createDateList(start)
 
         for (result in response) {
-            var idDay = listOfDates.indexOf(LocalDateTime.ofInstant(result.startTime, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS))
+            val idDay = listOfDates.indexOf(LocalDateTime.ofInstant(result.startTime, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS))
 
-            if (mName == "Steps") {
-                // Columns from 0 to the total number of steps
-                cFloatEntries_Columns[0][idDay] =
-                    cFloatEntries_Columns[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
-            }
-
-            else if (mName == "Heart Rate") {
-                // Columns from min to max + average as point
-
-                cFloatEntries_Columns[0][idDay] =
-                    cFloatEntries_Columns[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
-                cFloatEntries_Columns[1][idDay] =
-                    cFloatEntries_Columns[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
-                cFloatEntries_Lines[0][idDay] =
-                    cFloatEntries_Lines[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
-            }
-
-            else if (mName == "Pressure") {
-                // Columns from min to max + average as point
-                var diff =  0f
-                if (result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                    cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                    cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
-                }
-                if (result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                    cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                    cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
+            when (mName) {
+                "Steps" -> {
+                    // Columns from 0 to the total number of steps
+                    cFloatEntries_Columns[0][idDay] =
+                        cFloatEntries_Columns[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
                 }
 
-                cFloatEntries_Lines[0][idDay] =
-                    cFloatEntries_Lines[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                cFloatEntries_Lines[1][idDay] =
-                    cFloatEntries_Lines[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                "Heart Rate" -> {
+                    // Columns from min to max + average as point
+                    cFloatEntries_Columns[0][idDay] =
+                        cFloatEntries_Columns[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
+                    cFloatEntries_Columns[1][idDay] =
+                        cFloatEntries_Columns[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
+                    cFloatEntries_Lines[0][idDay] =
+                        cFloatEntries_Lines[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
+                }
+
+                "Pressure" -> {
+                    // Columns from min to max + average as point
+                    if (result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+                        cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
+                        cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
+                    }
+                    if (result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+                        cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
+                        cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
+                    }
+
+                    cFloatEntries_Lines[0][idDay] =
+                        cFloatEntries_Lines[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                    cFloatEntries_Lines[1][idDay] =
+                        cFloatEntries_Lines[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                }
 
             }
+
             cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
             cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
         }
@@ -263,8 +255,7 @@ data class ModuleData(
 
 
     /** Last data available
-     * @param start:  Date of start of daily values (between start and now)
-     * @param response: response of aggregated data from health connect
+     * @param healthConnectClient: client to healthconnect
      */
     suspend fun getLastData(healthConnectClient: HealthConnectClient): LDataPoint {
         val (start, now) = createTimes(duration)
@@ -279,25 +270,60 @@ data class ModuleData(
         val response = healthConnectClient.readRecords(request)
         val records = response.records
 
-        var value = arrayListOf<Float>()
+        val value = arrayListOf<Float>()
         var date =LocalDateTime.now()
 
-        if (mName== "Steps") {
-            value.add(cFloatEntries_Columns[0].last().y)
-            date = now
+        when (mName) {
+            "Steps" -> {
+                value.add(cFloatEntries_Columns[0].last().y)
+                date = now
+            }
+            "Glucose" -> {
+                value.add((records[0] as BloodGlucoseRecord).level.inMillimolesPerLiter.toFloat())
+                date = LocalDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
+            }
+            "Heart Rate" -> {
+                    value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
+                    date = LocalDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
+            }
         }
-
-        else if (mName== "Glucose") {
-            value.add((records[0] as BloodGlucoseRecord).level.inMillimolesPerLiter.toFloat())
-            date = LocalDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
-        }
-        else if (mName== "Heart Rate") {
-            value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
-            date = LocalDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
-        }
-        return LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd - hh:mm a")),  value)
+        return LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
     }
 
 
+    private fun getStats(): LDataStats{
 
+        var avg = 0f
+        var min = 0f
+        var max = 0f
+
+        // If the chart is a combo of lines and columns:
+        // - Lines contain info about average
+        // - Columns contain info about min (first arraylist) and max (second arraylist)
+        if (chartType == "Combo"){
+            min = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
+            max = cFloatEntries_Columns[1].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
+            avg = cFloatEntries_Lines[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+
+        }
+
+        if (chartType == "Columns"){
+            min = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
+            max = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
+            avg = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+        }
+
+
+        return  LDataStats( min, max, avg )
+
+    }
+
+    private fun createStartAxisValues() {
+        val roundedMax = Math.ceil((stats!!.value.max)/6.0) * 6.0
+        for (i in 0 until 6) {
+            startAxisValues.add(i * roundedMax / 6)
+        }
+
+
+    }
 }

@@ -1,51 +1,19 @@
 package com.laul.trackaid
 
-import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.CutCornerShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.laul.trackaid.data.DataProvider
-import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.color_general_primary
 import com.laul.trackaid.theme.color_surface_background
-import com.laul.trackaid.theme.color_text_primary
+import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
 import com.laul.trackaid.views.TopNavigationBar
-import com.laul.trackaid.views.rememberMarker
-import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
-import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.compose.chart.line.lineSpec
-import com.patrykandpatrick.vico.compose.component.lineComponent
-import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
-import com.patrykandpatrick.vico.compose.component.shapeComponent
-import com.patrykandpatrick.vico.compose.component.textComponent
-import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
-import com.patrykandpatrick.vico.core.axis.AxisPosition
-import com.patrykandpatrick.vico.core.axis.vertical.createVerticalAxis
-import com.patrykandpatrick.vico.core.chart.column.ColumnChart
-import com.patrykandpatrick.vico.core.chart.line.LineChart
-import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
-import com.patrykandpatrick.vico.core.component.shape.LineComponent
-import com.patrykandpatrick.vico.core.entry.entriesOf
-import com.patrykandpatrick.vico.core.entry.entryModelOf
-import com.patrykandpatrick.vico.core.marker.Marker
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,19 +29,155 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 
 @Composable
 fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
-    Row(
+    var module =  DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!
+    Column(
+
         modifier = Modifier
-            .padding(innerPaddingValues)
-            .background(color_surface_background)
-    ) {
-        compChart(
-            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!! ,
-            isBottomAxis = true,
-            isLeftAxis = true,
-            backgroundColor = color_surface_background
+            .fillMaxWidth()
+            .padding(
+                vertical = 80.dp,
+                horizontal = dimensionResource(id = R.dimen.padding_large)
             )
 
+    ) {
+        Row() {
+            // Last measure information
+            Column(
+                modifier = Modifier.weight(3f)
+            )
+            {
+                Text(
+                    text = "Last measure",
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                )
+                Text(
+                    text = module.lastDPoint!!.value.date.toString(),
+                    color = color_text_secondary,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                )
+
+                Text(
+                    if (module.mName == "Glucose") {
+                        "%.2f".format(module.lastDPoint!!.value.value[0])
+                    }
+                    //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                    //    }
+                    else {
+                        "%.0f".format(module.lastDPoint!!.value.value[0])
+                    },
+                    color = color_general_primary,
+                    style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(4f)
+            )
+            {
+                Spacer(modifier = Modifier.width(20.dp))
+
+                Text(
+                    text = "Analytics",
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                    style = androidx.compose.material3.MaterialTheme.typography.bodyMedium,
+                )
+                Row (
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Average
+                    Column(
+                        modifier = Modifier.weight(2f)
+                    ) {
+                        Text(
+                            text = "Average",
+                            color = color_text_secondary,
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        )
+
+                        Text(
+                            if (module.mName == "Glucose") {
+                                "%.2f".format(module.stats!!.value.avg)
+                            }
+                            //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                            //    }
+                            else {
+                                "%.0f".format(module.stats!!.value.avg)
+                            },
+                            color = color_general_primary,
+                            style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
+                        )
+                    }
+
+                    // Min
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Min",
+                            color = color_text_secondary,
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        )
+
+                        Text(
+                            if (module.mName == "Glucose") {
+                                "%.2f".format(module.stats!!.value.min)
+                            }
+                            //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                            //    }
+                            else {
+                                "%.0f".format(module.stats!!.value.min)
+                            },
+                            color = color_general_primary,
+                            style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
+                        )
+                    }
+
+                    // Max
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "Max",
+                            color = color_text_secondary,
+                            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                        )
+
+                        Text(
+                            if (module.mName == "Glucose") {
+                                "%.2f".format(module.stats!!.value.max)
+                            }
+                            //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                            //    }
+                            else {
+                                "%.0f".format(module.stats!!.value.max)
+                            },
+                            color = color_general_primary,
+                            style = androidx.compose.material3.MaterialTheme.typography.headlineSmall,
+                        )
+                    }
+                }
+
+            }
+
+
+
+
+        }
+
+        compChart(
+            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
+            isBottomAxis = true,
+            isStartAxis = true,
+            backgroundColor = color_surface_background
+        )
+
     }
-
-
 }
+
+
+

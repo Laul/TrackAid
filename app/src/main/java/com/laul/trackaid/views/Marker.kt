@@ -55,7 +55,7 @@ internal fun rememberMarker(): Marker {
         background = labelBackground,
         lineCount = LABEL_LINE_COUNT,
         padding = labelPadding,
-        typeface = Typeface.MONOSPACE,
+        typeface = Typeface.DEFAULT,
     )
     val indicatorInnerComponent = shapeComponent(Shapes.pillShape, MaterialTheme.colorScheme.surface)
     val indicatorCenterComponent = shapeComponent(Shapes.pillShape, Color.White)
@@ -98,7 +98,7 @@ internal fun rememberMarker(): Marker {
     }
 }
 
-private const val LABEL_BACKGROUND_SHADOW_RADIUS = 4f
+private const val LABEL_BACKGROUND_SHADOW_RADIUS = 3f
 private const val LABEL_BACKGROUND_SHADOW_DY = 2f
 private const val LABEL_LINE_COUNT = 1
 private const val GUIDELINE_ALPHA = .2f

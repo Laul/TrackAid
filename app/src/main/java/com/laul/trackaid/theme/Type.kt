@@ -82,6 +82,7 @@ val AppTypography = Typography(
         fontSize = 30.sp
     ),
 
+
     displayLarge = TextStyle(
         fontFamily = FontFamily_Title,
         fontWeight = FontWeight.W900,
@@ -98,10 +99,10 @@ val AppTypography = Typography(
     ),
     displaySmall = TextStyle(
         fontFamily = FontFamily_Title,
-        fontWeight = FontWeight.W600,
+        fontWeight = FontWeight.W200,
         letterSpacing = 0.sp,
-        lineHeight = 30.sp,
-        fontSize = 36.sp
+        lineHeight = 52.sp,
+        fontSize = 30.sp
     ),
 
     bodyLarge = TextStyle(

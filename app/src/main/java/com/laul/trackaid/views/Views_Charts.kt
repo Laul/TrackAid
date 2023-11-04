@@ -1,6 +1,7 @@
 package com.laul.trackaid
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -9,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
@@ -18,6 +21,7 @@ import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
+import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.column.ColumnChart
 import com.patrykandpatrick.vico.core.chart.composed.plus
@@ -26,6 +30,15 @@ import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 
+private const val BOTTOM_AXIS_ITEM_SPACING = 1
+private const val BOTTOM_AXIS_ITEM_OFFSET = 8
+private const val MAX_LABEL_COUNT = 6
+private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET)
+
+
+private const val MAX_LABELS = 2
+private const val START_AXIS_ITEM_OFFSET = 8
+private val startAxisItemPlacer = AxisItemPlacer.Vertical.default(MAX_LABELS, false)
 
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
@@ -34,7 +47,7 @@ import com.patrykandpatrick.vico.core.component.shape.Shapes
 fun compChart(
     module: ModuleData,
     isBottomAxis: Boolean,
-    isLeftAxis: Boolean,
+    isStartAxis: Boolean,
     backgroundColor: Color
 ) {
     androidx.compose.material.Surface {
@@ -47,19 +60,23 @@ fun compChart(
                 model = module.cChartModel_Columns,
                 bottomAxis = if (isBottomAxis) bottomAxis(
                     guideline = null,
+                    itemPlacer = bottomAxisItemPlacer,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
+
                     )
                 ) else null,
-                startAxis =  if (isLeftAxis) startAxis(
+                startAxis =  if (isStartAxis) startAxis(
                     guideline = null,
                     horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
                     ),
+                    valueFormatter = {y -> module.startAxisValues[y]},
+                    maxLabelCount = MAX_LABEL_COUNT,
                     title = module.mUnit,
                 ) else null,
 
@@ -78,6 +95,7 @@ fun compChart(
                 autoScaleUp = AutoScaleUp.Full,
                 bottomAxis = if (isBottomAxis) bottomAxis(
                     guideline = null,
+                    itemPlacer = bottomAxisItemPlacer,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
@@ -93,30 +111,48 @@ fun compChart(
                     module = module,
                     type = "Points"
                 ) + getColumnChart(module = module, isBottomAxis),
-                marker = rememberMarker(),
-                modifier = Modifier.background(backgroundColor),
 
+                marker = rememberMarker(),
+                modifier = Modifier
+                    .background(backgroundColor)
+                    .fillMaxWidth(),
                 model = module.cChartModel_Lines + module.cChartModel_Columns,
                 autoScaleUp = AutoScaleUp.Full,
 
 
-                startAxis =  if (isLeftAxis) startAxis(
+                startAxis = if (isStartAxis) rememberStartAxis(
+                    title = module.mUnit,
+                    guideline = null
+
+                    ) else null,
+
+
+                bottomAxis = if (isBottomAxis) rememberBottomAxis(
+                    tick = null,
                     guideline = null,
-                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+                    valueFormatter = { x, _ ->
+                        module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
                     ),
-                    title = module.mUnit,
+
                 ) else null,
-                bottomAxis = if (isBottomAxis) bottomAxis(
-                    guideline = null,
-                    valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
-                    titleComponent = textComponent(
-                        padding = dimensionsOf(2.dp, 2.dp),
-                        margins = dimensionsOf(2.dp),
-                    )
-                ) else null,
+
+
+
+//
+//                if (isStartAxis) startAxis(
+//                    guideline = null,
+//                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+//                    titleComponent = textComponent(
+//                        padding = dimensionsOf(2.dp, 2.dp),
+//                        margins = dimensionsOf(2.dp),
+//                    ),
+//                    itemPlacer = startAxisItemPlacer,
+//                )
+//                else null,
+//
             )
 
         }
