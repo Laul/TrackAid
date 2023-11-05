@@ -75,7 +75,7 @@ fun compChart(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
                     ),
-                    valueFormatter = {y -> module.startAxisValues[y]},
+
                     maxLabelCount = MAX_LABEL_COUNT,
                     title = module.mUnit,
                 ) else null,
