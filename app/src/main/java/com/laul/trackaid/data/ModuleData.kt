@@ -16,7 +16,6 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.data.DataGeneral.Companion.createTimes
-import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.core.entry.FloatEntry
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
@@ -47,10 +46,13 @@ data class ModuleData(
 
     ) {
     // Chart variables
-    var cFloatEntries_Columns = arrayListOf<ArrayList<FloatEntry>>()
-    var cFloatEntries_Lines = arrayListOf<ArrayList<FloatEntry>>()
-    var cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
-    var cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
+    var cFloatEntries_DailyMinMax = arrayListOf<ArrayList<FloatEntry>>()
+    var cFloatEntries_DailyAvg = arrayListOf<ArrayList<FloatEntry>>()
+    var cFloatEntries_Records = arrayListOf<ArrayList<FloatEntry>>()
+
+    var cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
+    var cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
+    var cChartModel_Records = entryModelOf(*cFloatEntries_Records.toTypedArray())
 
     var bottomAxisValues = ArrayList<String>()
     var startAxisValues = ArrayList<Double>()
@@ -60,14 +62,18 @@ data class ModuleData(
 
         if (nCol>0) {
             for (i in 0 until nCol ) {
-                cFloatEntries_Columns.add(arrayListOf())
+                cFloatEntries_DailyMinMax.add(arrayListOf())
             }
         }
         if (nLines>0) {
             for (i in 0 until nLines ) {
-                cFloatEntries_Lines.add(arrayListOf())
+                cFloatEntries_DailyAvg.add(arrayListOf())
             }
         }
+
+        cFloatEntries_Records.add(arrayListOf())
+
+
     }
 
 
@@ -89,6 +95,8 @@ data class ModuleData(
         val listOfValues = arrayListOf<Double>()
 
         for (record in records) {
+            cFloatEntries_Records[0].add(FloatEntry(record.time.epochSecond.toFloat(), record.level.inMillimolesPerLiter.toFloat()))
+
             if (LocalDateTime.ofInstant(record.time, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
                 if ( listOfValues.isNotEmpty() ) {
                     aggregateGlucoseData( currentDay, listOfDates, listOfValues)
@@ -105,8 +113,9 @@ data class ModuleData(
             aggregateGlucoseData( currentDay, listOfDates, listOfValues)
         }
 
-        cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
-        cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
+        cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
+        cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
+        cChartModel_Records =  entryModelOf(*cFloatEntries_Records.toTypedArray())
         lastDPoint!!.value = getLastData(healthConnectClient)
         stats!!.value = getStats()
         createStartAxisValues()
@@ -122,12 +131,12 @@ data class ModuleData(
     private fun aggregateGlucoseData(currentDate: LocalDateTime, listOfDates: ArrayList<LocalDateTime>, listOfValues : ArrayList<Double>){
         val idDay = listOfDates.indexOf(currentDate)
 
-        cFloatEntries_Columns[0][idDay] =
-            cFloatEntries_Columns[0][idDay].withY(listOfValues.min().toFloat()) as FloatEntry
-        cFloatEntries_Columns[1][idDay] =
-            cFloatEntries_Columns[1][idDay].withY(listOfValues.max().toFloat()) as FloatEntry
-        cFloatEntries_Lines[0][idDay] =
-            cFloatEntries_Lines[0][idDay].withY(listOfValues.average().toFloat()) as FloatEntry
+        cFloatEntries_DailyMinMax[0][idDay] =
+            cFloatEntries_DailyMinMax[0][idDay].withY(listOfValues.min().toFloat()) as FloatEntry
+        cFloatEntries_DailyMinMax[1][idDay] =
+            cFloatEntries_DailyMinMax[1][idDay].withY(listOfValues.max().toFloat()) as FloatEntry
+        cFloatEntries_DailyAvg[0][idDay] =
+            cFloatEntries_DailyAvg[0][idDay].withY(listOfValues.average().toFloat()) as FloatEntry
 
     }
 
@@ -186,13 +195,13 @@ data class ModuleData(
         }
 
         // Clear data variable for chart
-        cFloatEntries_Columns.forEach { item ->
+        cFloatEntries_DailyMinMax.forEach { item ->
             item.clear()
             for (i in 0 until listOfDates.size) {
                 item.add(entryOf(item.size, 0f))
             }
         }
-        cFloatEntries_Lines.forEach { item ->
+        cFloatEntries_DailyAvg.forEach { item ->
             item.clear()
             for (i in 0 until listOfDates.size) {
                 item.add(entryOf(item.size, 0f))
@@ -214,41 +223,41 @@ data class ModuleData(
             when (mName) {
                 "Steps" -> {
                     // Columns from 0 to the total number of steps
-                    cFloatEntries_Columns[0][idDay] =
-                        cFloatEntries_Columns[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
+                    cFloatEntries_DailyMinMax[0][idDay] =
+                        cFloatEntries_DailyMinMax[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
                 }
 
                 "Heart Rate" -> {
                     // Columns from min to max + average as point
-                    cFloatEntries_Columns[0][idDay] =
-                        cFloatEntries_Columns[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
-                    cFloatEntries_Columns[1][idDay] =
-                        cFloatEntries_Columns[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
-                    cFloatEntries_Lines[0][idDay] =
-                        cFloatEntries_Lines[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
+                    cFloatEntries_DailyMinMax[0][idDay] =
+                        cFloatEntries_DailyMinMax[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
+                    cFloatEntries_DailyMinMax[1][idDay] =
+                        cFloatEntries_DailyMinMax[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
+                    cFloatEntries_DailyAvg[0][idDay] =
+                        cFloatEntries_DailyAvg[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
                 }
 
                 "Pressure" -> {
                     // Columns from min to max + average as point
                     if (result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                        cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                        cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
+                        cFloatEntries_DailyMinMax[0][idDay] = cFloatEntries_DailyMinMax[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
+                        cFloatEntries_DailyMinMax[1][idDay] = cFloatEntries_DailyMinMax[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
                     }
                     if (result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                        cFloatEntries_Columns[0][idDay] = cFloatEntries_Columns[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                        cFloatEntries_Columns[1][idDay] = cFloatEntries_Columns[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_Columns[0][idDay].y) as FloatEntry
+                        cFloatEntries_DailyMinMax[0][idDay] = cFloatEntries_DailyMinMax[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
+                        cFloatEntries_DailyMinMax[1][idDay] = cFloatEntries_DailyMinMax[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
                     }
 
-                    cFloatEntries_Lines[0][idDay] =
-                        cFloatEntries_Lines[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                    cFloatEntries_Lines[1][idDay] =
-                        cFloatEntries_Lines[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                    cFloatEntries_DailyAvg[0][idDay] =
+                        cFloatEntries_DailyAvg[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                    cFloatEntries_DailyAvg[1][idDay] =
+                        cFloatEntries_DailyAvg[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
                 }
 
             }
 
-            cChartModel_Columns = entryModelOf(*cFloatEntries_Columns.toTypedArray())
-            cChartModel_Lines = entryModelOf(*cFloatEntries_Lines.toTypedArray())
+            cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
+            cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
         }
     }
 
@@ -275,7 +284,7 @@ data class ModuleData(
 
         when (mName) {
             "Steps" -> {
-                value.add(cFloatEntries_Columns[0].last().y)
+                value.add(cFloatEntries_DailyMinMax[0].last().y)
                 date = now
             }
             "Glucose" -> {
@@ -301,16 +310,16 @@ data class ModuleData(
         // - Lines contain info about average
         // - Columns contain info about min (first arraylist) and max (second arraylist)
         if (chartType == "Combo"){
-            min = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
-            max = cFloatEntries_Columns[1].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
-            avg = cFloatEntries_Lines[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+            min = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
+            max = cFloatEntries_DailyMinMax[1].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
+            avg = cFloatEntries_DailyAvg[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
 
         }
 
         if (chartType == "Columns"){
-            min = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
-            max = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
-            avg = cFloatEntries_Columns[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+            min = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
+            max = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
+            avg = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
         }
 
 

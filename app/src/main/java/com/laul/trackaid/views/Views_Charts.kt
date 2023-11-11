@@ -16,29 +16,39 @@ import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.chart.entry.plus
+import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
+import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollState
 import com.patrykandpatrick.vico.compose.component.lineComponent
 import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
 import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
+import com.patrykandpatrick.vico.core.DefaultDimens
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.column.ColumnChart
 import com.patrykandpatrick.vico.core.chart.composed.plus
+import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.extension.half
+import com.patrykandpatrick.vico.core.scroll.InitialScroll
 
-private const val BOTTOM_AXIS_ITEM_SPACING = 1
+private const val BOTTOM_AXIS_ITEM_SPACING = 100
 private const val BOTTOM_AXIS_ITEM_OFFSET = 8
+private const val MIN_VALUE = 8
 private const val MAX_LABEL_COUNT = 6
-private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET)
+private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, true)
 
-
+private val horizontalLayout = HorizontalLayout.FullWidth(
+    startPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
+    endPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
+)
 private const val MAX_LABELS = 2
 private const val START_AXIS_ITEM_OFFSET = 8
-private val startAxisItemPlacer = AxisItemPlacer.Vertical.default(MAX_LABELS, false)
+private val startAxisItemPlacer = AxisItemPlacer.Vertical.default(MAX_LABELS, true)
 
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
@@ -46,8 +56,7 @@ private val startAxisItemPlacer = AxisItemPlacer.Vertical.default(MAX_LABELS, fa
 @Composable
 fun compChart(
     module: ModuleData,
-    isBottomAxis: Boolean,
-    isStartAxis: Boolean,
+    isDetailedView: Boolean,
     backgroundColor: Color
 ) {
     androidx.compose.material.Surface {
@@ -56,9 +65,9 @@ fun compChart(
                 autoScaleUp = AutoScaleUp.Full,
                 marker = rememberMarker(),
                 modifier = Modifier.background(backgroundColor),
-                chart = getColumnChart(module = module, isBottomAxis),
-                model = module.cChartModel_Columns,
-                bottomAxis = if (isBottomAxis) bottomAxis(
+                chart = getColumnChart(module = module, isDetailedView),
+                model = module.cChartModel_DailyMinMax,
+                bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
                     itemPlacer = bottomAxisItemPlacer,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
@@ -68,7 +77,7 @@ fun compChart(
 
                     )
                 ) else null,
-                startAxis =  if (isStartAxis) startAxis(
+                startAxis =  if (isDetailedView) startAxis(
                     guideline = null,
                     horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
                     titleComponent = textComponent(
@@ -84,6 +93,9 @@ fun compChart(
         }
         if (module.chartType == "Line") {
             Chart(
+                chartScrollState = rememberChartScrollState(),
+                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
+
                 chart = getLineChart(
                     module = module,
                     type = "Line"
@@ -91,9 +103,9 @@ fun compChart(
                 modifier = Modifier.background(backgroundColor),
 
                 marker = rememberMarker(),
-                model = module.cChartModel_Columns,
+                model = module.cChartModel_DailyMinMax,
                 autoScaleUp = AutoScaleUp.Full,
-                bottomAxis = if (isBottomAxis) bottomAxis(
+                bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
                     itemPlacer = bottomAxisItemPlacer,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
@@ -107,28 +119,28 @@ fun compChart(
         }
         if (module.chartType == "Combo") {
             Chart(
+                chartScrollState = rememberChartScrollState(),
+                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
                 chart = getLineChart(
                     module = module,
                     type = "Points"
-                ) + getColumnChart(module = module, isBottomAxis),
+                ) + getColumnChart(module = module, isDetailedView),
 
                 marker = rememberMarker(),
                 modifier = Modifier
                     .background(backgroundColor)
                     .fillMaxWidth(),
-                model = module.cChartModel_Lines + module.cChartModel_Columns,
+                model = module.cChartModel_DailyAvg + module.cChartModel_DailyMinMax,
                 autoScaleUp = AutoScaleUp.Full,
 
-
-                startAxis = if (isStartAxis) rememberStartAxis(
+                startAxis = if (isDetailedView) rememberStartAxis(
                     title = module.mUnit,
                     guideline = null
 
                     ) else null,
 
 
-                bottomAxis = if (isBottomAxis) rememberBottomAxis(
-                    tick = null,
+                bottomAxis = if (isDetailedView) rememberBottomAxis(
                     guideline = null,
                     valueFormatter = { x, _ ->
                         module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
@@ -164,7 +176,31 @@ fun compChart(
  * @param module: module from DataProvider data class
  */
 @Composable
-fun compChart_Detailed(module: ModuleData) {
+fun compChart_Detailed(module: ModuleData, backgroundColor: Color) {
+    Chart(
+//        chartScrollState = rememberChartScrollState(),
+//        chartScrollSpec = rememberChartScrollSpec( initialScroll = InitialScroll.End),
+        chart = getLineChart(
+            module = module,
+            type = "Line"
+        ),
+        modifier = Modifier.background(backgroundColor),
+        autoScaleUp = AutoScaleUp.Full,
+        horizontalLayout = horizontalLayout,
+
+        marker = rememberMarker(),
+        model = module.cChartModel_Records,
+        bottomAxis =  bottomAxis(
+            guideline = null,
+            itemPlacer = bottomAxisItemPlacer,
+            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+            titleComponent = textComponent(
+                padding = dimensionsOf(2.dp, 2.dp),
+                margins = dimensionsOf(2.dp),
+            )
+        )
+    )
+
 }
 
 
@@ -182,7 +218,7 @@ fun getLineChart(
         com.patrykandpatrick.vico.compose.chart.line.lineSpec(
             lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
             lineThickness = if (type == "Line") 2.dp else 0.dp,
-            pointSize = if (type == "Line") 0.dp else 7.dp,
+            pointSize = if (type == "Line") 5.dp else 7.dp,
             point = shapeComponent(shape = Shapes.pillShape),
             lineBackgroundShader =
             if (type == "Line")
@@ -196,7 +232,7 @@ fun getLineChart(
                 null,
         ),
     ),
-    spacing = 5.dp
+    spacing = 1.dp
 )
 
 
@@ -244,7 +280,7 @@ fun getColumnChart(
 
     return columnChart(
         columns = columns,
-        spacing = 9.dp,
+        spacing = 5.dp,
         mergeMode = ColumnChart.MergeMode.Stack,
     )
 

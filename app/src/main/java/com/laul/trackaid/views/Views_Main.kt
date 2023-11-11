@@ -28,11 +28,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.laul.trackaid.data.DataProvider
+import com.laul.trackaid.data.DataProvider.Companion.healthConnectUpdate
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.NavRoutes
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -129,6 +133,7 @@ fun compCommon(context: Context) {
         granted -> permissionGranted =  granted.containsAll(permissionsSet)
     }
 
+    // Permissions management for healthconnect
     LaunchedEffect(permissionGranted) {
         if (!permissionGranted) {
             coroutineScope.launch {
@@ -155,7 +160,7 @@ fun compCommon(context: Context) {
             startDestination = NavRoutes.Home.route,
         ) {
             composable(NavRoutes.Home.route) {
-                compMainModule(navController = navController)
+                compMainModule(navController = navController, client= client)
             }
 
             composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
@@ -173,16 +178,17 @@ fun compCommon(context: Context) {
 
 /** View structure for Main screen
  * @param navController: Manager for bottom navigation bar
+ * @param client: client to healthconnect
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun compMainModule(navController: NavController) {
+fun compMainModule(navController: NavController,client: HealthConnectClient) {
 
 
     Scaffold(
         containerColor = color_surface_background,
         topBar = { Header() },
-        content = { innerPadding -> compModules( navController, innerPadding) },
+        content = { innerPadding -> compModules( navController, client, innerPadding) },
         bottomBar = { BottomNavigationBar(navController) }
 
     )
@@ -191,29 +197,47 @@ fun compMainModule(navController: NavController) {
 
 /** List of displayed modules in main view
  * @param navController: Manager for bottom navigation bar
+ * @param client: client to healthconnect
  * @param innerPadding: Int value for lazycolumn padding
  */
 @Composable
 private fun compModules(
     navController: NavController,
+    client: HealthConnectClient,
     innerPadding: PaddingValues
 ) {
     val moduleList = DataProvider.moduleList.values.toList().drop(1)
 
-    LazyColumn(
-        contentPadding = innerPadding,
-        modifier = Modifier.background(color_surface_background),
-    ) {
-        items(
-            items = moduleList,
-            itemContent = {
+    // Pull to refresh support: we call healthconnectUpdate when pulling the lazycolumn
+    var refreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(refreshing) {
+        if (refreshing) {
+            healthConnectUpdate(client)
+            delay(50)
+            refreshing = false
+        }
+    }
 
-                val lastDPoint = remember { it.lastDPoint }
-                compModule(
-                    module = it, navController, lastDPoint!!
-                )
-            }
-        )
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing = refreshing),
+        onRefresh = { refreshing = true },
+    )
+    {
+        LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier.background(color_surface_background),
+        ) {
+            items(
+                items = moduleList,
+                itemContent = {
+
+                    val lastDPoint = remember { it.lastDPoint }
+                    compModule(
+                        module = it, navController, lastDPoint!!
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -361,7 +385,7 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module , isBottomAxis =false, isStartAxis= false, backgroundColor = color_general_white)
+            compChart(module = module , isDetailedView =false, backgroundColor = color_general_white)
             Spacer(modifier = Modifier.width(10.dp))
 
         }
