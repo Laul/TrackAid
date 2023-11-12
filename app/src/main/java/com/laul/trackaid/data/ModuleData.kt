@@ -21,6 +21,8 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.time.Duration
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -90,19 +92,19 @@ data class ModuleData(
         val response = healthConnectClient.readRecords(request)
         val records = response.records
 
-        val listOfDates = createDateList(start)
-        var currentDay = start.truncatedTo(ChronoUnit.DAYS)
+        val listOfDates = createDateList(start.atZone(ZoneId.systemDefault()))
+        var currentDay = start.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS)
         val listOfValues = arrayListOf<Double>()
 
         for (record in records) {
             cFloatEntries_Records[0].add(FloatEntry(record.time.epochSecond.toFloat(), record.level.inMillimolesPerLiter.toFloat()))
 
-            if (LocalDateTime.ofInstant(record.time, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
+            if (record.time.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
                 if ( listOfValues.isNotEmpty() ) {
                     aggregateGlucoseData( currentDay, listOfDates, listOfValues)
                     listOfValues.clear()
                 }
-                currentDay = LocalDateTime.ofInstant(record.time, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS)
+                currentDay = record.time.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS)
 
 
             }
@@ -128,16 +130,24 @@ data class ModuleData(
      * @param listOfDates: list of dates based on the duration
      * @param listOfValues: list of values of the current day
      */
-    private fun aggregateGlucoseData(currentDate: LocalDateTime, listOfDates: ArrayList<LocalDateTime>, listOfValues : ArrayList<Double>){
-        val idDay = listOfDates.indexOf(currentDate)
+    private fun aggregateGlucoseData(currentDate: ZonedDateTime, listOfDates: ArrayList<ZonedDateTime>, listOfValues : ArrayList<Double>){
+//        val idDay = listOfDates.indexOf(currentDate)
+        val idDay = (0 until listOfDates.size).firstOrNull { listOfDates[it].dayOfYear == currentDate.dayOfYear }
 
-        cFloatEntries_DailyMinMax[0][idDay] =
-            cFloatEntries_DailyMinMax[0][idDay].withY(listOfValues.min().toFloat()) as FloatEntry
-        cFloatEntries_DailyMinMax[1][idDay] =
-            cFloatEntries_DailyMinMax[1][idDay].withY(listOfValues.max().toFloat()) as FloatEntry
-        cFloatEntries_DailyAvg[0][idDay] =
-            cFloatEntries_DailyAvg[0][idDay].withY(listOfValues.average().toFloat()) as FloatEntry
-
+        if( idDay != null ) {
+            cFloatEntries_DailyMinMax[0][idDay] =
+                cFloatEntries_DailyMinMax[0][idDay].withY(
+                    listOfValues.min().toFloat()
+                ) as FloatEntry
+            cFloatEntries_DailyMinMax[1][idDay] =
+                cFloatEntries_DailyMinMax[1][idDay].withY(
+                    listOfValues.max().toFloat()
+                ) as FloatEntry
+            cFloatEntries_DailyAvg[0][idDay] =
+                cFloatEntries_DailyAvg[0][idDay].withY(
+                    listOfValues.average().toFloat()
+                ) as FloatEntry
+        }
     }
 
 
@@ -173,7 +183,7 @@ data class ModuleData(
             // Run error handling here
         }
 
-        formatData(start, response)
+        formatData(start.atZone(ZoneId.systemDefault()), response)
         lastDPoint!!.value = getLastData(healthConnectClient)
         stats!!.value = getStats()
         createStartAxisValues()
@@ -184,9 +194,9 @@ data class ModuleData(
     /** Create the list of dates to get each day based on the duration
      * @param start: start date based on the duration
      */
-    private fun createDateList(start: LocalDateTime) : ArrayList<LocalDateTime> {
+    private fun createDateList(start: ZonedDateTime) : ArrayList<ZonedDateTime> {
         // Create a list of dates to assign proper values to days
-        val listOfDates = arrayListOf<LocalDateTime>()
+        val listOfDates = arrayListOf<ZonedDateTime>()
         for (i in 0 until duration + 1) {
             listOfDates.add(start.plus(i.toLong(), ChronoUnit.DAYS))
         }
@@ -214,46 +224,54 @@ data class ModuleData(
      * @param start:  Date of start of daily values (between start and now)
      * @param response: response of aggregated data from health connect
      */
-    private fun formatData(start: LocalDateTime, response: List<AggregationResultGroupedByDuration>) {
+    private fun formatData(start: ZonedDateTime, response: List<AggregationResultGroupedByDuration>) {
         val listOfDates = createDateList(start)
 
+
         for (result in response) {
-            val idDay = listOfDates.indexOf(LocalDateTime.ofInstant(result.startTime, java.time.ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS))
+//            val idDay = listOfDates.indexOf(result.startTime.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS))
+            val idDay = (0 until listOfDates.size).firstOrNull { listOfDates[it].dayOfYear == result.startTime.atZone(ZoneId.systemDefault()).dayOfYear }
 
-            when (mName) {
-                "Steps" -> {
-                    // Columns from 0 to the total number of steps
-                    cFloatEntries_DailyMinMax[0][idDay] =
-                        cFloatEntries_DailyMinMax[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
-                }
-
-                "Heart Rate" -> {
-                    // Columns from min to max + average as point
-                    cFloatEntries_DailyMinMax[0][idDay] =
-                        cFloatEntries_DailyMinMax[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
-                    cFloatEntries_DailyMinMax[1][idDay] =
-                        cFloatEntries_DailyMinMax[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
-                    cFloatEntries_DailyAvg[0][idDay] =
-                        cFloatEntries_DailyAvg[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
-                }
-
-                "Pressure" -> {
-                    // Columns from min to max + average as point
-                    if (result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                        cFloatEntries_DailyMinMax[0][idDay] = cFloatEntries_DailyMinMax[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                        cFloatEntries_DailyMinMax[1][idDay] = cFloatEntries_DailyMinMax[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
-                    }
-                    if (result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat()- result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                        cFloatEntries_DailyMinMax[0][idDay] = cFloatEntries_DailyMinMax[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat())as FloatEntry
-                        cFloatEntries_DailyMinMax[1][idDay] = cFloatEntries_DailyMinMax[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() -  cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
+            if( idDay != null ) {
+                when (mName) {
+                    "Steps" -> {
+                        // Columns from 0 to the total number of steps
+                        cFloatEntries_DailyMinMax[0][idDay] =
+                            cFloatEntries_DailyMinMax[0][idDay].withY(result.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
                     }
 
-                    cFloatEntries_DailyAvg[0][idDay] =
-                        cFloatEntries_DailyAvg[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                    cFloatEntries_DailyAvg[1][idDay] =
-                        cFloatEntries_DailyAvg[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                }
+                    "Heart Rate" -> {
+                        // Columns from min to max + average as point
+                        cFloatEntries_DailyMinMax[0][idDay] =
+                            cFloatEntries_DailyMinMax[0][idDay].withY(result.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
+                        cFloatEntries_DailyMinMax[1][idDay] =
+                            cFloatEntries_DailyMinMax[1][idDay].withY(result.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
+                        cFloatEntries_DailyAvg[0][idDay] =
+                            cFloatEntries_DailyAvg[0][idDay].withY(result.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
+                    }
 
+                    "Pressure" -> {
+                        // Columns from min to max + average as point
+                        if (result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+                            cFloatEntries_DailyMinMax[0][idDay] =
+                                cFloatEntries_DailyMinMax[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                            cFloatEntries_DailyMinMax[1][idDay] =
+                                cFloatEntries_DailyMinMax[1][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
+                        }
+                        if (result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+                            cFloatEntries_DailyMinMax[0][idDay] =
+                                cFloatEntries_DailyMinMax[2][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                            cFloatEntries_DailyMinMax[1][idDay] =
+                                cFloatEntries_DailyMinMax[3][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
+                        }
+
+                        cFloatEntries_DailyAvg[0][idDay] =
+                            cFloatEntries_DailyAvg[0][idDay].withY(result.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                        cFloatEntries_DailyAvg[1][idDay] =
+                            cFloatEntries_DailyAvg[1][idDay].withY(result.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+                    }
+
+                }
             }
 
             cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
@@ -280,20 +298,20 @@ data class ModuleData(
         val records = response.records
 
         val value = arrayListOf<Float>()
-        var date =LocalDateTime.now()
+        var date =ZonedDateTime.now()
 
         when (mName) {
             "Steps" -> {
                 value.add(cFloatEntries_DailyMinMax[0].last().y)
-                date = now
+                date = now.atZone(ZoneId.systemDefault())
             }
             "Glucose" -> {
                 value.add((records[0] as BloodGlucoseRecord).level.inMillimolesPerLiter.toFloat())
-                date = LocalDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
+                date = ZonedDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
             }
             "Heart Rate" -> {
                     value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
-                    date = LocalDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
+                    date = ZonedDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
             }
         }
         return LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)

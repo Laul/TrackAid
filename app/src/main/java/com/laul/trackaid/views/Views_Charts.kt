@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,7 @@ import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.compose.chart.entry.plus
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollState
 import com.patrykandpatrick.vico.compose.component.lineComponent
@@ -213,27 +215,32 @@ fun compChart_Detailed(module: ModuleData, backgroundColor: Color) {
 fun getLineChart(
     module: ModuleData,
     type: String,
-): LineChart = com.patrykandpatrick.vico.compose.chart.line.lineChart(
-    lines = listOf(
-        com.patrykandpatrick.vico.compose.chart.line.lineSpec(
-            lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
-            lineThickness = if (type == "Line") 2.dp else 0.dp,
-            pointSize = if (type == "Line") 5.dp else 7.dp,
-            point = shapeComponent(shape = Shapes.pillShape),
-            lineBackgroundShader =
-            if (type == "Line")
-                verticalGradient(
-                    arrayOf(
-                        Color(module.mColor_Primary!!),
-                        Color(module.mColor_Primary!!).copy(alpha = 0f)
+): LineChart {
+    val marker = rememberMarker()
+    return lineChart(
+        persistentMarkers = remember(marker) { mapOf(1f to marker) },
+        lines = listOf(
+            com.patrykandpatrick.vico.compose.chart.line.lineSpec(
+                lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
+                lineThickness = if (type == "Line") 2.dp else 0.dp,
+                pointSize = if (type == "Line") 5.dp else 7.dp,
+                point = shapeComponent(shape = Shapes.pillShape),
+                lineBackgroundShader =
+                if (type == "Line")
+                    verticalGradient(
+                        arrayOf(
+                            Color(module.mColor_Primary!!),
+                            Color(module.mColor_Primary!!).copy(alpha = 0f)
+                        )
                     )
-                )
-            else
-                null,
+                else
+                    null,
+            ),
         ),
-    ),
-    spacing = 1.dp
-)
+        spacing = 1.dp
+    )
+
+}
 
 
 @Composable
