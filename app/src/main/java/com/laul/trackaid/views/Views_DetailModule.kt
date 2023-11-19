@@ -174,11 +174,13 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
             isDetailedView = true,
             backgroundColor = color_surface_background
         )
-//
-//        compChart_Detailed(
-//            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
-//            backgroundColor = color_surface_background,
-//        )
+
+
+
+        compChart_Detailed(
+            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
+            backgroundColor = color_surface_background,
+        )
     }
 }
 

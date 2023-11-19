@@ -16,7 +16,6 @@ import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.compose.chart.entry.plus
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollState
@@ -29,24 +28,29 @@ import com.patrykandpatrick.vico.core.DefaultDimens
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.column.ColumnChart
+import com.patrykandpatrick.vico.core.chart.composed.ComposedChartEntryModel
 import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
+import com.patrykandpatrick.vico.core.entry.composed.plus
+import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.extension.half
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
+import java.text.SimpleDateFormat
 
-private const val BOTTOM_AXIS_ITEM_SPACING = 100
-private const val BOTTOM_AXIS_ITEM_OFFSET = 8
+private const val BOTTOM_AXIS_ITEM_SPACING = 500
+private const val BOTTOM_AXIS_ITEM_OFFSET = 50
 private const val MIN_VALUE = 8
 private const val MAX_LABEL_COUNT = 6
-private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, true)
+private val bottomAxisItemPlacer =
+    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, true)
 
 private val horizontalLayout = HorizontalLayout.FullWidth(
-    startPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
-    endPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
+    scalableStartPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
+    scalableEndPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
 )
 private const val MAX_LABELS = 2
 private const val START_AXIS_ITEM_OFFSET = 8
@@ -61,14 +65,19 @@ fun compChart(
     isDetailedView: Boolean,
     backgroundColor: Color
 ) {
+
+
+
     androidx.compose.material.Surface {
         if (module.chartType == "Columns") {
+            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
+
             Chart(
                 autoScaleUp = AutoScaleUp.Full,
                 marker = rememberMarker(),
                 modifier = Modifier.background(backgroundColor),
                 chart = getColumnChart(module = module, isDetailedView),
-                model = module.cChartModel_DailyMinMax,
+                model = cChartModel_DailyMinMax,
                 bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
                     itemPlacer = bottomAxisItemPlacer,
@@ -77,9 +86,9 @@ fun compChart(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
 
-                    )
+                        )
                 ) else null,
-                startAxis =  if (isDetailedView) startAxis(
+                startAxis = if (isDetailedView) startAxis(
                     guideline = null,
                     horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
                     titleComponent = textComponent(
@@ -91,9 +100,11 @@ fun compChart(
                     title = module.mUnit,
                 ) else null,
 
-            )
+                )
         }
         if (module.chartType == "Line") {
+            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
+
             Chart(
                 chartScrollState = rememberChartScrollState(),
                 chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
@@ -105,7 +116,7 @@ fun compChart(
                 modifier = Modifier.background(backgroundColor),
 
                 marker = rememberMarker(),
-                model = module.cChartModel_DailyMinMax,
+                model = cChartModel_DailyMinMax,
                 autoScaleUp = AutoScaleUp.Full,
                 bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
@@ -120,6 +131,9 @@ fun compChart(
 
         }
         if (module.chartType == "Combo") {
+            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
+            var cChartModel_DailyAvg = entryModelOf(*module.cFloatEntries_DailyAvg.toTypedArray())
+
             Chart(
                 chartScrollState = rememberChartScrollState(),
                 chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
@@ -132,27 +146,27 @@ fun compChart(
                 modifier = Modifier
                     .background(backgroundColor)
                     .fillMaxWidth(),
-                model = module.cChartModel_DailyAvg + module.cChartModel_DailyMinMax,
+                model = cChartModel_DailyAvg.plus(cChartModel_DailyMinMax),
                 autoScaleUp = AutoScaleUp.Full,
 
                 startAxis = if (isDetailedView) rememberStartAxis(
                     title = module.mUnit,
                     guideline = null
 
-                    ) else null,
+                ) else null,
 
 
                 bottomAxis = if (isDetailedView) rememberBottomAxis(
                     guideline = null,
                     valueFormatter = { x, _ ->
-                        module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+                        module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size]
+                    },
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
                         margins = dimensionsOf(2.dp),
                     ),
 
-                ) else null,
-
+                    ) else null,
 
 
 //
@@ -174,121 +188,137 @@ fun compChart(
 }
 
 
-/** Chart section in detailed views
- * @param module: module from DataProvider data class
- */
-@Composable
-fun compChart_Detailed(module: ModuleData, backgroundColor: Color) {
-    Chart(
-//        chartScrollState = rememberChartScrollState(),
-//        chartScrollSpec = rememberChartScrollSpec( initialScroll = InitialScroll.End),
-        chart = getLineChart(
-            module = module,
-            type = "Line"
-        ),
-        modifier = Modifier.background(backgroundColor),
-        autoScaleUp = AutoScaleUp.Full,
-        horizontalLayout = horizontalLayout,
+    /** Chart section in detailed views
+     * @param module: module from DataProvider data class
+     */
+    @Composable
+    fun compChart_Detailed(module: ModuleData, backgroundColor: Color) {
+        var cChartModel_Records = entryModelOf(*module.cFloatEntries_Records.toTypedArray())
 
-        marker = rememberMarker(),
-        model = module.cChartModel_Records,
-        bottomAxis =  bottomAxis(
-            guideline = null,
-            itemPlacer = bottomAxisItemPlacer,
-            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
-            titleComponent = textComponent(
-                padding = dimensionsOf(2.dp, 2.dp),
-                margins = dimensionsOf(2.dp),
+        Chart(
+            chartScrollState = rememberChartScrollState(),
+//        chartScrollSpec = rememberChartScrollSpec( initialScroll = InitialScroll.End),
+            chart = getLineChart(
+                module = module,
+                type = "Line"
+            ),
+            modifier = Modifier.background(backgroundColor),
+            autoScaleUp = AutoScaleUp.Full,
+            horizontalLayout = horizontalLayout,
+            chartScrollSpec = rememberChartScrollSpec(
+                isScrollEnabled = false,
+                initialScroll = InitialScroll.End
+            ),
+            marker = rememberMarker(),
+            model = cChartModel_Records,
+
+            startAxis = rememberStartAxis(
+                title = module.mUnit,
+                guideline = null
+            ),
+
+            bottomAxis = bottomAxis(
+                guideline = null,
+                itemPlacer = bottomAxisItemPlacer,
+//            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+                valueFormatter = { x, _
+                    ->
+                    SimpleDateFormat("h:ma").format(x)
+                },
+
+                titleComponent = textComponent(
+                    padding = dimensionsOf(2.dp, 2.dp),
+                    margins = dimensionsOf(2.dp),
+                )
             )
         )
-    )
 
-}
-
-
-/** LineChart creation and display set-up
- * @param module: module from DataProvider data class
- * @param type: String: set "Line" to display a curve + vertical Gradient
- * @param targetVerticalAxisPosition
- */
-@Composable
-fun getLineChart(
-    module: ModuleData,
-    type: String,
-): LineChart {
-    val marker = rememberMarker()
-    return lineChart(
-        persistentMarkers = remember(marker) { mapOf(1f to marker) },
-        lines = listOf(
-            com.patrykandpatrick.vico.compose.chart.line.lineSpec(
-                lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
-                lineThickness = if (type == "Line") 2.dp else 0.dp,
-                pointSize = if (type == "Line") 5.dp else 7.dp,
-                point = shapeComponent(shape = Shapes.pillShape),
-                lineBackgroundShader =
-                if (type == "Line")
-                    verticalGradient(
-                        arrayOf(
-                            Color(module.mColor_Primary!!),
-                            Color(module.mColor_Primary!!).copy(alpha = 0f)
-                        )
-                    )
-                else
-                    null,
-            ),
-        ),
-        spacing = 1.dp
-    )
-
-}
-
-
-@Composable
-fun getColumnChart(
-    module: ModuleData,
-    isBottomAxis: Boolean
-): ColumnChart {
-    var columns = arrayListOf<LineComponent>()
-
-    for (i in 0 until module.nCol) {
-        if (module.nCol== 1 || i % 2 == 1) {
-            columns.add(
-                lineComponent(
-                    thickness = 8.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    color = Color(module.mColor_Primary!!),
-                    dynamicShader = verticalGradient(
-                        arrayOf(
-                            Color(module.mColor_Primary!!),
-                            Color(module.mColor_Primary!!).copy(alpha = 0.3f),
-                            Color(module.mColor_Primary!!)
-                        )
-                    ),
-                )
-            )
-        } else {
-            columns.add(
-
-                lineComponent(
-                    color = Color.Transparent,
-                    thickness = 8.dp,
-                    shape = RoundedCornerShape(4.dp),
-                    dynamicShader = verticalGradient(
-                        arrayOf(
-                            Color(module.mColor_Primary!!),
-                            Color(module.mColor_Primary!!).copy(alpha = 0.1f)
-                        )
-
-                    ),
-                )
-            )
-        }
     }
 
-    return columnChart(
-        columns = columns,
-        spacing = 5.dp,
-        mergeMode = ColumnChart.MergeMode.Stack,
-    )
 
-}
+    /** LineChart creation and display set-up
+     * @param module: module from DataProvider data class
+     * @param type: String: set "Line" to display a curve + vertical Gradient
+     * @param targetVerticalAxisPosition
+     */
+    @Composable
+    fun getLineChart(
+        module: ModuleData,
+        type: String,
+    ): LineChart {
+        val marker = rememberMarker()
+        return lineChart(
+            persistentMarkers = remember(marker) { mapOf(1f to marker) },
+            lines = listOf(
+                com.patrykandpatrick.vico.compose.chart.line.lineSpec(
+                    lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
+                    lineThickness = if (type == "Line") 1.dp else 0.dp,
+                    pointSize = if (type == "Line") 5.dp else 7.dp,
+                    point = shapeComponent(shape = Shapes.pillShape),
+                    lineBackgroundShader =
+                    if (type == "Line")
+                        verticalGradient(
+                            arrayOf(
+                                Color(module.mColor_Primary!!),
+                                Color(module.mColor_Primary!!).copy(alpha = 0f)
+                            )
+                        )
+                    else
+                        null,
+                ),
+            ),
+            spacing = 1.dp
+        )
+
+    }
+
+
+    @Composable
+    fun getColumnChart(
+        module: ModuleData,
+        isBottomAxis: Boolean
+    ): ColumnChart {
+        var columns = arrayListOf<LineComponent>()
+
+        for (i in 0 until module.nCol) {
+            if (module.nCol == 1 || i % 2 == 1) {
+                columns.add(
+                    lineComponent(
+                        thickness = 8.dp,
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color(module.mColor_Primary!!),
+                        dynamicShader = verticalGradient(
+                            arrayOf(
+                                Color(module.mColor_Primary!!),
+                                Color(module.mColor_Primary!!).copy(alpha = 0.3f),
+                                Color(module.mColor_Primary!!)
+                            )
+                        ),
+                    )
+                )
+            } else {
+                columns.add(
+
+                    lineComponent(
+                        color = Color.Transparent,
+                        thickness = 8.dp,
+                        shape = RoundedCornerShape(4.dp),
+                        dynamicShader = verticalGradient(
+                            arrayOf(
+                                Color(module.mColor_Primary!!),
+                                Color(module.mColor_Primary!!).copy(alpha = 0.1f)
+                            )
+
+                        ),
+                    )
+                )
+            }
+        }
+
+        return columnChart(
+            columns = columns,
+            spacing = 5.dp,
+            mergeMode = ColumnChart.MergeMode.Stack,
+        )
+
+    }

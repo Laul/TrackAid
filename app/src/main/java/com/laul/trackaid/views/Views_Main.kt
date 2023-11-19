@@ -385,7 +385,13 @@ private fun compModule(
             }
             Spacer(modifier = Modifier.width(30.dp))
 
-            compChart(module = module , isDetailedView =false, backgroundColor = color_general_white)
+            if  (module.cFloatEntries_DailyMinMax.isNotEmpty() || module.cFloatEntries_DailyAvg.isNotEmpty() ) {
+                compChart(
+                    module = module,
+                    isDetailedView = false,
+                    backgroundColor = color_general_white
+                )
+            }
             Spacer(modifier = Modifier.width(10.dp))
 
         }

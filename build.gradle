@@ -6,7 +6,8 @@ buildscript {
 //        material3_version = '1.4.0-rc01'
 //        material3_version = '1.0.1'
         lifecycle_version = '2.5.1'
-        graph_version = '1.12.0'
+//        graph_version = '1.12.0'
+        graph_version = '1.13.0'
         nav_version = "2.5.3"
 
 

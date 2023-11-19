@@ -31,7 +31,7 @@ import com.patrykandpatrick.vico.core.marker.MarkerLabelFormatter
 
 public object CustomMarkerLabelFormatter : MarkerLabelFormatter {
 
-    private const val PATTERN = "%.02f"
+    private val PATTERN = "%.02f"
 
     override fun getLabel(
         markedEntries: List<Marker.EntryModel>,
@@ -46,7 +46,7 @@ public object CustomMarkerLabelFormatter : MarkerLabelFormatter {
 
         sortedValues.sort()
 
-        return sortedValues.transformToSpannable(
+        val markerData = sortedValues.transformToSpannable(
             prefix = if (markedEntries.size > 1) {
                 " ("
             } else "",
@@ -57,6 +57,10 @@ public object CustomMarkerLabelFormatter : MarkerLabelFormatter {
             append(PATTERN.format(value))
         }
 
+
+
+
+        return markerData
     }
 }
 

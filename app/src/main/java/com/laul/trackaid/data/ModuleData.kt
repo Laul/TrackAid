@@ -52,10 +52,6 @@ data class ModuleData(
     var cFloatEntries_DailyAvg = arrayListOf<ArrayList<FloatEntry>>()
     var cFloatEntries_Records = arrayListOf<ArrayList<FloatEntry>>()
 
-    var cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
-    var cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
-    var cChartModel_Records = entryModelOf(*cFloatEntries_Records.toTypedArray())
-
     var bottomAxisValues = ArrayList<String>()
     var startAxisValues = ArrayList<Double>()
 
@@ -115,9 +111,6 @@ data class ModuleData(
             aggregateGlucoseData( currentDay, listOfDates, listOfValues)
         }
 
-        cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
-        cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
-        cChartModel_Records =  entryModelOf(*cFloatEntries_Records.toTypedArray())
         lastDPoint!!.value = getLastData(healthConnectClient)
         stats!!.value = getStats()
         createStartAxisValues()
@@ -274,8 +267,6 @@ data class ModuleData(
                 }
             }
 
-            cChartModel_DailyMinMax = entryModelOf(*cFloatEntries_DailyMinMax.toTypedArray())
-            cChartModel_DailyAvg = entryModelOf(*cFloatEntries_DailyAvg.toTypedArray())
         }
     }
 
