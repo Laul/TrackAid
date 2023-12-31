@@ -26,6 +26,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.math.ceil
 import kotlin.reflect.KClass
 
 
@@ -83,6 +84,7 @@ data class ModuleData(
 
         val request = ReadRecordsRequest(
             recordType = BloodGlucoseRecord::class,
+            pageSize = 3000,
             timeRangeFilter = TimeRangeFilter.between(start, now)
         )
         val response = healthConnectClient.readRecords(request)
@@ -93,7 +95,7 @@ data class ModuleData(
         val listOfValues = arrayListOf<Double>()
 
         for (record in records) {
-            cFloatEntries_Records[0].add(FloatEntry(record.time.epochSecond.toFloat(), record.level.inMillimolesPerLiter.toFloat()))
+            cFloatEntries_Records[0].add(FloatEntry(record.time.toEpochMilli().toFloat(), record.level.inMillimolesPerLiter.toFloat()))
 
             if (record.time.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
                 if ( listOfValues.isNotEmpty() ) {
@@ -337,7 +339,7 @@ data class ModuleData(
     }
 
     private fun createStartAxisValues() {
-        val roundedMax = Math.ceil((stats!!.value.max)/6.0) * 6.0
+        val roundedMax = ceil((stats!!.value.max)/6.0) * 6.0
         for (i in 0 until 6) {
             startAxisValues.add(i * roundedMax / 6)
         }

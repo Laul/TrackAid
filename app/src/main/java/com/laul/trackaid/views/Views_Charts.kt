@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
@@ -40,13 +41,14 @@ import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.extension.half
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 
-private const val BOTTOM_AXIS_ITEM_SPACING = 500
-private const val BOTTOM_AXIS_ITEM_OFFSET = 50
+private const val BOTTOM_AXIS_ITEM_SPACING = 15
+private const val BOTTOM_AXIS_ITEM_OFFSET = 0
 private const val MIN_VALUE = 8
 private const val MAX_LABEL_COUNT = 6
 private val bottomAxisItemPlacer =
-    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, true)
+    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, false)
 
 private val horizontalLayout = HorizontalLayout.FullWidth(
     scalableStartPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
@@ -206,7 +208,7 @@ fun compChart(
             autoScaleUp = AutoScaleUp.Full,
             horizontalLayout = horizontalLayout,
             chartScrollSpec = rememberChartScrollSpec(
-                isScrollEnabled = false,
+                isScrollEnabled = true,
                 initialScroll = InitialScroll.End
             ),
             marker = rememberMarker(),
@@ -220,10 +222,10 @@ fun compChart(
             bottomAxis = bottomAxis(
                 guideline = null,
                 itemPlacer = bottomAxisItemPlacer,
+
 //            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
                 valueFormatter = { x, _
-                    ->
-                    SimpleDateFormat("h:ma").format(x)
+                    -> getDate(x.toLong(),"HH:mm" )
                 },
 
                 titleComponent = textComponent(
@@ -253,7 +255,7 @@ fun compChart(
                 com.patrykandpatrick.vico.compose.chart.line.lineSpec(
                     lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
                     lineThickness = if (type == "Line") 1.dp else 0.dp,
-                    pointSize = if (type == "Line") 5.dp else 7.dp,
+                    pointSize = if (type == "Line") 2.dp else 7.dp,
                     point = shapeComponent(shape = Shapes.pillShape),
                     lineBackgroundShader =
                     if (type == "Line")
