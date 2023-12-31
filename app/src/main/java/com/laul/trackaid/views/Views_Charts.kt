@@ -2,6 +2,7 @@ package com.laul.trackaid
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -26,6 +27,7 @@ import com.patrykandpatrick.vico.compose.component.shapeComponent
 import com.patrykandpatrick.vico.compose.component.textComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
 import com.patrykandpatrick.vico.core.DefaultDimens
+import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.column.ColumnChart
@@ -34,11 +36,15 @@ import com.patrykandpatrick.vico.core.chart.composed.plus
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
+import com.patrykandpatrick.vico.core.chart.values.AxisValuesOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import com.patrykandpatrick.vico.core.entry.composed.plus
 import com.patrykandpatrick.vico.core.entry.entryModelOf
+import com.patrykandpatrick.vico.core.extension.ceil
+import com.patrykandpatrick.vico.core.extension.floor
 import com.patrykandpatrick.vico.core.extension.half
+import com.patrykandpatrick.vico.core.extension.piRad
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
@@ -48,15 +54,12 @@ private const val BOTTOM_AXIS_ITEM_OFFSET = 0
 private const val MIN_VALUE = 8
 private const val MAX_LABEL_COUNT = 6
 private val bottomAxisItemPlacer =
-    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, false)
+    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, false ,true )
 
 private val horizontalLayout = HorizontalLayout.FullWidth(
     scalableStartPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
     scalableEndPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
 )
-private const val MAX_LABELS = 2
-private const val START_AXIS_ITEM_OFFSET = 8
-private val startAxisItemPlacer = AxisItemPlacer.Vertical.default(MAX_LABELS, true)
 
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
@@ -70,7 +73,9 @@ fun compChart(
 
 
 
-    androidx.compose.material.Surface {
+    androidx.compose.material.Surface (
+        modifier = Modifier.height(250.dp)
+    ) {
         if (module.chartType == "Columns") {
             var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
 
@@ -78,7 +83,7 @@ fun compChart(
                 autoScaleUp = AutoScaleUp.Full,
                 marker = rememberMarker(),
                 modifier = Modifier.background(backgroundColor),
-                chart = getColumnChart(module = module, isDetailedView),
+                chart = getColumnChart(module = module),
                 model = cChartModel_DailyMinMax,
                 bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
@@ -142,18 +147,20 @@ fun compChart(
                 chart = getLineChart(
                     module = module,
                     type = "Points"
-                ) + getColumnChart(module = module, isDetailedView),
+                ) + getColumnChart(module = module),
 
                 marker = rememberMarker(),
                 modifier = Modifier
                     .background(backgroundColor)
                     .fillMaxWidth(),
                 model = cChartModel_DailyAvg.plus(cChartModel_DailyMinMax),
-                autoScaleUp = AutoScaleUp.Full,
 
                 startAxis = if (isDetailedView) rememberStartAxis(
                     title = module.mUnit,
-                    guideline = null
+                    guideline = null,
+                    itemPlacer = AxisItemPlacer.Vertical.default(
+                        module.stats!!.value.max.ceil.toInt()+  module.stats!!.value.max.ceil.toInt()%2+1 // Set minimum Y-axis value
+                    )
 
                 ) else null,
 
@@ -255,7 +262,7 @@ fun compChart(
                 com.patrykandpatrick.vico.compose.chart.line.lineSpec(
                     lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
                     lineThickness = if (type == "Line") 1.dp else 0.dp,
-                    pointSize = if (type == "Line") 2.dp else 7.dp,
+                    pointSize = if (type == "Line") 2.dp else 5.dp,
                     point = shapeComponent(shape = Shapes.pillShape),
                     lineBackgroundShader =
                     if (type == "Line")
@@ -278,7 +285,6 @@ fun compChart(
     @Composable
     fun getColumnChart(
         module: ModuleData,
-        isBottomAxis: Boolean
     ): ColumnChart {
         var columns = arrayListOf<LineComponent>()
 
@@ -321,6 +327,12 @@ fun compChart(
             columns = columns,
             spacing = 5.dp,
             mergeMode = ColumnChart.MergeMode.Stack,
+            axisValuesOverrider = AxisValuesOverrider.fixed(
+                maxY = module.stats!!.value.max.ceil+  module.stats!!.value.max.ceil %2 // Adjust Y-axis value for even numbers
+            )
         )
 
     }
+
+
+

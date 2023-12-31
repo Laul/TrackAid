@@ -26,6 +26,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 
@@ -115,7 +116,6 @@ data class ModuleData(
 
         lastDPoint!!.value = getLastData(healthConnectClient)
         stats!!.value = getStats()
-        createStartAxisValues()
 
     }
 
@@ -136,7 +136,7 @@ data class ModuleData(
                 ) as FloatEntry
             cFloatEntries_DailyMinMax[1][idDay] =
                 cFloatEntries_DailyMinMax[1][idDay].withY(
-                    listOfValues.max().toFloat()
+                    listOfValues.max().toFloat() -listOfValues.min().toFloat()
                 ) as FloatEntry
             cFloatEntries_DailyAvg[0][idDay] =
                 cFloatEntries_DailyAvg[0][idDay].withY(
@@ -181,7 +181,6 @@ data class ModuleData(
         formatData(start.atZone(ZoneId.systemDefault()), response)
         lastDPoint!!.value = getLastData(healthConnectClient)
         stats!!.value = getStats()
-        createStartAxisValues()
 
     }
 
@@ -321,9 +320,16 @@ data class ModuleData(
         // - Lines contain info about average
         // - Columns contain info about min (first arraylist) and max (second arraylist)
         if (chartType == "Combo"){
-            min = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
-            max = cFloatEntries_DailyMinMax[1].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
-            avg = cFloatEntries_DailyAvg[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+            // Min and avg are the min of all min
+            min = cFloatEntries_DailyMinMax[0].stream().filter { it.y != 0f }.mapToDouble { it.y.toDouble() }.summaryStatistics().min.toFloat()
+            avg = cFloatEntries_DailyAvg[0].stream().filter { it.y != 0f }.mapToDouble { it.y.toDouble() }.summaryStatistics().average.toFloat()
+
+            // Max of the week is the max of all max. Cannot be based on the columns because of stacking
+            for (i in 0 until duration ) {
+                var dailyMax = cFloatEntries_DailyMinMax[0][i].y + cFloatEntries_DailyMinMax[1][i].y
+                if (dailyMax>max) max = dailyMax
+
+            }
 
         }
 
@@ -338,12 +344,5 @@ data class ModuleData(
 
     }
 
-    private fun createStartAxisValues() {
-        val roundedMax = ceil((stats!!.value.max)/6.0) * 6.0
-        for (i in 0 until 6) {
-            startAxisValues.add(i * roundedMax / 6)
-        }
 
-
-    }
 }
