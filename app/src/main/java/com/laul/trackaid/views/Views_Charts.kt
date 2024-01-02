@@ -87,7 +87,7 @@ fun compChart(
                 model = cChartModel_DailyMinMax,
                 bottomAxis = if (isDetailedView) bottomAxis(
                     guideline = null,
-                    itemPlacer = bottomAxisItemPlacer,
+                    //itemPlacer = bottomAxisItemPlacer,
                     valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
                     titleComponent = textComponent(
                         padding = dimensionsOf(2.dp, 2.dp),
@@ -104,7 +104,6 @@ fun compChart(
                     ),
 
                     maxLabelCount = MAX_LABEL_COUNT,
-                    title = module.mUnit,
                 ) else null,
 
                 )

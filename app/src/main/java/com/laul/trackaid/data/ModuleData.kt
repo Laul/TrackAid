@@ -283,7 +283,7 @@ data class ModuleData(
             recordType = recordType!!,
             timeRangeFilter = TimeRangeFilter.between(start, now),
             ascendingOrder = false,
-            pageSize = 1
+            pageSize = 3000
         )
 
         val response = healthConnectClient.readRecords(request)
@@ -302,8 +302,11 @@ data class ModuleData(
                 date = ZonedDateTime.ofInstant((records[0] as BloodGlucoseRecord).time, java.time.ZoneId.systemDefault())
             }
             "Heart Rate" -> {
-                    value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
-                    date = ZonedDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
+                for (record in records) {
+                    cFloatEntries_Records[0].add(FloatEntry((record as HeartRateRecord).endTime.toEpochMilli().toFloat(), record.samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat()))
+                }
+                value.add((records[0] as HeartRateRecord).samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
+                date = ZonedDateTime.ofInstant((records[0] as HeartRateRecord).endTime, java.time.ZoneId.systemDefault())
             }
         }
         return LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
