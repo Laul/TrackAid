@@ -25,6 +25,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import java.time.temporal.Temporal
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.ceil
@@ -95,12 +96,12 @@ data class ModuleData(
         // Create a list of dates to assign proper values to days
         val listOfDates = arrayListOf<ZonedDateTime>()
 
-                for (i in 0 until duration + 1) {
-                    listOfDates.add(start.plus(i.toLong(), ChronoUnit.DAYS))
-                }
-                listOfDates.forEach {
-                    bottomAxisValues.add(it.format(DateTimeFormatter.ofPattern("EEE")))
-                }
+        for (i in 0 until duration + 1) {
+            listOfDates.add(start.plus(i.toLong(), ChronoUnit.DAYS))
+        }
+        listOfDates.forEach {
+            bottomAxisValues.add(it.format(DateTimeFormatter.ofPattern("EEE")))
+        }
 
 
         // Clear data variable for chart
@@ -118,6 +119,7 @@ data class ModuleData(
         }
         cFloatEntries_Records.forEach { item ->
             item.clear()
+
         }
 
         return listOfDates
@@ -243,10 +245,33 @@ data class ModuleData(
                     )
                 )
 
+            val listOfHours = arrayListOf<ZonedDateTime>()
+
+            for (i in 0 until (duration + 1)*24) {
+                listOfHours.add(start.atZone(ZoneId.systemDefault()).plus(i.toLong(), ChronoUnit.HOURS))
+            }
+
+            cFloatEntries_Records.forEach { item ->
+                for (i in 0 until listOfHours.size) {
+                    item.add(entryOf(item.size, 0f))
+                }
+            }
 
 
             for (bucket in response) {
-                cFloatEntries_Records[0].add(FloatEntry(bucket.endTime.toEpochMilli().toFloat(), bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()))
+                val idHour = (0 until listOfHours.size).firstOrNull { listOfHours[it].truncatedTo(ChronoUnit.HOURS) == bucket.endTime.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.HOURS) }
+                if( idHour != null ) {
+                    cFloatEntries_Records[0][idHour] = cFloatEntries_Records[0][idHour].withY(bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
+
+
+//
+//                        .add(
+//                        FloatEntry(
+//                            bucket.endTime.toEpochMilli().toFloat(),
+//                            bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()
+//                        )
+//                    )
+                }
             }
 
 
