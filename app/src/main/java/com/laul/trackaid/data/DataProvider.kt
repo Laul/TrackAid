@@ -128,11 +128,8 @@ class DataProvider {
 
 
             moduleList.values.toList().drop(1).forEach {
-                if (it.mName == "Glucose") {
-                    it.getGlucoseData(client)
-                } else {
-                    it.getHealthConnectData(client, Duration.ofDays(1))
-                }
+                    it.getHealthConnectData(client)
+
 
             }
         }

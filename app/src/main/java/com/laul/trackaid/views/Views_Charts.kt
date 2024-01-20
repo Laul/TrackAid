@@ -106,7 +106,7 @@ fun compChart(
                     maxLabelCount = MAX_LABEL_COUNT,
                 ) else null,
 
-                )
+            )
         }
         if (module.chartType == "Line") {
             var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
@@ -203,43 +203,70 @@ fun compChart(
     fun compChart_Detailed(module: ModuleData, backgroundColor: Color) {
         var cChartModel_Records = entryModelOf(*module.cFloatEntries_Records.toTypedArray())
 
-        Chart(
-            chartScrollState = rememberChartScrollState(),
-//        chartScrollSpec = rememberChartScrollSpec( initialScroll = InitialScroll.End),
-            chart = getLineChart(
-                module = module,
-                type = "Line"
-            ),
-            modifier = Modifier.background(backgroundColor),
-            autoScaleUp = AutoScaleUp.Full,
-            horizontalLayout = horizontalLayout,
-            chartScrollSpec = rememberChartScrollSpec(
-                isScrollEnabled = true,
-                initialScroll = InitialScroll.End
-            ),
-            marker = rememberMarker(),
-            model = cChartModel_Records,
+        if (module.mName == "Steps") {
+            Chart(
+                chart = getColumnChart(module = module),
+                model = cChartModel_Records,
+                startAxis = rememberStartAxis(
+                    title = module.mUnit,
+                    guideline = null
+                ),
 
-            startAxis = rememberStartAxis(
-                title = module.mUnit,
-                guideline = null
-            ),
-
-            bottomAxis = bottomAxis(
-                guideline = null,
-                itemPlacer = bottomAxisItemPlacer,
+                chartScrollSpec = rememberChartScrollSpec(
+                    isScrollEnabled = true,
+                    initialScroll = InitialScroll.End
+                ),
+                bottomAxis = bottomAxis(
+                    guideline = null,
 
 //            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
-                valueFormatter = { x, _
-                    -> getDate(x.toLong(),"HH:mm" )
-                },
-
-                titleComponent = textComponent(
-                    padding = dimensionsOf(2.dp, 2.dp),
-                    margins = dimensionsOf(2.dp),
+                    valueFormatter = { x, _
+                        ->
+                        getDate(x.toLong(), "HH:mm")
+                    },
                 )
             )
-        )
+        }
+        else {
+            Chart(
+                chartScrollState = rememberChartScrollState(),
+                chart = getLineChart(
+                    module = module,
+                    type = "Line"
+                ),
+                modifier = Modifier.background(backgroundColor),
+                autoScaleUp = AutoScaleUp.Full,
+                horizontalLayout = horizontalLayout,
+                chartScrollSpec = rememberChartScrollSpec(
+                    isScrollEnabled = true,
+                    initialScroll = InitialScroll.End
+                ),
+                marker = rememberMarker(),
+                model = cChartModel_Records,
+
+                startAxis = rememberStartAxis(
+                    title = module.mUnit,
+                    guideline = null
+                ),
+
+                bottomAxis = bottomAxis(
+                    guideline = null,
+                    itemPlacer = bottomAxisItemPlacer,
+
+//            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+//                    valueFormatter = { x, _
+//                        ->
+//                        getDate(x.toLong(), "HH:mm")
+//                    },
+
+                    titleComponent = textComponent(
+                        padding = dimensionsOf(2.dp, 2.dp),
+                        margins = dimensionsOf(2.dp),
+                    )
+                )
+            )
+
+        }
 
     }
 
@@ -326,9 +353,9 @@ fun compChart(
             columns = columns,
             spacing = 5.dp,
             mergeMode = ColumnChart.MergeMode.Stack,
-            axisValuesOverrider = AxisValuesOverrider.fixed(
-                maxY = module.stats!!.value.max.ceil+  module.stats!!.value.max.ceil %2 // Adjust Y-axis value for even numbers
-            )
+            axisValuesOverrider = if (module.mName != "Steps") AxisValuesOverrider.fixed(
+                maxY = module.stats!!.value.max.ceil+  module.stats!!.value.max.ceil %2
+        )  else null
         )
 
     }
