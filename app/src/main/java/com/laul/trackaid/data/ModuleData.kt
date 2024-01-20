@@ -56,6 +56,7 @@ data class ModuleData(
     var cFloatEntries_Records = arrayListOf<ArrayList<FloatEntry>>()
 
     var bottomAxisValues = ArrayList<String>()
+    var bottomAxisValues_Detailed = ArrayList<String>()
     var startAxisValues = ArrayList<Double>()
 
     // Init variables to set the size of the buckets.
@@ -249,6 +250,10 @@ data class ModuleData(
 
             for (i in 0 until (duration + 1)*24) {
                 listOfHours.add(start.atZone(ZoneId.systemDefault()).plus(i.toLong(), ChronoUnit.HOURS))
+            }
+
+            listOfHours.forEach {
+                bottomAxisValues_Detailed.add(it.format(DateTimeFormatter.ofPattern("hh:mm")))
             }
 
             cFloatEntries_Records.forEach { item ->

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.DataGeneral.Companion.getDate
 import com.laul.trackaid.data.ModuleData
@@ -49,13 +50,9 @@ import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import java.text.SimpleDateFormat
 import java.time.format.DateTimeFormatter
 
-private const val BOTTOM_AXIS_ITEM_SPACING = 15
-private const val BOTTOM_AXIS_ITEM_OFFSET = 0
-private const val MIN_VALUE = 8
 private const val MAX_LABEL_COUNT = 6
-private val bottomAxisItemPlacer =
-    AxisItemPlacer.Horizontal.default(BOTTOM_AXIS_ITEM_SPACING, BOTTOM_AXIS_ITEM_OFFSET, false ,true )
-
+private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(20, 0, false ,true )
+private val bottomAxisItemPlacer_Detailed = AxisItemPlacer.Horizontal.default(4, 0, false ,true )
 private val horizontalLayout = HorizontalLayout.FullWidth(
     scalableStartPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
     scalableEndPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
@@ -176,19 +173,6 @@ fun compChart(
 
                     ) else null,
 
-
-//
-//                if (isStartAxis) startAxis(
-//                    guideline = null,
-//                    horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
-//                    titleComponent = textComponent(
-//                        padding = dimensionsOf(2.dp, 2.dp),
-//                        margins = dimensionsOf(2.dp),
-//                    ),
-//                    itemPlacer = startAxisItemPlacer,
-//                )
-//                else null,
-//
             )
 
         }
@@ -218,12 +202,9 @@ fun compChart(
                 ),
                 bottomAxis = bottomAxis(
                     guideline = null,
-
-//            valueFormatter = { x, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
-                    valueFormatter = { x, _
-                        ->
-                        getDate(x.toLong(), "HH:mm")
-                    },
+                    itemPlacer = bottomAxisItemPlacer_Detailed,
+                    valueFormatter = { x, _ -> module.bottomAxisValues_Detailed[x.toInt() % module.bottomAxisValues_Detailed.size] },
+                    tick =  LineComponent(color = Color.Transparent.toArgb(), thicknessDp = 0f)
                 )
             )
         }
