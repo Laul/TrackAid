@@ -3,7 +3,6 @@ package com.laul.trackaid.data
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.BloodPressureRecord
@@ -17,18 +16,12 @@ import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.data.DataGeneral.Companion.createTimes
 import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.time.Duration
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.Temporal
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.math.ceil
 import kotlin.reflect.KClass
 
 
@@ -48,6 +41,8 @@ data class ModuleData(
     var nLines : Int,
 
     var recordType : KClass<out Record>?,
+    var thresholdMin : Float,
+    var thresholdMax : Float,
 
     ) {
     // Chart variables

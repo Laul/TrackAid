@@ -4,14 +4,12 @@ import android.graphics.Color
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.R
 import com.laul.trackaid.views.NavRoutes
-import java.time.Duration
 
 
 class DataProvider {
@@ -32,7 +30,9 @@ class DataProvider {
                 chartType = null,
                 nCol = 0 ,
                 nLines = 0,
-                recordType = null
+                recordType = null,
+                thresholdMin = 0f,
+                thresholdMax = 0f,
             ),
 
             NavRoutes.Detailed.route + "/1" to ModuleData(
@@ -49,7 +49,9 @@ class DataProvider {
                 chartType = "Combo",
                 nCol = 2,
                 nLines= 1,
-                recordType = BloodGlucoseRecord::class
+                recordType = BloodGlucoseRecord::class,
+                thresholdMin = 4f,
+                thresholdMax = 9f,
             ),
 
             NavRoutes.Detailed.route + "/2" to ModuleData(
@@ -66,7 +68,9 @@ class DataProvider {
                 chartType = "Columns",
                 nCol = 1,
                 nLines= 0,
-                recordType = StepsRecord::class
+                recordType = StepsRecord::class,
+                thresholdMin = 0f,
+                thresholdMax = 1700f,
             ),
 
             NavRoutes.Detailed.route + "/3" to ModuleData(
@@ -83,7 +87,9 @@ class DataProvider {
                 chartType = "Combo",
                 nCol = 2,
                 nLines= 1,
-                recordType = HeartRateRecord::class
+                recordType = HeartRateRecord::class,
+                thresholdMin = 80f,
+                thresholdMax = 115f,
             ),
 //
 //            NavRoutes.Detailed.route + "/4" to ModuleData(
