@@ -3,32 +3,26 @@ package com.laul.trackaid.data
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.aggregate.AggregateMetric
 import androidx.health.connect.client.aggregate.AggregationResultGroupedByDuration
 import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateGroupByDurationRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
-import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.LDataLastPoint
+import com.laul.trackaid.LDataSerie
+import com.laul.trackaid.LDataSeries
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.data.DataGeneral.Companion.createTimes
 import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
 import java.time.Duration
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
-import java.time.temporal.Temporal
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.math.ceil
 import kotlin.reflect.KClass
 
 
@@ -40,7 +34,7 @@ data class ModuleData(
     val mIcon_outlined: Int,
     val mColor_Primary: Int?,
     val mColor_Secondary: Int?,
-    var lastDPoint: MutableState<LDataPoint>?,
+    var lastDPoint: MutableState<LDataLastPoint>?,
     var stats: MutableState<LDataStats>?,
     var duration: Int,
     var chartType: String?,
@@ -51,6 +45,15 @@ data class ModuleData(
 
     ) {
     // Chart variables
+    var series_all = LDataSeries(
+        s_all = LDataSerie(arrayListOf(), arrayListOf()),
+        s_sumD = LDataSerie(arrayListOf(), arrayListOf()),
+        s_sumH = LDataSerie(arrayListOf(), arrayListOf()),
+        s_min = LDataSerie(arrayListOf(), arrayListOf()),
+        s_max = LDataSerie(arrayListOf(), arrayListOf()),
+        s_avg = LDataSerie(arrayListOf(), arrayListOf())
+    )
+
     var cFloatEntries_DailyMinMax = arrayListOf<ArrayList<FloatEntry>>()
     var cFloatEntries_DailyAvg = arrayListOf<ArrayList<FloatEntry>>()
     var cFloatEntries_Records = arrayListOf<ArrayList<FloatEntry>>()
@@ -74,7 +77,6 @@ data class ModuleData(
         }
 
         cFloatEntries_Records.add(arrayListOf())
-
 
     }
 
@@ -106,6 +108,22 @@ data class ModuleData(
 
 
         // Clear data variable for chart
+        for (i in 0 until listOfDates.size) {
+            series_all.s_min.x.add(i.toFloat())
+            series_all.s_min.y.add(0f)
+
+            series_all.s_max.x.add(i.toFloat())
+            series_all.s_max.y.add(0f)
+
+            series_all.s_sumD.x.add(i.toFloat())
+            series_all.s_sumD.y.add(0f)
+
+            series_all.s_avg.x.add(i.toFloat())
+            series_all.s_avg.y.add(0f)
+
+        }
+
+
         cFloatEntries_DailyMinMax.forEach { item ->
             item.clear()
             for (i in 0 until listOfDates.size) {
@@ -122,6 +140,7 @@ data class ModuleData(
             item.clear()
 
         }
+
 
         return listOfDates
     }
@@ -150,7 +169,11 @@ data class ModuleData(
         // Loop to get all records in proper variables
         for (record in records) {
             // All Records to display in detailed view
-            cFloatEntries_Records[0].add(FloatEntry(record.time.toEpochMilli().toFloat(), record.level.inMillimolesPerLiter.toFloat()))
+
+            // cFloatEntries_Records[0].add(FloatEntry(record.time.toEpochMilli().toFloat(), record.level.inMillimolesPerLiter.toFloat()))
+            series_all.s_all.x.add(record.time.toEpochMilli().toFloat())
+            series_all.s_all.y.add(record.level.inMillimolesPerLiter.toFloat())
+            cFloatEntries_Records[0].add(FloatEntry(series_all.s_all.x.last(), series_all.s_all.y.last()))
 
             if (record.time.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
                 // Aggregate Glucose for main view chart
@@ -174,10 +197,10 @@ data class ModuleData(
 
         // LAST DATA
         if (records.isNotEmpty() ) {
-            val value = arrayListOf(records.last().level.inMillimolesPerLiter.toFloat())
+            val value = records.last().level.inMillimolesPerLiter.toFloat()
             val date = ZonedDateTime.ofInstant(records.last().time, ZoneId.systemDefault())
             lastDPoint!!.value =
-                LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")), value)
+                LDataLastPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")), value)
         }
 
 
@@ -195,18 +218,15 @@ data class ModuleData(
         val idDay = (0 until listOfDates.size).firstOrNull { listOfDates[it].dayOfYear == currentDate.dayOfYear }
 
         if( idDay != null ) {
-            cFloatEntries_DailyMinMax[0][idDay] =
-                cFloatEntries_DailyMinMax[0][idDay].withY(
-                    listOfValues.min().toFloat()
-                ) as FloatEntry
-            cFloatEntries_DailyMinMax[1][idDay] =
-                cFloatEntries_DailyMinMax[1][idDay].withY(
-                    listOfValues.max().toFloat() -listOfValues.min().toFloat()
-                ) as FloatEntry
-            cFloatEntries_DailyAvg[0][idDay] =
-                cFloatEntries_DailyAvg[0][idDay].withY(
-                    listOfValues.average().toFloat()
-                ) as FloatEntry
+            series_all.s_min.y[idDay]  = listOfValues.min().toFloat()
+            series_all.s_max.y[idDay]  = listOfValues.max().toFloat()
+            series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
+
+            cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_min.x[idDay], series_all.s_min.y[idDay])
+            cFloatEntries_DailyMinMax[1][idDay] = FloatEntry( series_all.s_max.x[idDay], series_all.s_max.y[idDay])
+            cFloatEntries_DailyAvg[0][idDay] = FloatEntry( series_all.s_avg.x[idDay], series_all.s_avg.y[idDay])
+
+
         }
     }
 
@@ -253,7 +273,13 @@ data class ModuleData(
             }
 
             listOfHours.forEach {
-                bottomAxisValues_Detailed.add(it.format(DateTimeFormatter.ofPattern("hh:mm")))
+                bottomAxisValues_Detailed.add(it.format(DateTimeFormatter.ofPattern("hha")))
+            }
+
+
+            for (i in 0 until listOfHours.size) {
+                series_all.s_sumH.x.add(i.toFloat())
+                series_all.s_sumH.y.add(0f)
             }
 
             cFloatEntries_Records.forEach { item ->
@@ -262,28 +288,20 @@ data class ModuleData(
                 }
             }
 
-
             for (bucket in response) {
                 val idHour = (0 until listOfHours.size).firstOrNull { listOfHours[it].truncatedTo(ChronoUnit.HOURS) == bucket.endTime.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.HOURS) }
                 if( idHour != null ) {
-                    cFloatEntries_Records[0][idHour] = cFloatEntries_Records[0][idHour].withY(bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
+                    series_all.s_sumH.y[idHour] = bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat().toFloat()
+                    cFloatEntries_Records[0][idHour] = FloatEntry( series_all.s_sumH.x[idHour], series_all.s_sumH.y[idHour])
 
-
-//
-//                        .add(
-//                        FloatEntry(
-//                            bucket.endTime.toEpochMilli().toFloat(),
-//                            bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()
-//                        )
-//                    )
                 }
             }
 
 
             //  LAST DATA
-            val value = arrayListOf(cFloatEntries_DailyMinMax[0].last().y)
+            val value = series_all.s_sumD.y.last()
             val date = now.atZone(ZoneId.systemDefault())
-            lastDPoint!!.value = LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
+            lastDPoint!!.value = LDataLastPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
 
             // STATS
             stats!!.value = getStats()
@@ -334,13 +352,15 @@ data class ModuleData(
             ))
 
         for (record in response.records) {
-            cFloatEntries_Records[0].add(FloatEntry(record.endTime.toEpochMilli().toFloat(), record.samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat()))
+            series_all.s_all.x.add(record.endTime.toEpochMilli().toFloat())
+            series_all.s_all.y.add(record.samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
+            cFloatEntries_Records[0].add(FloatEntry(series_all.s_all.x.last(), series_all.s_all.y.last()))
         }
 
         //  LAST DATA
-        val value = arrayListOf(response.records.last().samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
+        val value = response.records.last().samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat()
         val date = ZonedDateTime.ofInstant(response.records.last().endTime,ZoneId.systemDefault())
-        lastDPoint!!.value = LDataPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
+        lastDPoint!!.value = LDataLastPoint(date.format(DateTimeFormatter.ofPattern("E, MMM dd hh:mm a")),  value)
 
         // STATS
         stats!!.value = getStats()
@@ -366,41 +386,42 @@ data class ModuleData(
             if( idDay != null ) {
                 when (mName) {
                     "Steps" -> {
-                        // Columns from 0 to the total number of steps
-                        cFloatEntries_DailyMinMax[0][idDay] =
-                            cFloatEntries_DailyMinMax[0][idDay].withY(bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()) as FloatEntry
+                        series_all.s_sumD.y[idDay] = bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()
+                        cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_sumD.x[idDay], series_all.s_sumD.y[idDay])
                     }
 
                     "Heart Rate" -> {
+                        series_all.s_min.y[idDay] = bucket.result[HeartRateRecord.BPM_MIN]!!.toFloat()
+                        series_all.s_max.y[idDay] = bucket.result[HeartRateRecord.BPM_MAX]!!.toFloat()
+                        series_all.s_avg.y[idDay] = bucket.result[HeartRateRecord.BPM_AVG]!!.toFloat()
+
                         // Columns from min to max + average as point
-                        cFloatEntries_DailyMinMax[0][idDay] =
-                            cFloatEntries_DailyMinMax[0][idDay].withY(bucket.result[HeartRateRecord.BPM_MIN]!!.toFloat()) as FloatEntry
-                        cFloatEntries_DailyMinMax[1][idDay] =
-                            cFloatEntries_DailyMinMax[1][idDay].withY(bucket.result[HeartRateRecord.BPM_MAX]!!.toFloat()) as FloatEntry
-                        cFloatEntries_DailyAvg[0][idDay] =
-                            cFloatEntries_DailyAvg[0][idDay].withY(bucket.result[HeartRateRecord.BPM_AVG]!!.toFloat()) as FloatEntry
+                        cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_min.x[idDay], series_all.s_min.y[idDay])
+                        cFloatEntries_DailyMinMax[1][idDay] = FloatEntry( series_all.s_max.x[idDay], series_all.s_max.y[idDay])
+                        cFloatEntries_DailyAvg[0][idDay] = FloatEntry( series_all.s_avg.x[idDay], series_all.s_avg.y[idDay])
+
                     }
 
-                    "Pressure" -> {
-                        // Columns from min to max + average as point
-                        if (bucket.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - bucket.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                            cFloatEntries_DailyMinMax[0][idDay] =
-                                cFloatEntries_DailyMinMax[0][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                            cFloatEntries_DailyMinMax[1][idDay] =
-                                cFloatEntries_DailyMinMax[1][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
-                        }
-                        if (bucket.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - bucket.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
-                            cFloatEntries_DailyMinMax[0][idDay] =
-                                cFloatEntries_DailyMinMax[2][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                            cFloatEntries_DailyMinMax[1][idDay] =
-                                cFloatEntries_DailyMinMax[3][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
-                        }
-
-                        cFloatEntries_DailyAvg[0][idDay] =
-                            cFloatEntries_DailyAvg[0][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                        cFloatEntries_DailyAvg[1][idDay] =
-                            cFloatEntries_DailyAvg[1][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
-                    }
+//                    "Pressure" -> {
+//                        // Columns from min to max + average as point
+//                        if (bucket.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - bucket.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+//                            cFloatEntries_DailyMinMax[0][idDay] =
+//                                cFloatEntries_DailyMinMax[0][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+//                            cFloatEntries_DailyMinMax[1][idDay] =
+//                                cFloatEntries_DailyMinMax[1][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
+//                        }
+//                        if (bucket.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - bucket.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat() > 10f) {
+//                            cFloatEntries_DailyMinMax[0][idDay] =
+//                                cFloatEntries_DailyMinMax[2][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_MIN]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+//                            cFloatEntries_DailyMinMax[1][idDay] =
+//                                cFloatEntries_DailyMinMax[3][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_MAX]!!.inMillimetersOfMercury.toFloat() - cFloatEntries_DailyMinMax[0][idDay].y) as FloatEntry
+//                        }
+//
+//                        cFloatEntries_DailyAvg[0][idDay] =
+//                            cFloatEntries_DailyAvg[0][idDay].withY(bucket.result[BloodPressureRecord.DIASTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+//                        cFloatEntries_DailyAvg[1][idDay] =
+//                            cFloatEntries_DailyAvg[1][idDay].withY(bucket.result[BloodPressureRecord.SYSTOLIC_AVG]!!.inMillimetersOfMercury.toFloat()) as FloatEntry
+//                    }
 
                 }
             }
@@ -421,12 +442,12 @@ data class ModuleData(
         // - Columns contain info about min (first arraylist) and max (second arraylist)
         if (chartType == "Combo"){
             // Min and avg are the min of all min
-            min = cFloatEntries_DailyMinMax[0].stream().filter { it.y != 0f }.mapToDouble { it.y.toDouble() }.summaryStatistics().min.toFloat()
-            avg = cFloatEntries_DailyAvg[0].stream().filter { it.y != 0f }.mapToDouble { it.y.toDouble() }.summaryStatistics().average.toFloat()
+            min= series_all.s_min.y.min()
+            avg= series_all.s_avg.y.average().toFloat()
 
             // Max of the week is the max of all max. Cannot be based on the columns because of stacking
             for (i in 0 until duration ) {
-                var dailyMax = cFloatEntries_DailyMinMax[0][i].y + cFloatEntries_DailyMinMax[1][i].y
+                var dailyMax = series_all.s_min.y[i] + series_all.s_max.y[i]
                 if (dailyMax>max) max = dailyMax
 
             }
@@ -434,9 +455,10 @@ data class ModuleData(
         }
 
         if (chartType == "Columns"){
-            min = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().min.toFloat()
-            max = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().max.toFloat()
-            avg = cFloatEntries_DailyMinMax[0].stream().filter{it.y !=0f}.mapToDouble{it.y.toDouble()}.summaryStatistics().average.toFloat()
+
+            min= series_all.s_min.y.min()
+            max= series_all.s_max.y.max()
+            avg= series_all.s_avg.y.average().toFloat()
         }
 
 

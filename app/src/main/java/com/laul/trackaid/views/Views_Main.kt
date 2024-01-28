@@ -217,7 +217,7 @@ private fun compModules(
 private fun compModule(
     module: ModuleData,
     navController: NavController,
-    lastDPoint: MutableState<LDataPoint>?
+    lastDPoint: MutableState<LDataLastPoint>?
 ) {
     // Variables to be used to get data from GFit
     var moduleID by remember { mutableStateOf(module.mId.toString()) }
@@ -323,13 +323,13 @@ private fun compModule(
                     text =
 
                     if (module.mName == "Glucose") {
-                        "%.2f".format(lastDPoint!!.value.value[0])
+                        "%.2f".format(lastDPoint!!.value.value)
                     }
                     //else if (module.mName == "Pressure") {
 //                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
                 //    }
             else {
-                        "%.0f".format(lastDPoint!!.value.value[0])
+                        "%.0f".format(lastDPoint!!.value.value)
                     },
                     style = MaterialTheme.typography.displayMedium,
                     color = color_general_primary,

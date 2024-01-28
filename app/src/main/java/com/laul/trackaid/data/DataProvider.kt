@@ -6,7 +6,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BloodGlucoseRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
-import com.laul.trackaid.LDataPoint
+import com.laul.trackaid.LDataLastPoint
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.R
 
@@ -23,7 +23,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_home_outline,
                 mColor_Primary = R.color.red_primary,
                 mColor_Secondary = R.color.red_primary,
-                lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                lastDPoint = mutableStateOf(LDataLastPoint("", 0f)),
                 stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = null,
@@ -40,7 +40,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_bg_outline,
                 mColor_Primary = Color.rgb(156, 75, 194),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                lastDPoint = mutableStateOf(LDataPoint("",  arrayListOf(0f))),
+                lastDPoint = mutableStateOf(LDataLastPoint("",  0f)),
                 stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Combo",
@@ -57,7 +57,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_steps_outline,
                 mColor_Primary = Color.rgb(201, 117, 7),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                lastDPoint = mutableStateOf(LDataLastPoint("", 0f)),
                 stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Columns",
@@ -65,7 +65,7 @@ class DataProvider {
                 nLines= 0,
                 recordType = StepsRecord::class
             ),
-
+//
             NavRoutes.Detailed.route + "/3" to ModuleData(
                 mId = 3,
                 mName = "Heart Rate",
@@ -74,7 +74,7 @@ class DataProvider {
                 mIcon_outlined = R.drawable.ic_hr_outline,
                 mColor_Primary = Color.rgb(0, 119, 113),
                 mColor_Secondary = Color.rgb(103, 60, 79),
-                lastDPoint = mutableStateOf(LDataPoint("", arrayListOf(0f))),
+                lastDPoint = mutableStateOf(LDataLastPoint("", 0f)),
                 stats = mutableStateOf(LDataStats(0f,0f,0f)),
                 duration = 7,
                 chartType = "Combo",
@@ -82,7 +82,7 @@ class DataProvider {
                 nLines= 1,
                 recordType = HeartRateRecord::class
             ),
-//
+
 //            NavRoutes.Detailed.route + "/4" to ModuleData(
 //                mId = 4,
 //                mName = "Pressure",

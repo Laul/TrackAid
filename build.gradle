@@ -2,7 +2,7 @@ buildscript {
     ext {
         health_connect_version = "1.0.0-alpha11"
         compose_version = '1.5.3'
-        material3_version = '1.2.0-alpha09'
+        material3_version = '1.2.0-rc01'
 //        material3_version = '1.4.0-rc01'
 //        material3_version = '1.0.1'
         lifecycle_version = '2.5.1'

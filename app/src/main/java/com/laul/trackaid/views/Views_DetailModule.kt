@@ -59,13 +59,13 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
 
                 Text(
                     if (module.mName == "Glucose") {
-                        "%.2f".format(module.lastDPoint!!.value.value[0])
+                        "%.2f".format(module.lastDPoint!!.value.value)
                     }
                     //else if (module.mName == "Pressure") {
 //                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
                     //    }
                     else {
-                        "%.0f".format(module.lastDPoint!!.value.value[0])
+                        "%.0f".format(module.lastDPoint!!.value.value)
                     },
                     color = color_general_primary,
                     style = androidx.compose.material3.MaterialTheme.typography.displayMedium,
