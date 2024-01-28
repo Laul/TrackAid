@@ -16,8 +16,7 @@ import com.laul.trackaid.LDataSerie
 import com.laul.trackaid.LDataSeries
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.data.DataGeneral.Companion.createTimes
-import com.patrykandpatrick.vico.core.entry.FloatEntry
-import com.patrykandpatrick.vico.core.entry.entryOf
+
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -54,33 +53,9 @@ data class ModuleData(
         s_avg = LDataSerie(arrayListOf(), arrayListOf())
     )
 
-    var cFloatEntries_DailyMinMax = arrayListOf<ArrayList<FloatEntry>>()
-    var cFloatEntries_DailyAvg = arrayListOf<ArrayList<FloatEntry>>()
-    var cFloatEntries_Records = arrayListOf<ArrayList<FloatEntry>>()
-
     var bottomAxisValues = ArrayList<String>()
     var bottomAxisValues_Detailed = ArrayList<String>()
     var startAxisValues = ArrayList<Double>()
-
-    // Init variables to set the size of the buckets.
-    init {
-
-        if (nCol>0) {
-            for (i in 0 until nCol ) {
-                cFloatEntries_DailyMinMax.add(arrayListOf())
-            }
-        }
-        if (nLines>0) {
-            for (i in 0 until nLines ) {
-                cFloatEntries_DailyAvg.add(arrayListOf())
-            }
-        }
-
-        cFloatEntries_Records.add(arrayListOf())
-
-    }
-
-
 
     /** Get all HealthConnect data types except glucose
      * @param healthConnectClient: client to retrieve healthconnect data
@@ -122,26 +97,6 @@ data class ModuleData(
             series_all.s_avg.y.add(0f)
 
         }
-
-
-        cFloatEntries_DailyMinMax.forEach { item ->
-            item.clear()
-            for (i in 0 until listOfDates.size) {
-                item.add(entryOf(item.size, 0f))
-            }
-        }
-        cFloatEntries_DailyAvg.forEach { item ->
-            item.clear()
-            for (i in 0 until listOfDates.size) {
-                item.add(entryOf(item.size, 0f))
-            }
-        }
-        cFloatEntries_Records.forEach { item ->
-            item.clear()
-
-        }
-
-
         return listOfDates
     }
 
@@ -173,7 +128,6 @@ data class ModuleData(
             // cFloatEntries_Records[0].add(FloatEntry(record.time.toEpochMilli().toFloat(), record.level.inMillimolesPerLiter.toFloat()))
             series_all.s_all.x.add(record.time.toEpochMilli().toFloat())
             series_all.s_all.y.add(record.level.inMillimolesPerLiter.toFloat())
-            cFloatEntries_Records[0].add(FloatEntry(series_all.s_all.x.last(), series_all.s_all.y.last()))
 
             if (record.time.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS) != currentDay ) {
                 // Aggregate Glucose for main view chart
@@ -221,12 +175,6 @@ data class ModuleData(
             series_all.s_min.y[idDay]  = listOfValues.min().toFloat()
             series_all.s_max.y[idDay]  = listOfValues.max().toFloat()
             series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
-
-            cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_min.x[idDay], series_all.s_min.y[idDay])
-            cFloatEntries_DailyMinMax[1][idDay] = FloatEntry( series_all.s_max.x[idDay], series_all.s_max.y[idDay])
-            cFloatEntries_DailyAvg[0][idDay] = FloatEntry( series_all.s_avg.x[idDay], series_all.s_avg.y[idDay])
-
-
         }
     }
 
@@ -282,17 +230,11 @@ data class ModuleData(
                 series_all.s_sumH.y.add(0f)
             }
 
-            cFloatEntries_Records.forEach { item ->
-                for (i in 0 until listOfHours.size) {
-                    item.add(entryOf(item.size, 0f))
-                }
-            }
 
             for (bucket in response) {
                 val idHour = (0 until listOfHours.size).firstOrNull { listOfHours[it].truncatedTo(ChronoUnit.HOURS) == bucket.endTime.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.HOURS) }
                 if( idHour != null ) {
                     series_all.s_sumH.y[idHour] = bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat().toFloat()
-                    cFloatEntries_Records[0][idHour] = FloatEntry( series_all.s_sumH.x[idHour], series_all.s_sumH.y[idHour])
 
                 }
             }
@@ -354,7 +296,6 @@ data class ModuleData(
         for (record in response.records) {
             series_all.s_all.x.add(record.endTime.toEpochMilli().toFloat())
             series_all.s_all.y.add(record.samples.stream().mapToLong{it.beatsPerMinute}.summaryStatistics().average.toFloat())
-            cFloatEntries_Records[0].add(FloatEntry(series_all.s_all.x.last(), series_all.s_all.y.last()))
         }
 
         //  LAST DATA
@@ -387,19 +328,12 @@ data class ModuleData(
                 when (mName) {
                     "Steps" -> {
                         series_all.s_sumD.y[idDay] = bucket.result[StepsRecord.COUNT_TOTAL]!!.toFloat()
-                        cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_sumD.x[idDay], series_all.s_sumD.y[idDay])
                     }
 
                     "Heart Rate" -> {
                         series_all.s_min.y[idDay] = bucket.result[HeartRateRecord.BPM_MIN]!!.toFloat()
                         series_all.s_max.y[idDay] = bucket.result[HeartRateRecord.BPM_MAX]!!.toFloat()
                         series_all.s_avg.y[idDay] = bucket.result[HeartRateRecord.BPM_AVG]!!.toFloat()
-
-                        // Columns from min to max + average as point
-                        cFloatEntries_DailyMinMax[0][idDay] = FloatEntry( series_all.s_min.x[idDay], series_all.s_min.y[idDay])
-                        cFloatEntries_DailyMinMax[1][idDay] = FloatEntry( series_all.s_max.x[idDay], series_all.s_max.y[idDay])
-                        cFloatEntries_DailyAvg[0][idDay] = FloatEntry( series_all.s_avg.x[idDay], series_all.s_avg.y[idDay])
-
                     }
 
 //                    "Pressure" -> {

@@ -350,8 +350,8 @@ private fun compModule(
 
             }
             Spacer(modifier = Modifier.width(30.dp))
-
-            if  (module.cFloatEntries_DailyMinMax.isNotEmpty() || module.cFloatEntries_DailyAvg.isNotEmpty() ) {
+//
+            if  (module.series_all.s_avg.y.isNotEmpty() || module.series_all.s_sumD.y.isNotEmpty() ) {
                 compChart(
                     module = module,
                     isDetailedView = false,

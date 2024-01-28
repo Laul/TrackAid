@@ -65,7 +65,7 @@ class DataProvider {
                 nLines= 0,
                 recordType = StepsRecord::class
             ),
-//
+
             NavRoutes.Detailed.route + "/3" to ModuleData(
                 mId = 3,
                 mName = "Heart Rate",
