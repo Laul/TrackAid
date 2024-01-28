@@ -22,10 +22,12 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-.gradle
+# Gradle files: ignore all but build.gradle to track versions changes
 gradlew*
+*.gradle
+gradle*
+!build.gradle
 .idea
-gradle/
 app/src/main/res/drawable/ic_weight.xml
 app/src/main/res/drawable/ic_weight_outline.xml
 app/src/main/res/drawable/Archive/ic_bg.svg

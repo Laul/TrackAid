@@ -4,14 +4,11 @@ import android.graphics.Color
 import androidx.compose.runtime.mutableStateOf
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BloodGlucoseRecord
-import androidx.health.connect.client.records.BloodPressureRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.StepsRecord
 import com.laul.trackaid.LDataPoint
 import com.laul.trackaid.LDataStats
 import com.laul.trackaid.R
-import com.laul.trackaid.views.NavRoutes
-import java.time.Duration
 
 
 class DataProvider {
@@ -125,7 +122,6 @@ class DataProvider {
 
 
         suspend fun healthConnectUpdate(client: HealthConnectClient) {
-
 
             moduleList.values.toList().drop(1).forEach {
                     it.getHealthConnectData(client)

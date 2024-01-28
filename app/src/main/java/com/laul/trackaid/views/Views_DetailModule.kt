@@ -8,11 +8,11 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.laul.trackaid.data.DataProvider
+import com.laul.trackaid.data.NavRoutes
 import com.laul.trackaid.theme.color_general_primary
 import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.views.BottomNavigationBar
-import com.laul.trackaid.views.NavRoutes
 import com.laul.trackaid.views.TopNavigationBar
 
 

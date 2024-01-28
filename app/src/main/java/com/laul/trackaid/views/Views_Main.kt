@@ -3,7 +3,6 @@ package com.laul.trackaid
 
 //import com.laul.trackaid.views.BottomNavigationBar
 import android.content.Context
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,8 +21,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
-import androidx.health.connect.client.permission.HealthPermission
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,11 +30,11 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.DataProvider.Companion.healthConnectUpdate
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.data.NavRoutes
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
-import com.laul.trackaid.views.NavRoutes
+import com.laul.trackaid.views.getHealthConnectPermissions
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -109,52 +106,18 @@ fun Header() {
  */
 @Composable
 fun compCommon(context: Context) {
-    // Create client
-    val client = HealthConnectClient.getOrCreate(context = context )
-
-    // Create list of permissions to request
-    val permissionsSet = mutableSetOf<String>()
-
-    DataProvider.moduleList.values.toList().drop(1).forEach{
-        permissionsSet.add(HealthPermission.getReadPermission(it.recordType!!))
-    }
-
-    // Create the permissions launcher.
-    val requestPermissionActivityContract = PermissionController.createRequestPermissionResultContract()
-    var permissionGranted by remember {
-        mutableStateOf(false)
-    }
-    // Create a CoroutineScope bound to the request for HealthConnect
-    val coroutineScope = rememberCoroutineScope()
-
-    val requestPermissions = rememberLauncherForActivityResult(
-        requestPermissionActivityContract
-    ) {
-        granted -> permissionGranted =  granted.containsAll(permissionsSet)
-    }
-
-    // Permissions management for healthconnect
-    LaunchedEffect(permissionGranted) {
-        if (!permissionGranted) {
-            coroutineScope.launch {
-                val granted = client.permissionController
-                    .getGrantedPermissions()
-                if (granted.containsAll(permissionsSet)) {
-                    permissionGranted = true
-                    DataProvider.healthConnectUpdate(client )
-
-                } else {
-                    // Permissions not granted, request permissions.
-                    requestPermissions.launch(permissionsSet)
-                }
-            }
-        }
-    }
+    // Get HealthConnect Permissions Granting
+    val (client, permissionGranted) = getHealthConnectPermissions(context)
 
     // If permissions are granted, we display the home view
     if (permissionGranted) {
-        val navController = rememberNavController()
 
+        // If permissions are true, we retrieve data
+        LaunchedEffect(permissionGranted) {
+            DataProvider.healthConnectUpdate(client )
+        }
+
+        val navController = rememberNavController()
         NavHost(
             navController = navController,
             startDestination = NavRoutes.Home.route,
@@ -180,7 +143,6 @@ fun compCommon(context: Context) {
  * @param navController: Manager for bottom navigation bar
  * @param client: client to healthconnect
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun compMainModule(navController: NavController,client: HealthConnectClient) {
 
@@ -231,9 +193,13 @@ private fun compModules(
                 items = moduleList,
                 itemContent = {
 
+                    // lastDPoint is used as value to compare or refreshing the UI
                     val lastDPoint = remember { it.lastDPoint }
+
                     compModule(
-                        module = it, navController, lastDPoint!!
+                        module = it,
+                        navController = navController,
+                        lastDPoint = lastDPoint!!
                     )
                 }
             )

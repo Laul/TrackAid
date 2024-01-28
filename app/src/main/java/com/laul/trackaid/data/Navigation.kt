@@ -1,4 +1,4 @@
-package com.laul.trackaid.views
+package com.laul.trackaid.data
 
 
 class Navigation {
