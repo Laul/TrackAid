@@ -81,9 +81,22 @@ data class ModuleData(
             bottomAxisValues.add(it.format(DateTimeFormatter.ofPattern("EEE")))
         }
 
-
         // Clear data variable for chart
+        series_all.s_min.x.clear()
+        series_all.s_min.y.clear()
+        series_all.s_max.x.clear()
+        series_all.s_max.y.clear()
+        series_all.s_avg.x.clear()
+        series_all.s_avg.y.clear()
+        series_all.s_sumD.x.clear()
+        series_all.s_sumH.y.clear()
+        series_all.s_all.x.clear()
+        series_all.s_all.y.clear()
+
+
+        // Initialize series
         for (i in 0 until listOfDates.size) {
+
             series_all.s_min.x.add(i.toFloat())
             series_all.s_min.y.add(0f)
 

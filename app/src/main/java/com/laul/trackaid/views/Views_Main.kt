@@ -239,7 +239,7 @@ private fun compModule(
                 horizontal = dimensionResource(id = R.dimen.padding_large),
                 vertical = dimensionResource(id = R.dimen.padding_mid)
             )
-            .height(height = 120.dp)
+            .height(height = 150.dp)
             .fillMaxWidth()
             .clickable(
                 onClick = {
@@ -253,11 +253,13 @@ private fun compModule(
         Row(
 
             verticalAlignment = Alignment.CenterVertically,
+
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
                     horizontal = dimensionResource(id = R.dimen.padding_mid)
                 )
+
 
         ) {
             Icon(
@@ -306,10 +308,10 @@ private fun compModule(
 
             modifier = Modifier
                 .fillMaxWidth()
-                .height(95.dp)
                 .padding(
                     horizontal = dimensionResource(id = R.dimen.padding_mid)
                 )
+//                .background(Color.Black )
 
         ) {
             // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
@@ -349,14 +351,18 @@ private fun compModule(
 
 
             }
-            Spacer(modifier = Modifier.width(30.dp))
-//
+            Spacer(modifier = Modifier.width(15.dp))
             if  (module.series_all.s_avg.y.isNotEmpty() || module.series_all.s_sumD.y.isNotEmpty() ) {
-                compChart(
-                    module = module,
-                    isDetailedView = false,
-                    backgroundColor = color_general_white
-                )
+                Column(
+
+                    modifier = Modifier.align(Alignment.Top),
+               ) {
+                    compChart(
+                        module = module,
+                        isDetailedView = false,
+                        backgroundColor = color_general_white
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(10.dp))
 
@@ -365,6 +371,70 @@ private fun compModule(
 
     }
 }
+
+@Composable
+@Preview
+fun bottomOfCard() {
+// Bottom of the card: last value + graph
+Row(
+
+modifier = Modifier
+.fillMaxWidth()
+.padding(
+horizontal = dimensionResource(id = R.dimen.padding_mid)
+)
+
+) {
+    // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
+    Spacer(modifier = Modifier.width(42.dp))
+
+    Column(
+        modifier = Modifier.width(100.dp)
+    ) {
+
+        Text(
+            text = "GLUCOSE",
+
+            //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+            //    }
+
+            style = MaterialTheme.typography.displayMedium,
+            color = color_general_primary,
+            modifier = Modifier
+                .padding(top = 10.dp)
+
+                .height(38.dp)
+
+        )
+
+        Text(
+            text = "unit",
+            style = MaterialTheme.typography.bodySmall,
+            color = color_text_secondary,
+
+            )
+
+
+    }
+    Spacer(modifier = Modifier.width(15.dp))
+        Text(
+            text = "CHART",
+
+
+            style = MaterialTheme.typography.displayMedium,
+            color = color_general_primary,
+//            modifier =
+
+        )
+
+    }
+    Spacer(modifier = Modifier.width(10.dp))
+
+}
+
+
+
 
 //
 ///** Label to display the "status" of a given module

@@ -16,70 +16,88 @@
 
 package com.laul.trackaid.views
 
-//import com.patrykandpatrick.vico.core.chart.segment.SegmentProperties
+import android.graphics.Typeface
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.patrykandpatrick.vico.compose.component.overlayingComponent
+import com.patrykandpatrick.vico.compose.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.component.rememberShapeComponent
+import com.patrykandpatrick.vico.compose.component.rememberTextComponent
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
+import com.patrykandpatrick.vico.core.chart.dimensions.HorizontalDimensions
+import com.patrykandpatrick.vico.core.chart.insets.Insets
+import com.patrykandpatrick.vico.core.component.marker.MarkerComponent
 import com.patrykandpatrick.vico.core.component.shape.DashedShape
+import com.patrykandpatrick.vico.core.component.shape.ShapeComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
 import com.patrykandpatrick.vico.core.component.shape.cornered.Corner
 import com.patrykandpatrick.vico.core.component.shape.cornered.MarkerCorneredShape
+import com.patrykandpatrick.vico.core.context.MeasureContext
+import com.patrykandpatrick.vico.core.extension.copyColor
+import com.patrykandpatrick.vico.core.marker.Marker
+
 //
-//@Composable
-//internal fun rememberMarker(): Marker {
-//    val labelBackgroundColor = MaterialTheme.colorScheme.surface
-//    val labelBackground = remember(labelBackgroundColor) {
-//        ShapeComponent(labelBackgroundShape, labelBackgroundColor.toArgb()).setShadow(
-//            radius = LABEL_BACKGROUND_SHADOW_RADIUS,
-//            dy = LABEL_BACKGROUND_SHADOW_DY,
-//            applyElevationOverlay = true,
-//        )
-//    }
-//    val label = textComponent(
-//        background = labelBackground,
-//        lineCount = LABEL_LINE_COUNT,
-//        padding = labelPadding,
-//        typeface = Typeface.DEFAULT,
-//    )
-//    val indicatorInnerComponent = shapeComponent(Shapes.pillShape, MaterialTheme.colorScheme.surface)
-//    val indicatorCenterComponent = shapeComponent(Shapes.pillShape, Color.White)
-//    val indicatorOuterComponent = shapeComponent(Shapes.pillShape, Color.White)
-//    val indicator = overlayingComponent(
-//        outer = indicatorOuterComponent,
-//        inner = overlayingComponent(
-//            outer = indicatorCenterComponent,
-//            inner = indicatorInnerComponent,
-//            innerPaddingAll = indicatorInnerAndCenterComponentPaddingValue,
-//        ),
-//        innerPaddingAll = indicatorCenterAndOuterComponentPaddingValue,
-//    )
-//    val guideline = lineComponent(
-//        MaterialTheme.colorScheme.onSurface.copy(GUIDELINE_ALPHA),
-//        guidelineThickness,
-//        guidelineShape,
-//    )
-//    return remember(label, indicator, guideline) {
-//        object : MarkerComponent(label, indicator, guideline) {
-//            init {
-//                indicatorSizeDp = INDICATOR_SIZE_DP
-//                onApplyEntryColor = { entryColor ->
-//                    indicatorOuterComponent.color = entryColor.copyColor(INDICATOR_OUTER_COMPONENT_ALPHA)
-//                    with(indicatorCenterComponent) {
-//                        color = entryColor
-//                        setShadow(radius = INDICATOR_CENTER_COMPONENT_SHADOW_RADIUS, color = entryColor)
-//                    }
-//                }
-//                labelFormatter = CustomMarkerLabelFormatter
-//            }
-//
-////            override fun getInsets(context: MeasureContext, outInsets: Insets, segmentProperties: SegmentProperties) =
-////                with(context) {
-////                    outInsets.top = label.getHeight(context) + labelBackgroundShape.tickSizeDp.pixels +
-////                        LABEL_BACKGROUND_SHADOW_RADIUS.pixels * SHADOW_RADIUS_MULTIPLIER -
-////                        LABEL_BACKGROUND_SHADOW_DY.pixels
-////                }
-//        }
-//    }
-//}
+@Composable
+internal fun rememberMarker(): Marker {
+    val labelBackgroundColor = MaterialTheme.colorScheme.surface
+    val labelBackground = remember(labelBackgroundColor) {
+        ShapeComponent(labelBackgroundShape, labelBackgroundColor.toArgb()).setShadow(
+            radius = LABEL_BACKGROUND_SHADOW_RADIUS,
+            dy = LABEL_BACKGROUND_SHADOW_DY,
+            applyElevationOverlay = true,
+        )
+    }
+    val label = rememberTextComponent(
+        background = labelBackground,
+        lineCount = LABEL_LINE_COUNT,
+        padding = labelPadding,
+        typeface = Typeface.DEFAULT,
+
+    )
+    val indicatorInnerComponent = rememberShapeComponent(Shapes.pillShape, MaterialTheme.colorScheme.surface)
+    val indicatorCenterComponent = rememberShapeComponent(Shapes.pillShape, Color.White)
+    val indicatorOuterComponent = rememberShapeComponent(Shapes.pillShape, Color.White)
+    val indicator = overlayingComponent(
+        outer = indicatorOuterComponent,
+        inner = overlayingComponent(
+            outer = indicatorCenterComponent,
+            inner = indicatorInnerComponent,
+            innerPaddingAll = indicatorInnerAndCenterComponentPaddingValue,
+        ),
+        innerPaddingAll = indicatorCenterAndOuterComponentPaddingValue,
+    )
+    val guideline = rememberLineComponent(
+        MaterialTheme.colorScheme.onSurface.copy(GUIDELINE_ALPHA),
+        guidelineThickness,
+        guidelineShape,
+    )
+    return remember(label, indicator, guideline) {
+        object : MarkerComponent(label, indicator, guideline) {
+            init {
+                indicatorSizeDp = INDICATOR_SIZE_DP
+                onApplyEntryColor = { entryColor ->
+                    indicatorOuterComponent.color = entryColor.copyColor(INDICATOR_OUTER_COMPONENT_ALPHA)
+                    with(indicatorCenterComponent) {
+                        color = entryColor
+                        setShadow(radius = INDICATOR_CENTER_COMPONENT_SHADOW_RADIUS, color = entryColor)
+                    }
+                }
+                labelFormatter = CustomMarkerLabelFormatter
+            }
+
+            override fun getInsets(context: MeasureContext, outInsets: Insets, horizontalDimensions: HorizontalDimensions) =
+                with(context) {
+                    outInsets.top = label.getHeight(context) + labelBackgroundShape.tickSizeDp.pixels +
+                        LABEL_BACKGROUND_SHADOW_RADIUS.pixels * SHADOW_RADIUS_MULTIPLIER -
+                        LABEL_BACKGROUND_SHADOW_DY.pixels
+                }
+        }
+    }
+}
 
 private const val LABEL_BACKGROUND_SHADOW_RADIUS = 3f
 private const val LABEL_BACKGROUND_SHADOW_DY = 2f

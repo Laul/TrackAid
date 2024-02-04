@@ -1,23 +1,32 @@
 package com.laul.trackaid
 
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.CartesianChartHost
 import com.patrykandpatrick.vico.compose.chart.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
 import com.patrykandpatrick.vico.compose.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
 import com.patrykandpatrick.vico.core.DefaultDimens
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
+import com.patrykandpatrick.vico.core.axis.AxisPosition
+import com.patrykandpatrick.vico.core.axis.AxisRenderer
+import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
+import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.model.CartesianChartModel
 import com.patrykandpatrick.vico.core.model.ColumnCartesianLayerModel
@@ -41,6 +50,27 @@ private val columns: List<LineComponent>
             rememberLineComponent(color = Color.Black , thickness = 6.dp),
         )
 
+@Composable
+fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Start> {
+    var axis : VerticalAxis<AxisPosition.Vertical.Start> = rememberStartAxis()
+    if (module.mName == "Home") {
+        axis = rememberStartAxis(
+            guideline = null,
+            horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+            titleComponent = rememberTextComponent(
+                padding = dimensionsOf(2.dp, 2.dp),
+                margins = dimensionsOf(2.dp),
+            ),
+
+            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { MAX_LABEL_COUNT }) },
+        )
+    }
+    else null
+    return axis
+}
+
+
+
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
  */
@@ -52,26 +82,91 @@ fun compChart(
 ) {
 
 
-    androidx.compose.material.Surface(
-        modifier = Modifier.height(250.dp)
-    ) {
-        if (module.chartType == "Columns") {
-            CartesianChartHost(
-                chart = rememberCartesianChart(
-                    rememberColumnCartesianLayer(
+//    androidx.compose.material.Surface(
+//        modifier = Modifier.padding(vertical = 0.dp)
+//
+//    ) {
 
+        when (module.mName) {
+            // STEPS - Total Count
+            "Steps" -> {
+                CartesianChartHost(
+                    autoScaleUp = AutoScaleUp.Full,
+                    chartScrollSpec =  rememberChartScrollSpec(false),
+                    marker = rememberMarker(),
+                    modifier = Modifier
+                        .background(backgroundColor)
+                        .padding(bottom = 10.dp),
+
+                    chart = rememberCartesianChart(
+
+                        layers = arrayOf(
+                            rememberColumnCartesianLayer(
+                                columns = listOf(rememberLineComponent(color = Color.Black , thickness = 6.dp)),
+                                mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+                            )
+                        ),
+                    ),
+                    model = CartesianChartModel(
+                        ColumnCartesianLayerModel.build {
+                            series(x = module.series_all.s_sumD.x, y = module.series_all.s_sumD.y)
+                        }
+                    )
+                )
+            }
+
+            // GLUCOSE and HR - Min, Max, Avg
+            "Glucose", "Heart Rate" -> {
+                CartesianChartHost(
+                    marker = rememberMarker(),
+                    autoScaleUp = AutoScaleUp.Full,
+                    chartScrollSpec =  rememberChartScrollSpec(false),
+
+                    chart = rememberCartesianChart(
+                        layers = arrayOf(
+                            rememberColumnCartesianLayer(
+                                columns = columns,
+                                mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+                            ),
+                            rememberLineCartesianLayer()
                         ),
 
-
-                ),
-                model = CartesianChartModel(
-
-                    ColumnCartesianLayerModel.build {
-                                series(x = module.series_all.s_sumD.x, y = module.series_all.s_sumD.y)
-
-                    }
-                ),
-            )
+                        startAxis = if (isDetailedView) {
+                            customStartAxis(module)
+                        }else null,
+                        bottomAxis = rememberBottomAxis()
+                    ),
+                    model = CartesianChartModel(
+                        ColumnCartesianLayerModel.build {
+                            series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+                            series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
+                        },
+                        LineCartesianLayerModel.build {
+                            series(x = module.series_all.s_avg.x, y = module.series_all.s_avg.y)
+                        },
+                    )
+                )
+            }
+        }
+    }
+//}
+//
+//        if (module.chartType == "Columns") {
+//            CartesianChartHost(
+//                chart = rememberCartesianChart(
+//                    rememberColumnCartesianLayer(),
+//                ),
+//                model = CartesianChartModel(
+//                    ColumnCartesianLayerModel.build {
+//                        series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+//                        series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
+//                    },
+//                    LineCartesianLayerModel.build {
+//                        series(x = module.series_all.s_avg.x, y = module.series_all.s_avg.y)
+//                    },
+//                )
+//            )
+//        }
 
             // var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
 
@@ -103,8 +198,8 @@ fun compChart(
 //                ) else null,
 //
 //            )
-        }
-        if (module.chartType == "Line") {
+//        }
+//        if (module.chartType == "Line") {
 //            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
 //
 //            Chart(
@@ -131,96 +226,107 @@ fun compChart(
 //                ) else null,
 //            )
 
-        }
-        if (module.chartType == "Combo") {
-//            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
-//            var cChartModel_DailyAvg = entryModelOf(*module.cFloatEntries_DailyAvg.toTypedArray())
-            CartesianChartHost(
-                chart = rememberCartesianChart(
-                    layers = arrayOf(
-                        rememberColumnCartesianLayer(
-                            columns = columns,
-                            //                        axisValueOverrider = AxisValueOverrider.fixed(minY = -2f, maxY = 0f),
-                            mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
-                        ),
-                        
-                        rememberLineCartesianLayer()
-                    ),
-                    startAxis =
-                    rememberStartAxis(
-                        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 3 }) },
-                    ),
-                    bottomAxis = rememberBottomAxis(),
-//
-//                    rememberLineCartesianLayer(
-//                        listOf(
-//                            lineSpec(
-//                                point = null,
-//                                shader = DynamicShaders.color(Color.Black),
-//                                backgroundShader =
-//                                DynamicShaders.fromComponent(
-//                                    componentSize = 4.dp,
-//                                    component = rememberShapeComponent(shape = Shapes.pillShape),
-//                                ),
-//                            ),
+//        }
+//        if (module.chartType == "Combo") {
+//            var model = CartesianChartModel
+//            (arrayOf(
+//                ColumnCartesianLayerModel.build {
+//                    series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+//                series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
+//                },
+//                LineCartesianLayerModel.build {
+//                    series(x = module.series_all.s_avg.x, y = module.series_all.s_avg.y)
+//                }
+//            ))
+//            //            var cChartModel_DailyMinMax = entryModelOf(*module.cFloatEntries_DailyMinMax.toTypedArray())
+////            var cChartModel_DailyAvg = entryModelOf(*module.cFloatEntries_DailyAvg.toTypedArray())
+//            CartesianChartHost(
+//                chart = rememberCartesianChart(
+//                    layers = arrayOf(
+//                        rememberColumnCartesianLayer(
+//                            columns = columns,
+//                            //                        axisValueOverrider = AxisValueOverrider.fixed(minY = -2f, maxY = 0f),
+//                            mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
 //                        ),
-//                        axisValueOverrider = AxisValueOverrider.fixed(minX = 0f, maxY = 3f),
+//
+//                        rememberLineCartesianLayer()
 //                    ),
+//                    startAxis =
+//                    rememberStartAxis(
+//                        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 3 }) },
+//                    ),
+//                    bottomAxis = rememberBottomAxis(),
+////
+////                    rememberLineCartesianLayer(
+////                        listOf(
+////                            lineSpec(
+////                                point = null,
+////                                shader = DynamicShaders.color(Color.Black),
+////                                backgroundShader =
+////                                DynamicShaders.fromComponent(
+////                                    componentSize = 4.dp,
+////                                    component = rememberShapeComponent(shape = Shapes.pillShape),
+////                                ),
+////                            ),
+////                        ),
+////                        axisValueOverrider = AxisValueOverrider.fixed(minX = 0f, maxY = 3f),
+////                    ),
+////                ),
 //                ),
-                ),
-                model = CartesianChartModel(
-                    ColumnCartesianLayerModel.build {
-                        series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
-                        series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
-                    },
-                    LineCartesianLayerModel.build {
-                        series(x = module.series_all.s_avg.x, y = module.series_all.s_avg.y)
-                    },
-
-                ),
-
-//            Chart(
-//                chartScrollState = rememberChartScrollState(),
-//                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
-//                chart = getLineChart(
-//                    module = module,
-//                    type = "Points"
-//                ) + getColumnChart(module = module),
-//
-//                marker = rememberMarker(),
-//                modifier = Modifier
-//                    .background(backgroundColor)
-//                    .fillMaxWidth(),
-//                model = cChartModel_DailyAvg.plus(cChartModel_DailyMinMax),
-//
-//                startAxis = if (isDetailedView) rememberStartAxis(
-//                    title = module.mUnit,
-//                    guideline = null,
-//                    itemPlacer = AxisItemPlacer.Vertical.default(
-//                        module.stats!!.value.max.ceil.toInt()+  module.stats!!.value.max.ceil.toInt()%2+1 // Set minimum Y-axis value
-//                    )
-//
-//                ) else null,
-//
-//
-//                bottomAxis = if (isDetailedView) rememberBottomAxis(
-//                    guideline = null,
-//                    valueFormatter = { x, _ ->
-//                        module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size]
+//                model = CartesianChartModel(
+//                    ColumnCartesianLayerModel.build {
+//                        series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+//                        series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
+////
+////                        series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+////                        series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
 //                    },
-//                    titleComponent = textComponent(
-//                        padding = dimensionsOf(2.dp, 2.dp),
-//                        margins = dimensionsOf(2.dp),
-//                    ),
+//                    LineCartesianLayerModel.build {
+//                        series(x = module.series_all.s_avg.x, y = module.series_all.s_avg.y)
+//                    },
 //
-//                    ) else null,
+//                ),
 //
+////            Chart(
+////                chartScrollState = rememberChartScrollState(),
+////                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true),
+////                chart = getLineChart(
+////                    module = module,
+////                    type = "Points"
+////                ) + getColumnChart(module = module),
+////
+////                marker = rememberMarker(),
+////                modifier = Modifier
+////                    .background(backgroundColor)
+////                    .fillMaxWidth(),
+////                model = cChartModel_DailyAvg.plus(cChartModel_DailyMinMax),
+////
+////                startAxis = if (isDetailedView) rememberStartAxis(
+////                    title = module.mUnit,
+////                    guideline = null,
+////                    itemPlacer = AxisItemPlacer.Vertical.default(
+////                        module.stats!!.value.max.ceil.toInt()+  module.stats!!.value.max.ceil.toInt()%2+1 // Set minimum Y-axis value
+////                    )
+////
+////                ) else null,
+////
+////
+////                bottomAxis = if (isDetailedView) rememberBottomAxis(
+////                    guideline = null,
+////                    valueFormatter = { x, _ ->
+////                        module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size]
+////                    },
+////                    titleComponent = textComponent(
+////                        padding = dimensionsOf(2.dp, 2.dp),
+////                        margins = dimensionsOf(2.dp),
+////                    ),
+////
+////                    ) else null,
+////
+////            )
 //            )
-            )
 
-        }
-    }
-}
+
 //
 //
 //    /** Chart section in detailed views
@@ -389,23 +495,23 @@ fun compChart(
 /**
  * Generates a randomized [CartesianChartModel] with the specified numbers of series and value ranges.
  */
-public fun getModels(module: ModuleData): CartesianChartModel =
-    CartesianChartModel(
-        buildList {
-            add(
-                ColumnCartesianLayerModel.build
-                {
-                    series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
-                    series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
-                }
-//                RandomCartesianModelGenerator.getRandomColumnLayerModelPartial(
-//                    columnSeriesCount,
-//                    x,
-//                    y
-//                ).complete())
-//            add(RandomCartesianModelGenerator.getRandomLineLayerModelPartial(lineSeriesCount, x, y).complete())
-//        },
-            )
-        }
-    )
-
+//public fun getModels(module: ModuleData): CartesianChartModel =
+//    CartesianChartModel(
+//        buildList {
+//            add(
+//                ColumnCartesianLayerModel.build
+//                {
+//                    series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
+//                    series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
+//                }
+////                RandomCartesianModelGenerator.getRandomColumnLayerModelPartial(
+////                    columnSeriesCount,
+////                    x,
+////                    y
+////                ).complete())
+////            add(RandomCartesianModelGenerator.getRandomLineLayerModelPartial(lineSeriesCount, x, y).complete())
+////        },
+//            )
+//        }
+//    )
+//
