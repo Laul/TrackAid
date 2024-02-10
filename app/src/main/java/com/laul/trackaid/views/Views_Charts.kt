@@ -1,7 +1,8 @@
 package com.laul.trackaid
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,12 +13,15 @@ import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.CartesianChartHost
+import com.patrykandpatrick.vico.compose.chart.layer.lineSpec
 import com.patrykandpatrick.vico.compose.chart.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
 import com.patrykandpatrick.vico.compose.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.component.shape.shader.color
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
 import com.patrykandpatrick.vico.core.DefaultDimens
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
@@ -25,9 +29,13 @@ import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.AxisRenderer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.core.chart.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
+import com.patrykandpatrick.vico.core.component.shape.Shapes.pillShape
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.dimensions.MutableDimensions
 import com.patrykandpatrick.vico.core.model.CartesianChartModel
 import com.patrykandpatrick.vico.core.model.ColumnCartesianLayerModel
 import com.patrykandpatrick.vico.core.model.LineCartesianLayerModel
@@ -42,35 +50,107 @@ private val horizontalLayout = HorizontalLayout.FullWidth(
 )
 
 
-private val columns: List<LineComponent>
-    @Composable
-    get() =
-        listOf(
-            rememberLineComponent(color = Color.Transparent, thickness = 6.dp),
-            rememberLineComponent(color = Color.Black , thickness = 6.dp),
-        )
 
 @Composable
-fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Start> {
-    var axis : VerticalAxis<AxisPosition.Vertical.Start> = rememberStartAxis()
-    if (module.mName == "Home") {
-        axis = rememberStartAxis(
-            guideline = null,
-            horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
-            titleComponent = rememberTextComponent(
-                padding = dimensionsOf(2.dp, 2.dp),
-                margins = dimensionsOf(2.dp),
-            ),
+private fun getColumns(module:ModuleData): List<LineComponent>{
+    var columns = arrayListOf<LineComponent>()
 
-            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { MAX_LABEL_COUNT }) },
-        )
+
+    for (i in 0 until module.nCol) {
+        if (module.nCol == 1 || i % 2 == 1) {
+            columns.add(
+                rememberLineComponent(
+                    thickness = 6.dp,
+                    shape = RoundedCornerShape(2.dp),
+                    color = Color(module.mColor_Primary!!),
+
+                )
+            )
+        } else {
+            columns.add(
+                rememberLineComponent(
+                    color = Color.Transparent,
+                    thickness = 6.dp,
+                    shape = RoundedCornerShape(2.dp),
+
+                )
+            )
+        }
     }
-    else null
-    return axis
+
+    return columns
+}
+
+/** LineChart creation and display set-up
+ * @param module: module from DataProvider data class
+ * @param type: String: set "Line" to display a curve + vertical Gradient
+ * @param targetVerticalAxisPosition
+ */
+@Composable
+fun getLines( module: ModuleData, type:String): List<LineCartesianLayer.LineSpec> {
+    var lines = listOf(
+        lineSpec(
+            shader = if (type == "Line") DynamicShaders.color(Color(module.mColor_Primary!!)) else DynamicShaders.color(Color.Transparent),
+            thickness   = if (type == "Line") 1.dp else 0.dp,
+            pointSize = if (type == "Line") 2.dp else 5.dp,
+            point = rememberShapeComponent(pillShape),
+
+        )
+    )
+
+    return lines
 }
 
 
+@Composable
+fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Start> {
+    var startAxis : VerticalAxis<AxisPosition.Vertical.Start> = rememberStartAxis()
 
+    startAxis = rememberStartAxis(
+        guideline = null,
+        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+        titleComponent = rememberTextComponent(
+            padding = dimensionsOf(2.dp, 2.dp),
+            margins = dimensionsOf(2.dp),
+        ),
+        axis = rememberLineComponent(color = Color.Black, thickness = 1.dp),
+        tick = null,
+
+        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { MAX_LABEL_COUNT }) },
+
+        )
+
+    return startAxis
+}
+
+@Composable
+fun customBottomAxis(module: ModuleData, isDetailedView: Boolean): AxisRenderer<AxisPosition.Horizontal.Bottom> {
+    var bottomAxis = rememberBottomAxis()
+    if (isDetailedView) {
+        bottomAxis = rememberBottomAxis(
+            label = rememberTextComponent(),
+            axis = rememberLineComponent(color = Color.Black, thickness = 1.dp),
+            guideline = null,
+            tick = null,
+            valueFormatter = { x, _, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+            )
+    }
+    else {
+
+        bottomAxis = rememberBottomAxis(
+            label = rememberTextComponent(
+                textSize = MaterialTheme.typography.labelSmall.fontSize,
+                padding = MutableDimensions(0f, 5f,0f,0f)
+            ),
+
+            axis =  null,
+            guideline = null,
+            tick = null,
+            valueFormatter = { x, _, _ -> module.bottomAxisValues[x.toInt() % module.bottomAxisValues.size] },
+            )
+    }
+    return bottomAxis
+}
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
  */
@@ -78,16 +158,8 @@ fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Star
 fun compChart(
     module: ModuleData,
     isDetailedView: Boolean,
-    backgroundColor: Color
 ) {
-
-
-//    androidx.compose.material.Surface(
-//        modifier = Modifier.padding(vertical = 0.dp)
-//
-//    ) {
-
-        when (module.mName) {
+     when (module.mName) {
             // STEPS - Total Count
             "Steps" -> {
                 CartesianChartHost(
@@ -95,18 +167,21 @@ fun compChart(
                     chartScrollSpec =  rememberChartScrollSpec(false),
                     marker = rememberMarker(),
                     modifier = Modifier
-                        .background(backgroundColor)
                         .padding(bottom = 10.dp),
 
                     chart = rememberCartesianChart(
 
                         layers = arrayOf(
                             rememberColumnCartesianLayer(
-                                columns = listOf(rememberLineComponent(color = Color.Black , thickness = 6.dp)),
+                                spacing = 4.dp,
+                                columns = getColumns(module),
                                 mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
                             )
                         ),
-                    ),
+                        startAxis = if(isDetailedView) customStartAxis(module) else null,
+                        bottomAxis = customBottomAxis(module, isDetailedView) ,
+
+                        ),
                     model = CartesianChartModel(
                         ColumnCartesianLayerModel.build {
                             series(x = module.series_all.s_sumD.x, y = module.series_all.s_sumD.y)
@@ -122,19 +197,23 @@ fun compChart(
                     autoScaleUp = AutoScaleUp.Full,
                     chartScrollSpec =  rememberChartScrollSpec(false),
 
+
+
                     chart = rememberCartesianChart(
                         layers = arrayOf(
                             rememberColumnCartesianLayer(
-                                columns = columns,
+                                spacing = 4.dp,
+                                columns = getColumns(module),
                                 mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
                             ),
-                            rememberLineCartesianLayer()
-                        ),
 
-                        startAxis = if (isDetailedView) {
-                            customStartAxis(module)
-                        }else null,
-                        bottomAxis = rememberBottomAxis()
+                            rememberLineCartesianLayer(
+                                spacing = 4.dp,
+                                lines = getLines(module, "Points")
+                            )
+                        ),
+                        startAxis = if(isDetailedView) customStartAxis(module) else null,
+                        bottomAxis = customBottomAxis(module, isDetailedView),
                     ),
                     model = CartesianChartModel(
                         ColumnCartesianLayerModel.build {
@@ -401,43 +480,11 @@ fun compChart(
 //    }
 //
 //
-//    /** LineChart creation and display set-up
-//     * @param module: module from DataProvider data class
-//     * @param type: String: set "Line" to display a curve + vertical Gradient
-//     * @param targetVerticalAxisPosition
-//     */
-//    @Composable
-//    fun getLineChart(
-//        module: ModuleData,
-//        type: String,
-//    ): LineChart {
-//        val marker = rememberMarker()
-//        return lineChart(
-//            persistentMarkers = remember(marker) { mapOf(1f to marker) },
-//            lines = listOf(
-//                com.patrykandpatrick.vico.compose.chart.line.lineSpec(
-//                    lineColor = if (type == "Line") Color(module.mColor_Primary!!) else Color.Transparent,
-//                    lineThickness = if (type == "Line") 1.dp else 0.dp,
-//                    pointSize = if (type == "Line") 2.dp else 5.dp,
-//                    point = shapeComponent(shape = Shapes.pillShape),
-//                    lineBackgroundShader =
-//                    if (type == "Line")
-//                        verticalGradient(
-//                            arrayOf(
-//                                Color(module.mColor_Primary!!),
-//                                Color(module.mColor_Primary!!).copy(alpha = 0f)
-//                            )
-//                        )
-//                    else
-//                        null,
-//                ),
-//            ),
-//            spacing = 1.dp
-//        )
+
 //
 //    }
 //
-//
+////
 //    @Composable
 //    fun getColumnChart(
 //        module: ModuleData,
@@ -489,29 +536,4 @@ fun compChart(
 //        )
 //
 //    }
-
-
-
-/**
- * Generates a randomized [CartesianChartModel] with the specified numbers of series and value ranges.
- */
-//public fun getModels(module: ModuleData): CartesianChartModel =
-//    CartesianChartModel(
-//        buildList {
-//            add(
-//                ColumnCartesianLayerModel.build
-//                {
-//                    series(x = module.series_all.s_min.x, y = module.series_all.s_min.y)
-//                    series(x = module.series_all.s_max.x, y = module.series_all.s_max.y)
-//                }
-////                RandomCartesianModelGenerator.getRandomColumnLayerModelPartial(
-////                    columnSeriesCount,
-////                    x,
-////                    y
-////                ).complete())
-////            add(RandomCartesianModelGenerator.getRandomLineLayerModelPartial(lineSeriesCount, x, y).complete())
-////        },
-//            )
-//        }
-//    )
 //

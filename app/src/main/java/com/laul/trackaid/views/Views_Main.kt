@@ -96,7 +96,7 @@ fun Header() {
 
                     }
                 ),
-            )
+        )
 
     }
 
@@ -114,7 +114,7 @@ fun compCommon(context: Context) {
 
         // If permissions are true, we retrieve data
         LaunchedEffect(permissionGranted) {
-            DataProvider.healthConnectUpdate(client )
+            DataProvider.healthConnectUpdate(client)
         }
 
         val navController = rememberNavController()
@@ -123,7 +123,7 @@ fun compCommon(context: Context) {
             startDestination = NavRoutes.Home.route,
         ) {
             composable(NavRoutes.Home.route) {
-                compMainModule(navController = navController, client= client)
+                compMainModule(navController = navController, client = client)
             }
 
             composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
@@ -144,13 +144,13 @@ fun compCommon(context: Context) {
  * @param client: client to healthconnect
  */
 @Composable
-fun compMainModule(navController: NavController,client: HealthConnectClient) {
+fun compMainModule(navController: NavController, client: HealthConnectClient) {
 
 
     Scaffold(
         containerColor = color_surface_background,
         topBar = { Header() },
-        content = { innerPadding -> compModules( navController, client, innerPadding) },
+        content = { innerPadding -> compModules(navController, client, innerPadding) },
         bottomBar = { BottomNavigationBar(navController) }
 
     )
@@ -239,7 +239,7 @@ private fun compModule(
                 horizontal = dimensionResource(id = R.dimen.padding_large),
                 vertical = dimensionResource(id = R.dimen.padding_mid)
             )
-            .height(height = 150.dp)
+            .height(height = 120.dp)
             .fillMaxWidth()
             .clickable(
                 onClick = {
@@ -248,192 +248,137 @@ private fun compModule(
 
                 )
     ) {
+        Box() {
+            // Top of the card: Title + Last update timestamp
+            Row(
 
-        // Top of the card: Title + Last update timestamp
-        Row(
+                verticalAlignment = Alignment.CenterVertically,
 
-            verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = dimensionResource(id = R.dimen.padding_mid)
+                    )
+//            .border(1.dp, Color.Red )
 
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = dimensionResource(id = R.dimen.padding_mid)
+
+            ) {
+                Icon(
+                    painterResource(id = module.mIcon),
+                    tint = color_general_primary,
+                    contentDescription = "icon",
+                    modifier = Modifier
+                        .padding(
+                            top = dimensionResource(id = R.dimen.padding_mid)
+                        )
+                        .size(dimensionResource(R.dimen.icon_size_large)),
+                )
+
+                Spacer(modifier = Modifier.width(10.dp))
+
+                Text(
+                    text = module.mName,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier
+                        .weight(.7f)
+                        .padding(
+                            top = dimensionResource(id = R.dimen.padding_mid)
+                        )
                 )
 
 
-        ) {
-            Icon(
-                painterResource(id = module.mIcon),
-                tint = color_general_primary,
-                contentDescription = "icon",
-                modifier = Modifier
-                    .padding(
-                        top = dimensionResource(id = R.dimen.padding_mid)
-                    )
-                    .size(dimensionResource(R.dimen.icon_size_large)),
-            )
+                Text(
+                    modifier = Modifier
+                        .padding(start = dimensionResource(R.dimen.padding_mid))
+                        .padding(
+                            top = dimensionResource(id = R.dimen.padding_mid)
+                        )
+                        .weight(.25f),
+                    text = lastDPoint!!.value.date,
+                    textAlign = TextAlign.End,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = color_text_secondary
 
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Text(
-                text = module.mName,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier
-                    .weight(.7f)
-                    .padding(
-                        top = dimensionResource(id = R.dimen.padding_mid)
-                    )
-            )
-
-
-            Text(
-                modifier = Modifier
-                    .padding(start = dimensionResource(R.dimen.padding_mid))
-                    .padding(
-                        top = dimensionResource(id = R.dimen.padding_mid)
-                    )
-                    .weight(.25f),
-                text = lastDPoint!!.value.date,
-                textAlign = TextAlign.End,
-                style = MaterialTheme.typography.bodySmall,
-                color = color_text_secondary
-
-            )
-
-        }
-
-        // Bottom of the card: last value + graph
-        Row(
-
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = dimensionResource(id = R.dimen.padding_mid)
                 )
+
+            }
+
+            // Bottom of the card: last value + graph
+            Row(
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        // horizontal = dimensionResource(id = R.dimen.padding_mid)
+                    )
+//            .border(1.dp, Color.Green )
+
 //                .background(Color.Black )
 
-        ) {
-            // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
-            Spacer(modifier = Modifier.width(42.dp))
-
-            Column(
-                modifier = Modifier.width(100.dp)
             ) {
+                // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
+                Spacer(modifier = Modifier.width(42.dp))
 
-                Text(
-                    text =
-
-                    if (module.mName == "Glucose") {
-                        "%.2f".format(lastDPoint!!.value.value)
-                    }
-                    //else if (module.mName == "Pressure") {
-//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
-                //    }
-            else {
-                        "%.0f".format(lastDPoint!!.value.value)
-                    },
-                    style = MaterialTheme.typography.displayMedium,
-                    color = color_general_primary,
-                    modifier = Modifier
-                        .padding(top = 10.dp)
-
-                        .height(38.dp)
-
-                )
-
-                Text(
-                    text = module.mUnit!!,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = color_text_secondary,
-
-                    )
-
-
-            }
-            Spacer(modifier = Modifier.width(15.dp))
-            if  (module.series_all.s_avg.y.isNotEmpty() || module.series_all.s_sumD.y.isNotEmpty() ) {
                 Column(
+                    modifier = Modifier
+                        .padding(top = 40.dp)
+                        .width(100.dp)
+                ) {
 
-                    modifier = Modifier.align(Alignment.Top),
-               ) {
-                    compChart(
-                        module = module,
-                        isDetailedView = false,
-                        backgroundColor = color_general_white
+                    Text(
+                        text =
+
+                        if (module.mName == "Glucose") {
+                            "%.2f".format(lastDPoint!!.value.value)
+                        }
+                        //else if (module.mName == "Pressure") {
+//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
+                        //    }
+                        else {
+                            "%.0f".format(lastDPoint!!.value.value)
+                        },
+                        style = MaterialTheme.typography.displayMedium,
+                        color = color_general_primary,
+                        modifier = Modifier
+                            .padding(top = 10.dp)
+                            .height(38.dp)
+
                     )
-                }
-            }
-            Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.height(5.dp))
 
+                    Text(
+                        text = module.mUnit!!,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = color_text_secondary,
+
+                        )
+
+
+                }
+
+                Spacer(modifier = Modifier.width(15.dp))
+
+                if (module.series_all.s_avg.y.isNotEmpty() || module.series_all.s_sumD.y.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .padding(all = 10.dp)
+//                    .border(1.dp, Color.Blue)
+                            .align(Alignment.Bottom),
+                    ) {
+                        compChart(
+                            module = module,
+                            isDetailedView = false,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+
+            }
         }
 
-
     }
 }
-
-@Composable
-@Preview
-fun bottomOfCard() {
-// Bottom of the card: last value + graph
-Row(
-
-modifier = Modifier
-.fillMaxWidth()
-.padding(
-horizontal = dimensionResource(id = R.dimen.padding_mid)
-)
-
-) {
-    // Add spacer to align the value and unit to the card title (i.e. sum of icon + spacer widths of the top row)
-    Spacer(modifier = Modifier.width(42.dp))
-
-    Column(
-        modifier = Modifier.width(100.dp)
-    ) {
-
-        Text(
-            text = "GLUCOSE",
-
-            //else if (module.mName == "Pressure") {
-//                        "%.0f-%.0f".format(lastDPoint!!.value.value[1], lastDPoint!!.value.value[0])
-            //    }
-
-            style = MaterialTheme.typography.displayMedium,
-            color = color_general_primary,
-            modifier = Modifier
-                .padding(top = 10.dp)
-
-                .height(38.dp)
-
-        )
-
-        Text(
-            text = "unit",
-            style = MaterialTheme.typography.bodySmall,
-            color = color_text_secondary,
-
-            )
-
-
-    }
-    Spacer(modifier = Modifier.width(15.dp))
-        Text(
-            text = "CHART",
-
-
-            style = MaterialTheme.typography.displayMedium,
-            color = color_general_primary,
-//            modifier =
-
-        )
-
-    }
-    Spacer(modifier = Modifier.width(10.dp))
-
-}
-
-
 
 
 //

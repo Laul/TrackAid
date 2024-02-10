@@ -1,10 +1,8 @@
 package com.laul.trackaid.theme
 
+
 import androidx.compose.material3.Typography
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.ExperimentalTextApi
-
-
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -147,7 +145,7 @@ val AppTypography = Typography(
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.10000000149011612.sp,
         lineHeight = 9.sp,
-        fontSize = 11.sp
+        fontSize = 9.sp
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily_Title,
