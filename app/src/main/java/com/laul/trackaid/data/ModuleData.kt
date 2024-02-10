@@ -389,7 +389,7 @@ data class ModuleData(
         // - Columns contain info about min (first arraylist) and max (second arraylist)
         if (chartType == "Combo"){
             // Min and avg are the min of all min
-            min= series_all.s_min.y.min()
+            min = series_all.s_min.y.filter{it != 0f }.min()
             avg= series_all.s_avg.y.average().toFloat()
 
             // Max of the week is the max of all max. Cannot be based on the columns because of stacking
@@ -402,8 +402,7 @@ data class ModuleData(
         }
 
         if (chartType == "Columns"){
-
-            min= series_all.s_min.y.min()
+            min = series_all.s_min.y.filter{it != 0f }.min()
             max= series_all.s_max.y.max()
             avg= series_all.s_avg.y.average().toFloat()
         }

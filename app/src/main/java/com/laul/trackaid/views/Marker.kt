@@ -110,7 +110,7 @@ private const val GUIDELINE_DASH_LENGTH_DP = 8f
 private const val GUIDELINE_GAP_LENGTH_DP = 4f
 private const val SHADOW_RADIUS_MULTIPLIER = 1.3f
 
-private val labelBackgroundShape = MarkerCorneredShape(Corner.FullyRounded)
+private val labelBackgroundShape = MarkerCorneredShape(Corner.Sharp)
 private val labelHorizontalPaddingValue = 8.dp
 private val labelVerticalPaddingValue = 4.dp
 private val labelPadding = dimensionsOf(labelHorizontalPaddingValue, labelVerticalPaddingValue)

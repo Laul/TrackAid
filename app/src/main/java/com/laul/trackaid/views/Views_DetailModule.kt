@@ -1,15 +1,18 @@
 package com.laul.trackaid
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.NavRoutes
 import com.laul.trackaid.theme.color_general_primary
+import com.laul.trackaid.theme.color_general_white
 import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.views.BottomNavigationBar
@@ -35,12 +38,16 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
         modifier = Modifier
             .fillMaxWidth()
             .padding(
-                vertical = 80.dp,
-                horizontal = dimensionResource(id = R.dimen.padding_large)
+                vertical = 90.dp,
+//                horizontal = dimensionResource(id = R.dimen.padding_large)
             )
 
     ) {
-        Row() {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 25.dp)
+                .height(120.dp)
+        ) {
             // Last measure information
             Column(
                 modifier = Modifier.weight(3f)
@@ -166,17 +173,38 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
 
         }
 
-        compChart(
-            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
-            isDetailedView = true,
+        Box (
+            modifier = Modifier
+                .fillMaxWidth() // Take the full width
+                .height(200.dp) // Set the height of the box
+                .background(Color(module.mColor_Primary!!)) // Set background color of the box
+                .padding(bottom = 1.dp) // Add padding to the bottom to create the border
+                .background(Color.White) // Set background color of the border
+
+        )
+        {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+//                    .height(209.dp)
+                    .background(color_general_white)
+                    .padding(top = 20.dp, bottom = 30.dp, start = 5.dp, end = 5.dp)
+
+            ) {
+                compChart(
+                    module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
+                    isDetailedView = true,
+                )
+
+            }
+
+        }
+
+        compChart_Detailed(
+            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!
         )
 
-
-//
-//        compChart_Detailed(
-//            module = DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!,
-//            backgroundColor = color_surface_background,
-//        )
     }
 }
 
