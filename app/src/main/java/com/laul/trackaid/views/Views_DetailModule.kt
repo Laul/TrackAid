@@ -46,7 +46,7 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
         Row(
             modifier = Modifier
                 .padding(horizontal = 25.dp)
-                .height(120.dp)
+                .height(110.dp)
         ) {
             // Last measure information
             Column(
@@ -176,7 +176,7 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
         Box (
             modifier = Modifier
                 .fillMaxWidth() // Take the full width
-                .height(200.dp) // Set the height of the box
+                .height(220.dp) // Set the height of the box
                 .background(Color(module.mColor_Primary!!)) // Set background color of the box
                 .padding(bottom = 1.dp) // Add padding to the bottom to create the border
                 .background(Color.White) // Set background color of the border
@@ -187,9 +187,10 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-//                    .height(209.dp)
+                    .height(230.dp)
                     .background(color_general_white)
-                    .padding(top = 20.dp, bottom = 30.dp, start = 5.dp, end = 5.dp)
+                    .padding(top =0.dp, bottom = 10.dp, start = 5.dp, end = 5.dp)
+
 
             ) {
                 compChart(

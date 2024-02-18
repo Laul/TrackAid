@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.laul.trackaid.data.ModuleData
 import com.patrykandpatrick.vico.compose.component.overlayingComponent
 import com.patrykandpatrick.vico.compose.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.component.rememberShapeComponent
@@ -42,7 +43,7 @@ import com.patrykandpatrick.vico.core.marker.Marker
 
 //
 @Composable
-internal fun rememberMarker(): Marker {
+internal fun rememberMarker(module:ModuleData): Marker {
     val labelBackgroundColor = MaterialTheme.colorScheme.surface
     val labelBackground = remember(labelBackgroundColor) {
         ShapeComponent(labelBackgroundShape, labelBackgroundColor.toArgb()).setShadow(
@@ -53,7 +54,7 @@ internal fun rememberMarker(): Marker {
     }
     val label = rememberTextComponent(
         background = labelBackground,
-        lineCount = LABEL_LINE_COUNT,
+        lineCount = if(module.mName != "Steps") 2 else 1 ,
         padding = labelPadding,
         typeface = Typeface.DEFAULT,
 
@@ -86,7 +87,7 @@ internal fun rememberMarker(): Marker {
                         setShadow(radius = INDICATOR_CENTER_COMPONENT_SHADOW_RADIUS, color = entryColor)
                     }
                 }
-                labelFormatter = CustomMarkerLabelFormatter
+                labelFormatter = CustomMarkerLabelFormatter(module)
             }
 
             override fun getInsets(context: MeasureContext, outInsets: Insets, horizontalDimensions: HorizontalDimensions) =
@@ -101,7 +102,7 @@ internal fun rememberMarker(): Marker {
 
 private const val LABEL_BACKGROUND_SHADOW_RADIUS = 3f
 private const val LABEL_BACKGROUND_SHADOW_DY = 2f
-private const val LABEL_LINE_COUNT = 1
+private const val LABEL_LINE_COUNT = 2
 private const val GUIDELINE_ALPHA = .2f
 private const val INDICATOR_SIZE_DP = 36f
 private const val INDICATOR_OUTER_COMPONENT_ALPHA = 32

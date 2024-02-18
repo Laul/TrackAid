@@ -46,7 +46,9 @@ class DataProvider {
                 chartType = "Combo",
                 nCol = 2,
                 nLines= 1,
-                recordType = BloodGlucoseRecord::class
+                recordType = BloodGlucoseRecord::class,
+
+
             ),
 
             NavRoutes.Detailed.route + "/2" to ModuleData(

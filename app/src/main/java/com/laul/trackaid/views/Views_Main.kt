@@ -248,7 +248,6 @@ private fun compModule(
 
                 )
     ) {
-        Box() {
             // Top of the card: Title + Last update timestamp
             Row(
 
@@ -322,8 +321,9 @@ private fun compModule(
 
                 Column(
                     modifier = Modifier
-                        .padding(top = 40.dp)
-                        .width(100.dp)
+//                        .padding(top = 40.dp)
+                        .width(90.dp)
+//                        .border(1.dp, Color.Blue)
                 ) {
 
                     Text(
@@ -357,13 +357,14 @@ private fun compModule(
 
                 }
 
-                Spacer(modifier = Modifier.width(15.dp))
+                Spacer(modifier = Modifier.width(20.dp))
 
                 if (module.series_all.s_avg.y.isNotEmpty() || module.series_all.s_sumD.y.isNotEmpty()) {
                     Column(
                         modifier = Modifier
-                            .padding(all = 10.dp)
-//                    .border(1.dp, Color.Blue)
+                            //.padding(top = 20.dp, bottom = 0.dp, end = 10.dp)
+//                            .border(1.dp, Color.Blue)
+                            .padding(top = 5.dp, end = 10.dp)
                             .align(Alignment.Bottom),
                     ) {
                         compChart(
@@ -372,13 +373,12 @@ private fun compModule(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(10.dp))
 
             }
         }
 
     }
-}
+
 
 
 //

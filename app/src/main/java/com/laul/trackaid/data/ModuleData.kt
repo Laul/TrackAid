@@ -186,9 +186,14 @@ data class ModuleData(
 
         if( idDay != null ) {
             series_all.s_min.y[idDay]  = listOfValues.min().toFloat()
-            series_all.s_max.y[idDay]  = listOfValues.max().toFloat()
+            series_all.s_max.y[idDay]  = listOfValues.max().toFloat() - listOfValues.min().toFloat()
             series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
         }
+//        if( idDay != null ) {
+//            series_all.s_min.y[idDay]  = listOfValues.min().toFloat()
+//            series_all.s_max.y[idDay]  = listOfValues.max().toFloat()
+//            series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
+//        }
     }
 
     /** Get Steps data from HealthConnect
@@ -345,7 +350,7 @@ data class ModuleData(
 
                     "Heart Rate" -> {
                         series_all.s_min.y[idDay] = bucket.result[HeartRateRecord.BPM_MIN]!!.toFloat()
-                        series_all.s_max.y[idDay] = bucket.result[HeartRateRecord.BPM_MAX]!!.toFloat()
+                        series_all.s_max.y[idDay] = bucket.result[HeartRateRecord.BPM_MAX]!!.toFloat() - bucket.result[HeartRateRecord.BPM_MIN]!!.toFloat()
                         series_all.s_avg.y[idDay] = bucket.result[HeartRateRecord.BPM_AVG]!!.toFloat()
                     }
 
@@ -394,7 +399,7 @@ data class ModuleData(
 
             // Max of the week is the max of all max. Cannot be based on the columns because of stacking
             for (i in 0 until duration ) {
-                var dailyMax = series_all.s_min.y[i] + series_all.s_max.y[i]
+                var dailyMax =  series_all.s_max.y[i] + min
                 if (dailyMax>max) max = dailyMax
 
             }

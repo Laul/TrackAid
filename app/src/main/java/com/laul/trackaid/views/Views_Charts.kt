@@ -36,7 +36,6 @@ import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
-import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes.pillShape
 import com.patrykandpatrick.vico.core.component.shape.shader.ColorShader
@@ -57,6 +56,10 @@ private val horizontalLayout = HorizontalLayout.FullWidth(
     scalableEndPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
 )
 
+private fun valFormat(value : Float): String {
+
+    return SimpleDateFormat("E").format(value) + " - "  + SimpleDateFormat("hh:mm a").format(value)
+}
 
 @Composable
 private fun getColumns(module: ModuleData): List<LineComponent> {
@@ -101,7 +104,7 @@ fun getLines(module: ModuleData, type: String): List<LineCartesianLayer.LineSpec
                 Color.Transparent.toArgb()
             ),
             backgroundShader = ColorShader(Color.Transparent.toArgb()),
-            thickness = if (type == "Line") 1.dp else 0.dp,
+            thickness = if (type == "Line") 2.dp else 0.dp,
             pointSize = if (type == "Line")0.dp else 4.dp,
             point = rememberShapeComponent(
                 shape = pillShape,
@@ -132,7 +135,11 @@ fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Star
         axis = null,
         tick = null,
         itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }) },
-        valueFormatter = { y, _, _ -> y.toInt().toString() },
+        valueFormatter = { y, _, _ ->
+            //module.startAxisValues[y.toInt()% module.startAxisValues.size] .toString()
+
+            ceil(y).toInt().toString()
+                         },
 
         )
 
@@ -170,6 +177,7 @@ fun customBottomAxis(
     return bottomAxis
 }
 
+
 /** Chart section in main view for each card module
  * @param module: module from DataProvider data class
  */
@@ -182,9 +190,10 @@ fun compChart(
         // STEPS - Total Count
         "Steps" -> {
             CartesianChartHost(
+
                 autoScaleUp = AutoScaleUp.Full,
                 chartScrollSpec = rememberChartScrollSpec(false),
-                marker = rememberMarker(),
+                marker = if (isDetailedView) rememberMarker(module) else null,
                 modifier = Modifier
                     .padding(bottom = 10.dp),
 
@@ -211,11 +220,9 @@ fun compChart(
 
         // GLUCOSE and HR - Min, Max, Avg
         "Glucose", "Heart Rate" -> {
-            var marker = rememberMarker()
-
 
             CartesianChartHost(
-                marker = rememberMarker(),
+                marker = if (isDetailedView) rememberMarker(module) else null,
                 autoScaleUp = AutoScaleUp.Full,
                 chartScrollSpec = rememberChartScrollSpec(false),
                 modifier = Modifier
@@ -228,13 +235,12 @@ fun compChart(
                             spacing = 4.dp,
                             columns = getColumns(module),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
-//                                axisValueOverrider = AxisValueOverrider.fixed(maxY=10f),
 
-                            axisValueOverrider = AxisValueOverrider.fixed(
-                                maxY = if (ceil(module.stats!!.value.max) % 2 == 1f) {
-                                    ceil(module.stats!!.value.max) + 1
-                                } else ceil(module.stats!!.value.max)
-                            )
+//                            axisValueOverrider = AxisValueOverrider.fixed(
+//                                maxY = if (ceil(module.stats!!.value.max) % 2 == 1f) {
+//                                    ceil(module.stats!!.value.max) + 10
+//                                } else ceil(module.stats!!.value.max),
+//                            )
                         ),
 
                         rememberLineCartesianLayer(
@@ -270,14 +276,15 @@ fun compChart_Detailed(module: ModuleData) {
 
     // GLUCOSE and HR - Min, Max, Avg
         "Glucose", "Heart Rate" -> {
-            var marker = rememberMarker()
+            var marker = rememberMarker(module)
             CartesianChartHost(
                 marker = marker,
                 autoScaleUp = AutoScaleUp.None,
                 chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(top = 30.dp, start = 0.dp, end = 15.dp, bottom = 0.dp),
+                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
+                ,
 
                 chart = rememberCartesianChart(
                     rememberLineCartesianLayer(
@@ -307,9 +314,21 @@ fun compChart_Detailed(module: ModuleData) {
                         tick = null,
                         itemPlacer = remember { AxisItemPlacer.Horizontal.default(spacing = 20) },
                         valueFormatter = { x, _, _ ->
-                            SimpleDateFormat("hh:mm").format(x) },
+                            valFormat(x) },
 
                         ),
+//                    decorations =
+//                    listOf(
+//                        com.patrykandpatrick.vico.core.chart.decoration.ThresholdLine(
+//                            thresholdValue = 2f,
+//                            lineComponent = rememberShapeComponent(color = Color.Black),
+//                            labelComponent =
+//                            rememberTextComponent(
+//                                Color.Black,
+//                                padding = dimensionsOf(horizontal = 8.dp)
+//                            ),
+//                        ),
+//                    ),
                 ),
                 model = CartesianChartModel(
                     LineCartesianLayerModel.build {
