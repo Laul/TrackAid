@@ -1,8 +1,16 @@
 package com.laul.trackaid
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,19 +27,26 @@ import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.TopNavigationBar
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** Structure of the Detailed views. Common to all modules
+ * @param navController: Host controller for navigation
+ * @param moduleID: Id of the module as string to retrieve proper data
+ */
 @Composable
 fun compDetailedModule(navController: NavHostController, moduleID : String?){
     Scaffold(
         containerColor = color_surface_background,
         topBar = { TopNavigationBar(navController, moduleID) },
-        content = {innerPadding -> compDetailed(navController, innerPadding, moduleID) },
+        content = {innerPadding -> compDetailed(moduleID) },
         bottomBar = {BottomNavigationBar(navController)}
     )
 }
 
+
+/** Specific content of the detailed view
+ * @param moduleID: Id of the module as string to retrieve proper data
+ */
 @Composable
-fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingValues, moduleID : String?){
+fun compDetailed(moduleID : String?){
     var module =  DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!
     Column(
 
@@ -39,7 +54,6 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
             .fillMaxWidth()
             .padding(
                 vertical = 90.dp,
-//                horizontal = dimensionResource(id = R.dimen.padding_large)
             )
 
     ) {
@@ -177,7 +191,7 @@ fun compDetailed(navController: NavHostController, innerPaddingValues: PaddingVa
             modifier = Modifier
                 .fillMaxWidth() // Take the full width
                 .height(220.dp) // Set the height of the box
-                .background(Color(module.mColor_Primary!!)) // Set background color of the box
+//                .background(Color(module.mColor_Primary!!)) // Set background color of the box
                 .padding(bottom = 1.dp) // Add padding to the bottom to create the border
                 .background(Color.White) // Set background color of the border
 

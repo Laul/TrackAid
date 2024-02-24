@@ -94,3 +94,6 @@ val color_surface_background    =   Color(0xFFF8F8F8)
 val color_surface_stroke        =   Color(0xFFCAC4D0)
 val color_test      =   Color(0xFF)
 
+val color_valid                 =   Color(0xFF065C34)
+val color_warning               =   Color(0xFFFFC107)
+val color_danger                =   Color(0xFF7C2409)

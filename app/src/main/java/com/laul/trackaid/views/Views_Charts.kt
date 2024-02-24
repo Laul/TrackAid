@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import com.laul.trackaid.data.ModuleData
+import com.laul.trackaid.theme.color_valid
 import com.laul.trackaid.theme.md_theme_light_primaryContainer
 import com.laul.trackaid.views.rememberMarker
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
@@ -32,10 +33,14 @@ import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
+import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
+import com.patrykandpatrick.vico.core.chart.decoration.Decoration
+import com.patrykandpatrick.vico.core.chart.decoration.ThresholdLine
 import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
 import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
+import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes.pillShape
 import com.patrykandpatrick.vico.core.component.shape.shader.ColorShader
@@ -105,11 +110,13 @@ fun getLines(module: ModuleData, type: String): List<LineCartesianLayer.LineSpec
             ),
             backgroundShader = ColorShader(Color.Transparent.toArgb()),
             thickness = if (type == "Line") 2.dp else 0.dp,
-            pointSize = if (type == "Line")0.dp else 4.dp,
+            pointSize = if (type == "Line") 0.dp else 4.dp,
             point = rememberShapeComponent(
                 shape = pillShape,
                 color = Color.White
             ),
+
+            pointConnector = DefaultPointConnector(cubicStrength = 0f),
 
             )
     )
@@ -356,9 +363,11 @@ fun compChart_Detailed(module: ModuleData) {
                     rememberLineCartesianLayer(
                         spacing = 4.dp,
                         lines = getLines(module, "Line"),
+                        axisValueOverrider = AxisValueOverrider.adaptiveYValues(yFraction = 1.2f, round = true),
+
 
                     ),
-//                    persistentMarkers = mapOf(2f to marker, 3f to marker),
+
                     persistentMarkers = remember(marker) { mapOf(module.series_all.s_all.x.last() to marker) },
 
                     endAxis = rememberEndAxis(
@@ -370,9 +379,8 @@ fun compChart_Detailed(module: ModuleData) {
 
                             axis = null,
                             tick = null,
-                            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }) },
+                            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }, shiftTopLines = true)  },
                             valueFormatter = { y, _, _ -> y.toInt().toString() },
-
 
                     ) ,
                     bottomAxis = rememberBottomAxis(
@@ -383,18 +391,7 @@ fun compChart_Detailed(module: ModuleData) {
                             valFormat(x) },
 
                         ),
-//                    decorations =
-//                    listOf(
-//                        com.patrykandpatrick.vico.core.chart.decoration.ThresholdLine(
-//                            thresholdValue = 2f,
-//                            lineComponent = rememberShapeComponent(color = Color.Black),
-//                            labelComponent =
-//                            rememberTextComponent(
-//                                Color.Black,
-//                                padding = dimensionsOf(horizontal = 8.dp)
-//                            ),
-//                        ),
-//                    ),
+                    decorations = createThresholdLines(module.target)
                 ),
                 model = CartesianChartModel(
                     LineCartesianLayerModel.build {
@@ -406,4 +403,47 @@ fun compChart_Detailed(module: ModuleData) {
         }
 
     }
+}
+
+
+/** Threshold lines creation.
+ * @param targetValues: array list of threshold y values
+ */
+@Composable
+fun createThresholdLines( targetValues: ArrayList<Float>) : List<Decoration>{
+    var decoration = ArrayList<Decoration>()
+
+        targetValues.forEach{
+            decoration.add(
+                ThresholdLine(
+                    thresholdValue = it,
+                    lineComponent = rememberShapeComponent(
+                        strokeWidth = .5.dp,
+                        color = color_valid.copy()
+                    ),
+                    labelComponent =
+                        rememberTextComponent(
+                            color = Color.Black,
+                            padding = dimensionsOf(horizontal = 8.dp)
+                        ),
+                    labelHorizontalPosition =  ThresholdLine.LabelHorizontalPosition.End,
+                    labelVerticalPosition =  ThresholdLine.LabelVerticalPosition.Bottom,
+
+                ),
+            )
+        }
+
+    if (targetValues.size ==2) {
+        decoration.add(
+            ThresholdLine(
+                thresholdRange = targetValues[0]..targetValues[1],
+                lineComponent = rememberShapeComponent(color = color_valid.copy(alpha = 0.03f)),
+                thresholdLabel = "",
+            ),
+
+
+        )
+    }
+
+    return decoration
 }

@@ -35,11 +35,11 @@ data class ModuleData(
     val mColor_Secondary: Int?,
     var lastDPoint: MutableState<LDataLastPoint>?,
     var stats: MutableState<LDataStats>?,
+    var target: ArrayList<Float>,
     var duration: Int,
     var chartType: String?,
     var nCol: Int,
     var nLines : Int,
-
     var recordType : KClass<out Record>?,
 
     ) {
