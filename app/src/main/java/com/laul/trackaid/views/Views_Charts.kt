@@ -28,9 +28,9 @@ import com.patrykandpatrick.vico.compose.component.rememberTextComponent
 import com.patrykandpatrick.vico.compose.component.shape.shader.color
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
 import com.patrykandpatrick.vico.core.DefaultDimens
+import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.AxisPosition
-import com.patrykandpatrick.vico.core.axis.AxisRenderer
 import com.patrykandpatrick.vico.core.axis.vertical.VerticalAxis
 import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layer.LineCartesianLayer
@@ -119,7 +119,7 @@ fun getLines(module: ModuleData, type: String): List<LineCartesianLayer.LineSpec
 
 
 @Composable
-fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Start> {
+fun customStartAxis(module: ModuleData): Axis<AxisPosition.Vertical.Start> {
     var startAxis: VerticalAxis<AxisPosition.Vertical.Start> = rememberStartAxis()
 
     startAxis = rememberStartAxis(
@@ -150,7 +150,7 @@ fun customStartAxis(module: ModuleData): AxisRenderer<AxisPosition.Vertical.Star
 fun customBottomAxis(
     module: ModuleData,
     isDetailedView: Boolean
-): AxisRenderer<AxisPosition.Horizontal.Bottom> {
+): Axis<AxisPosition.Horizontal.Bottom> {
     var bottomAxis = rememberBottomAxis()
     if (isDetailedView) {
         bottomAxis = rememberBottomAxis(

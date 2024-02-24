@@ -407,9 +407,9 @@ data class ModuleData(
         }
 
         if (chartType == "Columns"){
-            min = series_all.s_min.y.filter{it != 0f }.min()
-            max= series_all.s_max.y.max()
-            avg= series_all.s_avg.y.average().toFloat()
+            min = series_all.s_sumD.y.filter{it != 0f }.min()
+            max = series_all.s_sumD.y.filter{it != 0f }.max()
+            avg = series_all.s_sumD.y.filter{it != 0f }.average().toFloat()
         }
 
 

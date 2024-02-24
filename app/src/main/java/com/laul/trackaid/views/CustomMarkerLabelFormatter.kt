@@ -3,6 +3,9 @@ package com.laul.trackaid.views
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import androidx.core.text.bold
+import androidx.core.text.color
+import androidx.core.text.scale
 import com.laul.trackaid.data.ModuleData
 import com.patrykandpatrick.vico.core.chart.values.ChartValues
 import com.patrykandpatrick.vico.core.marker.Marker
@@ -22,12 +25,20 @@ public class CustomMarkerLabelFormatter(module: ModuleData): MarkerLabelFormatte
         markedEntries: List<Marker.EntryModel>,
         chartValues: ChartValues,
     ): CharSequence {
-        var label = ""
+
+        if (markedEntries.size == 3){
+
+            var label = SpannableStringBuilder()
+
+            .bold { color(module.mColor_Primary!! , { append("%.02f".format(markedEntries[1].entry.y)) }) }
+
+            .append(System.lineSeparator())
+            .scale(0.75f, { append( "%.02f".format(markedEntries[0].entry.y) + " - "+ "%.02f".format(markedEntries[2].entry.y))})
+
+            return label
+        }
 
 
-         if (markedEntries.size == 3){
-                             return  "%.02f".format(markedEntries[1].entry.y) +  System.lineSeparator() +  "%.02f".format(markedEntries[0].entry.y) + " - "+ "%.02f".format(markedEntries[2].entry.y)
-            }
 
 
         return markedEntries.transformToSpannable(

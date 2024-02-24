@@ -17,12 +17,14 @@
 package com.laul.trackaid.views
 
 import android.graphics.Typeface
+import android.text.Layout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.laul.trackaid.data.ModuleData
 import com.patrykandpatrick.vico.compose.component.overlayingComponent
 import com.patrykandpatrick.vico.compose.component.rememberLineComponent
@@ -57,6 +59,8 @@ internal fun rememberMarker(module:ModuleData): Marker {
         lineCount = if(module.mName != "Steps") 2 else 1 ,
         padding = labelPadding,
         typeface = Typeface.DEFAULT,
+        textSize = 16.sp,
+        textAlignment = Layout.Alignment.ALIGN_CENTER
 
     )
     val indicatorInnerComponent = rememberShapeComponent(Shapes.pillShape, MaterialTheme.colorScheme.surface)
@@ -77,7 +81,7 @@ internal fun rememberMarker(module:ModuleData): Marker {
         guidelineShape,
     )
     return remember(label, indicator, guideline) {
-        object : MarkerComponent(label, indicator, guideline) {
+        object : MarkerComponent(label,   indicator, guideline) {
             init {
                 indicatorSizeDp = INDICATOR_SIZE_DP
                 onApplyEntryColor = { entryColor ->
