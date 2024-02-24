@@ -62,7 +62,7 @@ private fun valFormat(value : Float): String {
 }
 
 @Composable
-private fun getColumns(module: ModuleData): List<LineComponent> {
+private fun getColumns(module: ModuleData, isDaily: Boolean): List<LineComponent> {
     var columns = arrayListOf<LineComponent>()
 
 
@@ -70,7 +70,7 @@ private fun getColumns(module: ModuleData): List<LineComponent> {
         if (module.nCol == 1 || i % 2 == 1) {
             columns.add(
                 rememberLineComponent(
-                    thickness = 5.dp,
+                    thickness = if (isDaily != true) 5.dp else 10.dp,
                     shape = RoundedCornerShape(2.dp),
                     color = Color(module.mColor_Primary!!),
 
@@ -202,7 +202,10 @@ fun compChart(
                     layers = arrayOf(
                         rememberColumnCartesianLayer(
                             spacing = 4.dp,
-                            columns = getColumns(module),
+                            columns = getColumns(
+                                module = module,
+                                isDaily = false
+                            ),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
                         )
                     ),
@@ -233,7 +236,10 @@ fun compChart(
                     layers = arrayOf(
                         rememberColumnCartesianLayer(
                             spacing = 4.dp,
-                            columns = getColumns(module),
+                            columns = getColumns(
+                                module = module,
+                                isDaily = false
+                            ),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
 
 //                            axisValueOverrider = AxisValueOverrider.fixed(
@@ -266,17 +272,77 @@ fun compChart(
     }
 }
 
+fun <K, V> Map<K, V?>.lastKeyOfNonZeroValue(): K? {
+    return entries.reversed().firstOrNull {
+        it.value != 0 }?.key
+}
 
 /** Chart section in detailed views
  * @param module: module from DataProvider data class
  */
 @Composable
 fun compChart_Detailed(module: ModuleData) {
+    var marker = rememberMarker(module)
+
+
     when (module.mName) {
 
-    // GLUCOSE and HR - Min, Max, Avg
+        // STEPS - Sum per hour
+        "Steps" -> {
+            CartesianChartHost(
+
+                autoScaleUp = AutoScaleUp.None,
+                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
+                marker = marker,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
+                ,
+
+                chart = rememberCartesianChart(
+                    persistentMarkers = remember(marker) { mapOf(module.series_all.s_sumH.x[module.series_all.s_sumH.y.reversed().mapIndexedNotNull { i, n -> i.takeIf { n != 0f } } [0]]to marker) },
+
+                    layers = arrayOf(
+                        rememberColumnCartesianLayer(
+                            spacing = 12.dp,
+                            columns = getColumns(
+                                module = module,
+                                isDaily = true
+                            ),
+                        )
+                    ),
+                    endAxis = rememberEndAxis(
+                        guideline = rememberLineComponent(
+                            color = md_theme_light_primaryContainer,
+                            thickness = 1.dp
+                        ),
+                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+
+                        axis = null,
+                        tick = null,
+                        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }) },
+                        valueFormatter = { y, _, _ -> y.toInt().toString() },
+
+
+                        ) ,
+                    bottomAxis = rememberBottomAxis(
+                        guideline = null,
+                        tick = null,
+                        itemPlacer = remember { AxisItemPlacer.Horizontal.default(spacing = 4) },
+                        valueFormatter = { x, _, _ -> module.bottomAxisValues_Detailed[x.toInt() % module.bottomAxisValues_Detailed.size] },
+                        ),
+
+                    ),
+                model = CartesianChartModel(
+                    ColumnCartesianLayerModel.build {
+                        series(x = module.series_all.s_sumH.x, y = module.series_all.s_sumH.y)
+                    }
+                )
+            )
+        }
+
+        // GLUCOSE and HR - All Data
         "Glucose", "Heart Rate" -> {
-            var marker = rememberMarker(module)
             CartesianChartHost(
                 marker = marker,
                 autoScaleUp = AutoScaleUp.None,

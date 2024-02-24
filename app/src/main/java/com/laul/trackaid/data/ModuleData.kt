@@ -89,6 +89,8 @@ data class ModuleData(
         series_all.s_avg.x.clear()
         series_all.s_avg.y.clear()
         series_all.s_sumD.x.clear()
+        series_all.s_sumD.y.clear()
+        series_all.s_sumH.x.clear()
         series_all.s_sumH.y.clear()
         series_all.s_all.x.clear()
         series_all.s_all.y.clear()
@@ -103,11 +105,14 @@ data class ModuleData(
             series_all.s_max.x.add(i.toFloat())
             series_all.s_max.y.add(0f)
 
+            series_all.s_avg.x.add(i.toFloat())
+            series_all.s_avg.y.add(0f)
+
             series_all.s_sumD.x.add(i.toFloat())
             series_all.s_sumD.y.add(0f)
 
-            series_all.s_avg.x.add(i.toFloat())
-            series_all.s_avg.y.add(0f)
+            series_all.s_sumH.x.add(i.toFloat())
+            series_all.s_sumH.y.add(0f)
 
         }
         return listOfDates
@@ -189,11 +194,6 @@ data class ModuleData(
             series_all.s_max.y[idDay]  = listOfValues.max().toFloat() - listOfValues.min().toFloat()
             series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
         }
-//        if( idDay != null ) {
-//            series_all.s_min.y[idDay]  = listOfValues.min().toFloat()
-//            series_all.s_max.y[idDay]  = listOfValues.max().toFloat()
-//            series_all.s_avg.y[idDay]  = listOfValues.average().toFloat()
-//        }
     }
 
     /** Get Steps data from HealthConnect
