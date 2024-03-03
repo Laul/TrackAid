@@ -30,10 +30,10 @@ public class CustomMarkerLabelFormatter(module: ModuleData): MarkerLabelFormatte
 
             var label = SpannableStringBuilder()
 
-            .bold { color(module.mColor_Primary!! , { append("%.02f".format(markedEntries[1].entry.y)) }) }
+            .bold { color(module.mColor_Primary!! , { append("%.02f".format(markedEntries[2].entry.y )) }) }
 
             .append(System.lineSeparator())
-            .scale(0.75f, { append( "%.02f".format(markedEntries[0].entry.y) + " - "+ "%.02f".format(markedEntries[2].entry.y))})
+            .scale(0.75f, { append( "%.02f".format(markedEntries[0].entry.y) + " - "+ "%.02f".format(markedEntries[1].entry.y+markedEntries[0].entry.y))})
 
             return label
         }
