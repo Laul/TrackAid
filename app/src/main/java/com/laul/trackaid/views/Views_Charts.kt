@@ -52,6 +52,7 @@ import com.patrykandpatrick.vico.core.model.LineCartesianLayerModel
 import com.patrykandpatrick.vico.core.scroll.InitialScroll
 import java.text.SimpleDateFormat
 import kotlin.math.ceil
+import kotlin.math.round
 
 
 private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(20, 0, false, true)
@@ -193,6 +194,7 @@ fun compChart(
     module: ModuleData,
     isDetailedView: Boolean,
 ) {
+    var marker = rememberMarker(module)
     when (module.mName) {
         // STEPS - Total Count
         "Steps" -> {
@@ -200,7 +202,7 @@ fun compChart(
 
                 autoScaleUp = AutoScaleUp.Full,
                 chartScrollSpec = rememberChartScrollSpec(false),
-                marker = if (isDetailedView) rememberMarker(module) else null,
+                marker = if (isDetailedView) marker else null,
                 modifier = Modifier
                     .padding(bottom = 10.dp),
 
@@ -214,11 +216,14 @@ fun compChart(
                                 isDaily = false
                             ),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
-                        )
+
+                            )
                     ),
                     startAxis = if (isDetailedView) customStartAxis(module) else null,
                     bottomAxis = customBottomAxis(module, isDetailedView),
-
+                    persistentMarkers = if (isDetailedView) {
+                        remember(marker) { mapOf(module.series_all.s_sumD.x.last() to marker) }
+                    } else null,
                     ),
                 model = CartesianChartModel(
                     ColumnCartesianLayerModel.build {
@@ -242,12 +247,19 @@ fun compChart(
                 chart = rememberCartesianChart(
                     layers = arrayOf(
                         rememberColumnCartesianLayer(
+
                             spacing = 4.dp,
                             columns = getColumns(
                                 module = module,
                                 isDaily = false
                             ),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
+                            axisValueOverrider = if(isDetailedView) {
+                                AxisValueOverrider.fixed(
+                                    minY = round(module.stats!!.value.min!!* .5f),
+                                    maxY = module.stats!!.value.max!!* 1.2f,
+                                )
+                            } else null,
 
 //                            axisValueOverrider = AxisValueOverrider.fixed(
 //                                maxY = if (ceil(module.stats!!.value.max) % 2 == 1f) {
@@ -257,12 +269,22 @@ fun compChart(
                         ),
 
                         rememberLineCartesianLayer(
+                            axisValueOverrider = if(isDetailedView) {
+                                AxisValueOverrider.fixed(
+                                    minY = round( module.stats!!.value.min!!* .5f),
+                                    maxY = module.stats!!.value.max!!* 1.2f,
+                                )
+                            } else null,
                             spacing = 4.dp,
                             lines = getLines(module, "Points")
+
                         )
                     ),
                     startAxis = if (isDetailedView) customStartAxis(module) else null,
                     bottomAxis = customBottomAxis(module, isDetailedView),
+                    persistentMarkers = if (isDetailedView) {
+                        remember(marker) { mapOf(module.series_all.s_sumD.x.last() to marker) }
+                    } else null,
 
                     ),
                 model = CartesianChartModel(
@@ -413,25 +435,25 @@ fun compChart_Detailed(module: ModuleData) {
 fun createThresholdLines( targetValues: ArrayList<Float>) : List<Decoration>{
     var decoration = ArrayList<Decoration>()
 
-        targetValues.forEach{
-            decoration.add(
-                ThresholdLine(
-                    thresholdValue = it,
-                    lineComponent = rememberShapeComponent(
-                        strokeWidth = .5.dp,
-                        color = color_valid.copy()
-                    ),
-                    labelComponent =
-                        rememberTextComponent(
-                            color = Color.Black,
-                            padding = dimensionsOf(horizontal = 8.dp)
-                        ),
-                    labelHorizontalPosition =  ThresholdLine.LabelHorizontalPosition.End,
-                    labelVerticalPosition =  ThresholdLine.LabelVerticalPosition.Bottom,
-
+    targetValues.forEach{
+        decoration.add(
+            ThresholdLine(
+                thresholdValue = it,
+                lineComponent = rememberShapeComponent(
+                    strokeWidth = .5.dp,
+                    color = color_valid.copy()
                 ),
-            )
-        }
+                labelComponent =
+                    rememberTextComponent(
+                        color = Color.Black,
+                        padding = dimensionsOf(horizontal = 8.dp)
+                    ),
+                labelHorizontalPosition =  ThresholdLine.LabelHorizontalPosition.End,
+                labelVerticalPosition =  ThresholdLine.LabelVerticalPosition.Bottom,
+
+            ),
+        )
+    }
 
     if (targetValues.size ==2) {
         decoration.add(
