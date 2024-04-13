@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +27,10 @@ import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.views.BottomNavigationBar
 import com.laul.trackaid.views.TopNavigationBar
+import com.patrykandpatrick.vico.core.model.CartesianChartModelProducer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 
 /** Structure of the Detailed views. Common to all modules
@@ -45,9 +51,11 @@ fun compDetailedModule(navController: NavHostController, moduleID : String?){
 /** Specific content of the detailed view
  * @param moduleID: Id of the module as string to retrieve proper data
  */
+
 @Composable
 fun compDetailed(moduleID : String?){
     var module =  DataProvider.moduleList[NavRoutes.Detailed.route + "/" + moduleID]!!
+
     Column(
 
         modifier = Modifier

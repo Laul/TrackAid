@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,13 +23,13 @@ import com.patrykandpatrick.vico.compose.chart.layer.lineSpec
 import com.patrykandpatrick.vico.compose.chart.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.chart.rememberCartesianChart
-import com.patrykandpatrick.vico.compose.chart.scroll.rememberChartScrollSpec
+import com.patrykandpatrick.vico.compose.chart.scroll.rememberVicoScrollState
 import com.patrykandpatrick.vico.compose.component.rememberLineComponent
 import com.patrykandpatrick.vico.compose.component.rememberShapeComponent
 import com.patrykandpatrick.vico.compose.component.rememberTextComponent
 import com.patrykandpatrick.vico.compose.component.shape.shader.color
 import com.patrykandpatrick.vico.compose.dimensions.dimensionsOf
-import com.patrykandpatrick.vico.core.DefaultDimens
+import com.patrykandpatrick.vico.core.Defaults
 import com.patrykandpatrick.vico.core.axis.Axis
 import com.patrykandpatrick.vico.core.axis.AxisItemPlacer
 import com.patrykandpatrick.vico.core.axis.AxisPosition
@@ -39,7 +40,6 @@ import com.patrykandpatrick.vico.core.chart.decoration.ThresholdLine
 import com.patrykandpatrick.vico.core.chart.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layer.LineCartesianLayer
 import com.patrykandpatrick.vico.core.chart.layout.HorizontalLayout
-import com.patrykandpatrick.vico.core.chart.scale.AutoScaleUp
 import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes.pillShape
@@ -47,19 +47,21 @@ import com.patrykandpatrick.vico.core.component.shape.shader.ColorShader
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
 import com.patrykandpatrick.vico.core.dimensions.MutableDimensions
 import com.patrykandpatrick.vico.core.model.CartesianChartModel
+import com.patrykandpatrick.vico.core.model.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.model.ColumnCartesianLayerModel
 import com.patrykandpatrick.vico.core.model.LineCartesianLayerModel
-import com.patrykandpatrick.vico.core.scroll.InitialScroll
+import com.patrykandpatrick.vico.core.scroll.Scroll
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import kotlin.math.ceil
-import kotlin.math.round
 
 
 private val bottomAxisItemPlacer = AxisItemPlacer.Horizontal.default(20, 0, false, true)
 private val bottomAxisItemPlacer_Detailed = AxisItemPlacer.Horizontal.default(4, 0, false, true)
 private val horizontalLayout = HorizontalLayout.FullWidth(
-    scalableStartPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
-    scalableEndPaddingDp = DefaultDimens.COLUMN_OUTSIDE_SPACING,
+    scalableStartPaddingDp = Defaults.COLUMN_OUTSIDE_SPACING,
+    scalableEndPaddingDp = Defaults.COLUMN_OUTSIDE_SPACING,
 )
 
 private fun valFormat(value : Float): String {
@@ -142,7 +144,7 @@ fun customStartAxis(module: ModuleData): Axis<AxisPosition.Vertical.Start> {
         ),
         axis = null,
         tick = null,
-        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }) },
+        itemPlacer = remember { AxisItemPlacer.Vertical.count( { 5 }) },
         valueFormatter = { y, _, _ ->
             //module.startAxisValues[y.toInt()% module.startAxisValues.size] .toString()
 
@@ -195,13 +197,15 @@ fun compChart(
     isDetailedView: Boolean,
 ) {
     var marker = rememberMarker(module)
+
+
     when (module.mName) {
         // STEPS - Total Count
         "Steps" -> {
             CartesianChartHost(
-
-                autoScaleUp = AutoScaleUp.Full,
-                chartScrollSpec = rememberChartScrollSpec(false),
+//                runInitialAnimation= true,
+//                autoScaleUp = AutoScaleUp.Full,
+                scrollState = rememberVicoScrollState(scrollEnabled = false),
                 marker = if (isDetailedView) marker else null,
                 modifier = Modifier
                     .padding(bottom = 10.dp),
@@ -238,8 +242,8 @@ fun compChart(
 
             CartesianChartHost(
                 marker = if (isDetailedView) rememberMarker(module) else null,
-                autoScaleUp = AutoScaleUp.Full,
-                chartScrollSpec = rememberChartScrollSpec(false),
+//                autoScaleUp = AutoScaleUp.Full,
+                scrollState = rememberVicoScrollState(scrollEnabled = false),
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(bottom = 10.dp),
@@ -254,12 +258,12 @@ fun compChart(
                                 isDaily = false
                             ),
                             mergeMode = { ColumnCartesianLayer.MergeMode.Stacked },
-                            axisValueOverrider = if(isDetailedView) {
-                                AxisValueOverrider.fixed(
-                                    minY = round(module.stats!!.value.min!!* .5f),
-                                    maxY = module.stats!!.value.max!!* 1.2f,
-                                )
-                            } else null,
+//                            axisValueOverrider = if(isDetailedView) {
+//                                AxisValueOverrider.fixed(
+//                                    minY = round(module.stats!!.value.min!!* .5f),
+//                                    maxY = module.stats!!.value.max!!* 1.2f,
+//                                )
+//                            } else null,
 
 //                            axisValueOverrider = AxisValueOverrider.fixed(
 //                                maxY = if (ceil(module.stats!!.value.max) % 2 == 1f) {
@@ -269,12 +273,12 @@ fun compChart(
                         ),
 
                         rememberLineCartesianLayer(
-                            axisValueOverrider = if(isDetailedView) {
-                                AxisValueOverrider.fixed(
-                                    minY = round( module.stats!!.value.min!!* .5f),
-                                    maxY = module.stats!!.value.max!!* 1.2f,
-                                )
-                            } else null,
+//                            axisValueOverrider = if(isDetailedView) {
+//                                AxisValueOverrider.fixed(
+//                                    minY = round( module.stats!!.value.min!!* .5f),
+//                                    maxY = module.stats!!.value.max!!* 1.2f,
+//                                )
+//                            } else null,
                             spacing = 4.dp,
                             lines = getLines(module, "Points")
 
@@ -313,15 +317,21 @@ fun <K, V> Map<K, V?>.lastKeyOfNonZeroValue(): K? {
 fun compChart_Detailed(module: ModuleData) {
     var marker = rememberMarker(module)
 
+    val modelProducer = remember { CartesianChartModelProducer.build() }
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            modelProducer.tryRunTransaction { module.series_all.s_all  }
+        }
+    }
 
     when (module.mName) {
 
         // STEPS - Sum per hour
         "Steps" -> {
             CartesianChartHost(
+                scrollState = rememberVicoScrollState(scrollEnabled = true, initialScroll =  Scroll.Absolute.End),
 
-                autoScaleUp = AutoScaleUp.None,
-                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
+//                autoScaleUp = AutoScaleUp.None,
                 marker = marker,
                 modifier = Modifier
                     .fillMaxHeight()
@@ -349,7 +359,7 @@ fun compChart_Detailed(module: ModuleData) {
 
                         axis = null,
                         tick = null,
-                        itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }) },
+                        itemPlacer = remember { AxisItemPlacer.Vertical.count({ 5 }) },
                         valueFormatter = { y, _, _ -> y.toInt().toString() },
 
 
@@ -374,8 +384,9 @@ fun compChart_Detailed(module: ModuleData) {
         "Glucose", "Heart Rate" -> {
             CartesianChartHost(
                 marker = marker,
-                autoScaleUp = AutoScaleUp.None,
-                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
+//                autoScaleUp = AutoScaleUp.None,
+                scrollState = rememberVicoScrollState(scrollEnabled = true, initialScroll =  Scroll.Absolute.End),
+
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
@@ -401,7 +412,7 @@ fun compChart_Detailed(module: ModuleData) {
 
                             axis = null,
                             tick = null,
-                            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }, shiftTopLines = true)  },
+                            itemPlacer = remember { AxisItemPlacer.Vertical.count({ 5 }, shiftTopLines = true)  },
                             valueFormatter = { y, _, _ -> y.toInt().toString() },
 
                     ) ,
@@ -415,11 +426,14 @@ fun compChart_Detailed(module: ModuleData) {
                         ),
                     decorations = createThresholdLines(module.target)
                 ),
-                model = CartesianChartModel(
-                    LineCartesianLayerModel.build {
-                        series(x = module.series_all.s_all.x, y = module.series_all.s_all.y)
-                    },
-                )
+                modelProducer = modelProducer,
+                runInitialAnimation= true,
+
+//                model = CartesianChartModel(
+//                    LineCartesianLayerModel.build {
+//                        series(x = module.series_all.s_all.x, y = module.series_all.s_all.y)
+//                    },
+//                )
 
             )
         }

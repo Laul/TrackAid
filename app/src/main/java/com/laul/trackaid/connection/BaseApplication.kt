@@ -16,8 +16,6 @@
 package com.laul.trackaid.connection
 
 import android.app.Application
-import androidx.compose.runtime.Composable
-import androidx.health.connect.client.HealthConnectClient
 
 class BaseApplication : Application() {
 
