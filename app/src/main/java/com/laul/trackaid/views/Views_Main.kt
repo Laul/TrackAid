@@ -33,6 +33,7 @@ import com.laul.trackaid.data.ModuleData
 import com.laul.trackaid.data.NavRoutes
 import com.laul.trackaid.theme.*
 import com.laul.trackaid.views.BottomNavigationBar
+import com.laul.trackaid.views.compDrugsModule
 import com.laul.trackaid.views.getHealthConnectPermissions
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime
@@ -125,7 +126,9 @@ fun compCommon(context: Context) {
             composable(NavRoutes.Home.route) {
                 compMainModule(navController = navController, client = client)
             }
-
+            composable(NavRoutes.Drugs.route) {
+                compDrugsModule(navController = navController)
+            }
             composable(NavRoutes.Detailed.route + "/{moduleID}") { backStackEntry ->
                 val moduleID = backStackEntry.arguments?.getString("moduleID")
 
@@ -168,7 +171,7 @@ private fun compModules(
     client: HealthConnectClient,
     innerPadding: PaddingValues
 ) {
-    val moduleList = DataProvider.moduleList.values.toList().drop(1)
+    val moduleList = DataProvider.moduleList.values.toList().drop(1).dropLast(1)
 
     // Pull to refresh support: we call healthconnectUpdate when pulling the lazycolumn
     var refreshing by remember { mutableStateOf(false) }

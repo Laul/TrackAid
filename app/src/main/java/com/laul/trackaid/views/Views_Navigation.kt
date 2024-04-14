@@ -3,10 +3,20 @@ package com.laul.trackaid.views
 import android.content.Context
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,7 +41,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.laul.trackaid.R
 import com.laul.trackaid.data.DataProvider
 import com.laul.trackaid.data.NavRoutes
-import com.laul.trackaid.theme.*
+import com.laul.trackaid.theme.color_general_primary
+import com.laul.trackaid.theme.color_surface_background
+import com.laul.trackaid.theme.color_text_primary
+import com.laul.trackaid.theme.color_text_secondary
 import kotlinx.coroutines.launch
 
 @Composable
@@ -42,7 +55,7 @@ fun getHealthConnectPermissions(context : Context) : Pair<HealthConnectClient, B
     // Create list of permissions to request
     val permissionsSet = mutableSetOf<String>()
 
-    DataProvider.moduleList.values.toList().drop(1).forEach{
+    DataProvider.moduleList.values.toList().drop(1).dropLast(1).forEach(){
         permissionsSet.add(HealthPermission.getReadPermission(it.recordType!!))
     }
 
@@ -80,7 +93,6 @@ fun getHealthConnectPermissions(context : Context) : Pair<HealthConnectClient, B
     return Pair(client, permissionGranted)
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopNavigationBar(navController: NavController, moduleID: String?) {
     Row(
@@ -100,13 +112,25 @@ fun TopNavigationBar(navController: NavController, moduleID: String?) {
             onClick = { navController.navigateUp() }) {
             Icon(Icons.Filled.ArrowBack, null)
         }
-        Text(
-            text = DataProvider.moduleList[NavRoutes.Detailed.route + "/$moduleID"]!!.mName,
-            color = color_text_primary,
-            maxLines = 1,
-            textAlign = TextAlign.Center
 
-        )
+        if(moduleID != "Drugs") {
+            Text(
+                text = DataProvider.moduleList[NavRoutes.Detailed.route + "/$moduleID"]!!.mName,
+                color = color_text_primary,
+                maxLines = 1,
+                textAlign = TextAlign.Center
+
+            )
+        }
+        else {
+            Text(
+                text = DataProvider.moduleList[NavRoutes.Drugs.route]!!.mName,
+                color = color_text_primary,
+                maxLines = 1,
+                textAlign = TextAlign.Center
+
+            )
+        }
     }
 
 }

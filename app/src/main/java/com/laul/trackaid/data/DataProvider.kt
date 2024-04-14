@@ -33,6 +33,7 @@ class DataProvider {
                 recordType = null
             ),
 
+
             NavRoutes.Detailed.route + "/1" to ModuleData(
                 mId = 1,
                 mName = "Glucose",
@@ -107,7 +108,7 @@ class DataProvider {
 //            ),
 
 //            NavRoutes.Detailed.route + "/5" to ModuleData(
-//                mId = 4,
+//                mId = 5,
 //                mName = "Weight",
 //                mUnit = "kG",
 //                mIcon = R.drawable.ic_weight,
@@ -123,7 +124,24 @@ class DataProvider {
 //                chartType = "Line",
 //                nCol = 0,
 //                nLines= 1
-//            )
+//            ),
+            NavRoutes.Drugs.route to ModuleData(
+                mId = 0,
+                mName = "Drugs",
+                mUnit = null,
+                mIcon = R.drawable.ic_pill,
+                mIcon_outlined = R.drawable.ic_pill_outline,
+                mColor_Primary = R.color.red_primary,
+                mColor_Secondary = R.color.red_primary,
+                lastDPoint = mutableStateOf(LDataLastPoint("", 0f)),
+                stats = mutableStateOf(LDataStats(0f,0f,0f)),
+                target = arrayListOf(0f),
+                duration = 7,
+                chartType = null,
+                nCol = 0 ,
+                nLines = 0,
+                recordType = null
+            )
         )
 
 
