@@ -1,5 +1,6 @@
 package com.laul.trackaid.views
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,11 +40,15 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.android.fhir.get
+import com.laul.trackaid.connection.FhirApplication.Companion.fhirEngine
 import com.laul.trackaid.theme.color_general_primary
 import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_primary
 import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.theme.md_theme_light_secondaryContainer
+import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Patient
 
 @Composable
     fun compDrugsModule(navController: NavController) {
@@ -59,6 +65,19 @@ import com.laul.trackaid.theme.md_theme_light_secondaryContainer
 fun compQuestDrugs(){
     var dName by remember { mutableStateOf("") }
     var dQuantity by remember { mutableStateOf("") }
+
+    // Instantiate FHIR engine
+    // TODO
+//    var fhirEngine = fhirEngine(LocalContext.current)
+//    val fhirCoroutineScope = rememberCoroutineScope()
+//
+//
+//    // val patient = entry.resource as Patient
+//
+//    fhirCoroutineScope.launch {
+//        val patient = fhirEngine.get<Patient>("1")
+//        fhirEngine.create(patient)
+//    }
 
     Column (
         horizontalAlignment = Alignment.Start,
