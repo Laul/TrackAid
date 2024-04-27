@@ -216,7 +216,7 @@ data class ModuleData(
         }
 
         catch (e: Exception) {
-            Log.i("StepsToException:", e.toString())
+            Log.i("TrackAid_StepsToException:", e.toString())
             // Run error handling here
         }
 
@@ -298,7 +298,7 @@ data class ModuleData(
         }
 
         catch (e: Exception) {
-            Log.i("Heart RateToException:", e.toString())
+            Log.i("TrackAid_Heart RateToException:", e.toString())
             // Run error handling here
         }
 
@@ -325,7 +325,7 @@ data class ModuleData(
         stats!!.value = getStats()
         }
         catch (e: Exception) {
-            Log.i("Heart RateToException:", e.toString())
+            Log.i("TrackAid_Heart RateToException:", e.toString())
             // Run error handling here
         }
     }

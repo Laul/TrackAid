@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "802890762154",
+    "project_id": "trackaid",
+    "storage_bucket": "trackaid.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802890762154:android:eaccf740d29727587c4dd3",
+        "android_client_info": {
+          "package_name": "com.laul.trackaid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "802890762154-6u8iic6jd7gebdda4f833ss38c0g7a74.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.laul.trackaid",
+            "certificate_hash": "763e485913e4f42bc773eb0230c549cbf84757b1"
+          }
+        },
+        {
+          "client_id": "802890762154-e4fahoitltgpa830kqg06l5k5uehiocv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPl5ibkz-q2BYM75e5bvtysKaEXsCySRs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "802890762154-e4fahoitltgpa830kqg06l5k5uehiocv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

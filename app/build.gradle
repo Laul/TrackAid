@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -64,6 +65,8 @@ dependencies {
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation "androidx.activity:activity-compose:$compose_version"
+    implementation 'androidx.datastore:datastore-core-android:1.1.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
@@ -115,5 +118,11 @@ dependencies {
     implementation("com.google.android.fhir:data-capture:1.1.0")
     implementation("androidx.fragment:fragment-ktx:1.5.5")
     implementation("com.google.android.fhir:engine:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    implementation 'com.firebaseui:firebase-ui-auth:8.0.2'
+    // Import the BoM for the Firebase platform
+    implementation platform('com.google.firebase:firebase-bom:31.0.0')
+    // Declare the dependency for the Firebase Authentication library
+    implementation 'com.google.firebase:firebase-auth-ktx'
 }

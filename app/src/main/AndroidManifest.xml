@@ -43,6 +43,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.SignInActivity"
+
+        />"
+
     </application>
     <queries>
         <package android:name="com.google.android.apps.healthdata" />

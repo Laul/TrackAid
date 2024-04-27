@@ -1,6 +1,6 @@
 package com.laul.trackaid.views
 
-import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -40,15 +40,24 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.android.fhir.db.ResourceNotFoundException
 import com.google.android.fhir.get
-import com.laul.trackaid.connection.FhirApplication.Companion.fhirEngine
+import com.google.android.fhir.search.search
+import com.google.android.fhir.sync.Sync
+import com.laul.trackaid.activities.SignInActivity.Companion.fhirEngine
+import com.laul.trackaid.data.FhirPeriodicSyncWorker
 import com.laul.trackaid.theme.color_general_primary
 import com.laul.trackaid.theme.color_surface_background
 import com.laul.trackaid.theme.color_text_primary
 import com.laul.trackaid.theme.color_text_secondary
 import com.laul.trackaid.theme.md_theme_light_secondaryContainer
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.Enumerations
+import org.hl7.fhir.r4.model.HumanName
 import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.ResourceType
 
 @Composable
     fun compDrugsModule(navController: NavController) {
@@ -68,16 +77,71 @@ fun compQuestDrugs(){
 
     // Instantiate FHIR engine
     // TODO
-//    var fhirEngine = fhirEngine(LocalContext.current)
-//    val fhirCoroutineScope = rememberCoroutineScope()
+    val appContext = LocalContext.current
+    var fhirEngine = fhirEngine(appContext)
+    val fhirCoroutineScope = rememberCoroutineScope()
+
 //
-//
-//    // val patient = entry.resource as Patient
-//
-//    fhirCoroutineScope.launch {
-//        val patient = fhirEngine.get<Patient>("1")
-//        fhirEngine.create(patient)
-//    }
+//     val patient = entry.resource as Patient
+
+    fhirCoroutineScope.launch {
+        // Create a new Patient resource
+        val patient = Patient().apply{
+            id = "19682646"
+            gender = Enumerations.AdministrativeGender.FEMALE
+            addName(
+                HumanName().apply {
+                    addGiven("Lauranne")
+                    family = "Sins"
+                }
+            )
+        }
+
+        fhirEngine.create(patient)
+
+
+            Sync.oneTimeSync<FhirPeriodicSyncWorker>(appContext)
+                .shareIn(this, SharingStarted.Eagerly, 0)
+                .collect {  /* Handle SyncJobStatus here */ }
+
+
+//        fhirEngine.syncUpload(
+//            localChangesFetchMode = LocalChangesFetchMode.AllChanges,
+//            upload =
+//            )
+
+
+        // Read a Patient resource by ID
+        try {
+            val patient = fhirEngine.get<Patient>("19682646")
+        } catch (e : ResourceNotFoundException) {
+            e.printStackTrace()
+        }
+
+    }
+
+    val fhirSearchScope = rememberCoroutineScope()
+
+    fhirSearchScope.launch {
+
+        var s = fhirEngine.search<Patient> {
+            filter(Patient.GIVEN, {
+                value = "Lauranne"
+
+            })
+
+        }
+        Log.i("Trackaid_PatientSearch: " , s.toString())
+
+
+        var p = fhirEngine.get(
+            type = ResourceType.Patient,
+            id = "19682646"
+
+        )
+        Log.i("Trackaid_PatientGet: " , p.toString())
+    }
+
 
     Column (
         horizontalAlignment = Alignment.Start,
