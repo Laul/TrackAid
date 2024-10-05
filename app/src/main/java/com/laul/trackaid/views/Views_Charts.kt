@@ -194,6 +194,7 @@ fun compChart(
     module: ModuleData,
     isDetailedView: Boolean,
 ) {
+
     var marker = rememberMarker(module)
     when (module.mName) {
         // STEPS - Total Count
@@ -313,7 +314,7 @@ fun <K, V> Map<K, V?>.lastKeyOfNonZeroValue(): K? {
 fun compChart_Detailed(module: ModuleData) {
     var marker = rememberMarker(module)
 
-
+if (module.series_all.s_all.y.isNotEmpty()) {
     when (module.mName) {
 
         // STEPS - Sum per hour
@@ -321,15 +322,17 @@ fun compChart_Detailed(module: ModuleData) {
             CartesianChartHost(
 
                 autoScaleUp = AutoScaleUp.None,
-                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
+                chartScrollSpec = rememberChartScrollSpec(
+                    isScrollEnabled = true,
+                    initialScroll = InitialScroll.End
+                ),
                 marker = marker,
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
-                ,
+                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp),
 
                 chart = rememberCartesianChart(
-                    persistentMarkers = remember(marker) { mapOf(module.series_all.s_sumH.x[module.series_all.s_sumH.y.reversed().mapIndexedNotNull { i, n -> i.takeIf { n != 0f } } [0]]to marker) },
+//                    persistentMarkers = remember(marker) { mapOf(module.series_all.s_sumH.x[module.series_all.s_sumH.y.reversed().mapIndexedNotNull { i, n -> i.takeIf { n != 0f } } [0]]to marker) },
 
                     layers = arrayOf(
                         rememberColumnCartesianLayer(
@@ -353,13 +356,13 @@ fun compChart_Detailed(module: ModuleData) {
                         valueFormatter = { y, _, _ -> y.toInt().toString() },
 
 
-                        ) ,
+                        ),
                     bottomAxis = rememberBottomAxis(
                         guideline = null,
                         tick = null,
                         itemPlacer = remember { AxisItemPlacer.Horizontal.default(spacing = 4) },
                         valueFormatter = { x, _, _ -> module.bottomAxisValues_Detailed[x.toInt() % module.bottomAxisValues_Detailed.size] },
-                        ),
+                    ),
 
                     ),
                 model = CartesianChartModel(
@@ -375,42 +378,53 @@ fun compChart_Detailed(module: ModuleData) {
             CartesianChartHost(
                 marker = marker,
                 autoScaleUp = AutoScaleUp.None,
-                chartScrollSpec = rememberChartScrollSpec(isScrollEnabled = true, initialScroll= InitialScroll.End),
+                chartScrollSpec = rememberChartScrollSpec(
+                    isScrollEnabled = true,
+                    initialScroll = InitialScroll.End
+                ),
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp)
-                ,
+                    .padding(top = 10.dp, start = 0.dp, end = 0.dp, bottom = 0.dp),
 
                 chart = rememberCartesianChart(
                     rememberLineCartesianLayer(
                         spacing = 4.dp,
                         lines = getLines(module, "Line"),
-                        axisValueOverrider = AxisValueOverrider.adaptiveYValues(yFraction = 1.2f, round = true),
+                        axisValueOverrider = AxisValueOverrider.adaptiveYValues(
+                            yFraction = 1.2f,
+                            round = true
+                        ),
 
 
-                    ),
+                        ),
 
-                    persistentMarkers = remember(marker) { mapOf(module.series_all.s_all.x.last() to marker) },
+//                    persistentMarkers = remember(marker) { mapOf(module.series_all.s_all.x.last() to marker) },
 
                     endAxis = rememberEndAxis(
-                            guideline = rememberLineComponent(
-                                color = md_theme_light_primaryContainer,
-                                thickness = 1.dp
-                            ),
-                            horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
+                        guideline = rememberLineComponent(
+                            color = md_theme_light_primaryContainer,
+                            thickness = 1.dp
+                        ),
+                        horizontalLabelPosition = VerticalAxis.HorizontalLabelPosition.Outside,
 
-                            axis = null,
-                            tick = null,
-                            itemPlacer = remember { AxisItemPlacer.Vertical.default(maxItemCount = { 5 }, shiftTopLines = true)  },
-                            valueFormatter = { y, _, _ -> y.toInt().toString() },
+                        axis = null,
+                        tick = null,
+                        itemPlacer = remember {
+                            AxisItemPlacer.Vertical.default(
+                                maxItemCount = { 5 },
+                                shiftTopLines = true
+                            )
+                        },
+                        valueFormatter = { y, _, _ -> y.toInt().toString() },
 
-                    ) ,
+                        ),
                     bottomAxis = rememberBottomAxis(
                         guideline = null,
                         tick = null,
                         itemPlacer = remember { AxisItemPlacer.Horizontal.default(spacing = 20) },
                         valueFormatter = { x, _, _ ->
-                            valFormat(x) },
+                            valFormat(x)
+                        },
 
                         ),
                     decorations = createThresholdLines(module.target)
@@ -425,6 +439,7 @@ fun compChart_Detailed(module: ModuleData) {
         }
 
     }
+}
 }
 
 
